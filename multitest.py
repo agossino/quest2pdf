@@ -8,12 +8,16 @@ from random import shuffle
 from simpletest import SingleTest
 
 class MultiTest:
+    '''Put more shuffled SimpleTest together and save as flowable
+    '''
     def __init__(self, testsLst, c):
         shuffle(testsLst)
+        
         self.testsLst = []
         for test, count in zip(testsLst, range(1, len(testsLst) + 1)):
             sTest = SingleTest(testID=count, **test)
             self.testsLst.append(sTest)
+            
         self.c = c
 
         A4width, A4height = A4
@@ -30,6 +34,7 @@ class MultiTest:
         self.leftH = styles['LeftHead']
         self.centerF = styles['CenterFooter']
 
+        # How much of the sheet is taken by main frame
         widthFactor = 0.9
         heightFactor = 0.9
 
@@ -55,7 +60,7 @@ class MultiTest:
     def __str__(self):
         return ''.join([item.__str__() + '\n' for item in self.testsLst])
         
-    def print(self):
+    def save(self):
         f = Frame(self.frameXLowLeftCorner,
                   self.frameYLowLeftCorner,
                   self.frameW, self.frameH)
@@ -155,8 +160,7 @@ genio è di essere compreso (1 risposta)''',
 
     tests = MultiTest([test1, test2, test3], c)
     tests.setHeader('file: ' + fileName)
-    tests.print()
-    print(tests)
+    tests.save()
 
     return
 

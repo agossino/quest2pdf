@@ -24,8 +24,10 @@ class SingleTest:
             self.question = args['question']
             self.right = args['answers'][0]
         except (IndexError, KeyError):
-            raise STException('One question and, at least, one answer must be provided')
+            text = 'One question and, at least, one answer must be provided'
+            raise STException(text)
         
+        # '' answers ara accepted but not used
         self.wrong = [ans for ans in args['answers'][1:] if ans != '']
         
         try:
@@ -33,11 +35,21 @@ class SingleTest:
         except KeyError:
             self.image = ''
 
+        # in case of plain text, rightletter is the right sentece
+        self.rightLetter = self.right
+
+        self.bType = 'A' # answers bullet are capital letters, if not a letters
+        # rightLetter must be changed
+
+        if self.wrong != []: # Multi choice or True/False question            
+            self.answerLst = self.wrong + [self.right]
+            shuffle(self.answerLst)
+            self.rightLetter = (chr(self.answerLst.index(self.right)
+                                    + ord(self.bType)))
+
         self.fillSpace = '_'
         self.fillTimes = 1000
         self.filler = self.fillSpace * self.fillTimes # space for written answer
-
-        self.bType = 'A' # answers bullet are capital letters
 
         styles = getSampleStyleSheet()
         styles.add(ParagraphStyle(name='Justify', fontSize=12,
@@ -47,8 +59,6 @@ class SingleTest:
                                   alignment=TA_JUSTIFY))
         self.just, self.ans = styles['Justify'], styles['Answer']
 
-        self.rightLetter = self.right
-        
         if len(self.wrong) == 0:
             self.type =  ' - open '
         elif len(self.wrong) == 1:
@@ -96,19 +106,13 @@ class SingleTest:
         story = []
                      
         if self.wrong != []: # Multi choice or True/False question
-            # question with image, if applicable
-            listItem = [ListItem(listFlow, value=self.testID)]
-            
-            answerLst = self.wrong + [self.right]
-            shuffle(answerLst)
-            self.rightLetter = chr(answerLst.index(self.right) + ord(self.bType))
-            
+            listItem = [ListItem(listFlow, value=self.testID)]            
             # First choice: A
-            listItem.append(ListItem(Paragraph(answerLst[0], self.ans),
+            listItem.append(ListItem(Paragraph(self.answerLst[0], self.ans),
                                      bulletType=self.bType,
                                      leftIndent=30, value=1))
             
-            for answer in answerLst[1:]: # Following choices
+            for answer in self.answerLst[1:]: # Following choices
                 listItem.append(ListItem(Paragraph(answer, self.ans),
                                          bulletType=self.bType, leftIndent=30))
             story.extend([ListFlowable(listItem)])

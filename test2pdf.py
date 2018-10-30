@@ -44,14 +44,16 @@ def main():
     fileName = ''.join((user, '-', host, '-', now))[:-4] + '.pdf'
 
     c = Canvas(fileName, pagesize=A4)
-    print(fileName)
     c.setAuthor('Giancarlo Ossino')
     c.setTitle('Esame intermedio DDT')
     c.setSubject('Formazione')
 
     tests = MultiTest(dictLst, c)
     tests.setHeader('file: ' + fileName)
-    tests.print()
+    tests.save()
+
+    print(fileName)
+    print(tests)
     
     return
 
