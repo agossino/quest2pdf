@@ -13,8 +13,7 @@ class MultiTest:
         self.testsLst = []
         for test, count in zip(testsLst, range(1, len(testsLst) + 1)):
             sTest = SingleTest(testID=count, **test)
-            print(sTest)
-            self.testsLst.extend(sTest.getFlowable())
+            self.testsLst.append(sTest)
         self.c = c
 
         A4width, A4height = A4
@@ -53,6 +52,9 @@ class MultiTest:
 
         return
 
+    def __str__(self):
+        return ''.join([item.__str__() + '\n' for item in self.testsLst])
+        
     def print(self):
         f = Frame(self.frameXLowLeftCorner,
                   self.frameYLowLeftCorner,
@@ -76,7 +78,9 @@ class MultiTest:
         fPara = Paragraph(ftext, self.centerF)
         footer.add(fPara, self.c)
 
-        for item in self.testsLst:
+        flowLst = [item.getFlowable()[0] for item in self.testsLst]
+        
+        for item in flowLst:
             if not f.add(item, self.c):
                 self.c.showPage()
                 f = Frame(self.frameXLowLeftCorner,
@@ -152,6 +156,7 @@ genio è di essere compreso (1 risposta)''',
     tests = MultiTest([test1, test2, test3], c)
     tests.setHeader('file: ' + fileName)
     tests.print()
+    print(tests)
 
     return
 

@@ -47,22 +47,24 @@ class SingleTest:
                                   alignment=TA_JUSTIFY))
         self.just, self.ans = styles['Justify'], styles['Answer']
 
-        self.rightAns = self.right
+        self.rightLetter = self.right
         
         if len(self.wrong) == 0:
-            self.output = str(self.testID) + ' open '
+            self.type =  ' - open '
         elif len(self.wrong) == 1:
-            self.output = str(self.testID) + ' true/false '
+            self.type = ' - true/false '
         else:
-            self.output = str(self.testID) + ' multiple choice '
+            self.type = ' - multiple choice '
             
         if self.image != '':
-            self.output = self.output + 'with image '
+            self.type = self.type + 'with image.'
+        else:
+            self.type = self.type + 'without image.'
 
         return
             
     def __str__(self):
-        return self.output + self.question[:10] + '...: ' + self.rightAns
+        return str(self.testID) + ': ' + self.rightLetter + self.type
 
     def _getImage(self, name, width=50*mm):
         '''Return Image with original aspect and given width.
@@ -99,7 +101,7 @@ class SingleTest:
             
             answerLst = self.wrong + [self.right]
             shuffle(answerLst)
-            self.rightAns = chr(answerLst.index(self.right) + ord(self.bType))
+            self.rightLetter = chr(answerLst.index(self.right) + ord(self.bType))
             
             # First choice: A
             listItem.append(ListItem(Paragraph(answerLst[0], self.ans),
@@ -140,20 +142,14 @@ sunt in culpa qui officia deserunt mollit anim id est laborum.''',
              'question': '''Non sa niente, e crede di saper tutto.
              Questo fa chiaramente prevedere una carriera politica''',
              'image': '',
-             'answers': ['giusta', '''La politica è forse l’unica professione per la quale non si ritiene
-                         necessaria alcuna preparazione''', '', ''],
+             'answers': ['giusta', '''La politica è forse l’unica professione
+per la quale non si ritiene necessaria alcuna preparazione''', '', ''],
              'altro 1': 'altro'}
     test3 = {'testID': 3,
-             'question': 'Il peggio che può capitare a un genio è di essere compreso',
+             'question': '''Il peggio che può capitare a un genio
+è di essere compreso''',
              'image': Path('/home/ago/Devel/Reportlab/image/b.png'),
-             'answers': ['giusta', '''Il lavoro è una manna quando ci
-aiuta a pensare a quello che stiamo facendo.
-Ma diventa una maledizione nel momento in cui la sua unica utilità
-consiste nell’evitare che riflettiamo sul senso della vita.''',
-                         '''Un popolo che ignora il proprio passato non saprà mai
-                         nulla del proprio presente''',
-                         '''È vero che non sei responsabile di quello che sei,
-ma sei responsabile di quello che fai di ciò che sei.'''],
+             'answers': ['giusta'],
              'altro 1': 'altro',
              'altro 2': 'altro'}
     
@@ -170,13 +166,14 @@ ma sei responsabile di quello che fai di ciò che sei.'''],
     leftH = styles['LeftHead']
     centerF = styles['CenterFooter']
     
-    Story = [SingleTest(**test) for test in (test1, test2, test3)]
+##    Story = [SingleTest(**test) for test in (test1, test2, test3)]
+    Story = []
     sp = Spacer(mm, mm*20)
 
-##    for test in (test1, test2, test3):
-##        oneTest = SingleTest(**test)
-##        Story.extend(oneTest.getFlowable())
-##        print(oneTest)
+    for test in (test1, test2, test3):
+        oneTest = SingleTest(**test)
+        Story.extend(oneTest.getFlowable())
+        print(oneTest)
         
     fileName = 'output.pdf'
 

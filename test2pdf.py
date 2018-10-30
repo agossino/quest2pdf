@@ -16,11 +16,10 @@ def getText(file_name):
         rows = [row for row in reader]
     return rows
 
-def setDictionary(row, value):
+def setDictionary(row):
     '''Give the right format for SimpleTest argument.
     '''
-    output = {'testID': value,
-              'question': row['question'],
+    output = {'question': row['question'],
               'image': row['image']
               }
     
@@ -34,15 +33,10 @@ def setDictionary(row, value):
 def main():
     story = []
 
-    testFile = 'testFile/AAtest.csv'
+    testFile = 'testFile/DigitalDatatest.csv'
 
     text = getText(testFile)
-    shuffle(text)
-
-    for row, value in zip(text, range(1,len(text)+1)):
-        oneTest = SingleTest(**setDictionary(row, value))
-        story.extend(oneTest.getFlowable())
-        print(oneTest)
+    dictLst = [setDictionary(row) for row in text]
 
     host = node()
     user = getlogin()
@@ -51,11 +45,11 @@ def main():
 
     c = Canvas(fileName, pagesize=A4)
     print(fileName)
-    c.setAuthor('Giancarlo')
-    c.setTitle('Esame')
+    c.setAuthor('Giancarlo Ossino')
+    c.setTitle('Esame intermedio DDT')
     c.setSubject('Formazione')
 
-    tests = MultiTest(story, c)
+    tests = MultiTest(dictLst, c)
     tests.setHeader('file: ' + fileName)
     tests.print()
     
