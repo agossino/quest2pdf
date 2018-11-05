@@ -101,8 +101,15 @@ venv.bak/
 /site
 
 # my ignore files/dir
+# virtualenv dir
+bin/
+include/
+share/
+# others files/dir
 Doc/
 Examples/
 testFile/
 image/
 *.pdf
+*.txt
+

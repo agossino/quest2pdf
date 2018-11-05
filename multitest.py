@@ -21,6 +21,8 @@ class MultiTest:
         self.c = c
 
         A4width, A4height = A4
+
+        self.boundary = False
         
         styles = getSampleStyleSheet()
         styles.add(ParagraphStyle(name='RightHead', fontSize=10,
@@ -64,17 +66,20 @@ class MultiTest:
         f = Frame(self.frameXLowLeftCorner,
                   self.frameYLowLeftCorner,
                   self.frameW, self.frameH)
-        f.drawBoundary(self.c)
+        if self.boundary:
+            f.drawBoundary(self.c)
 
         header = Frame(self.headerXLowLeftCorner,
                        self.headerYLowLeftCorner,
                        self.headerW, self.headerH)
-        header.drawBoundary(self.c)
+        if self.boundary:
+            header.drawBoundary(self.c)
 
         footer = Frame(self.footerXLowLeftCorner,
                        self.footerYLowLeftCorner,
                        self.footerW, self.footerH)
-        footer.drawBoundary(self.c)
+        if self.boundary:
+            footer.drawBoundary(self.c)
         
         hPara = Paragraph(self.headerTxt, self.rightH)
         header.add(hPara, self.c)
@@ -91,17 +96,20 @@ class MultiTest:
                 f = Frame(self.frameXLowLeftCorner,
                           self.frameYLowLeftCorner,
                           self.frameW, self.frameH)
-                f.drawBoundary(self.c)
+                if self.boundary:
+                    f.drawBoundary(self.c)
                 
                 header = Frame(self.headerXLowLeftCorner,
                                self.headerYLowLeftCorner,
                                self.headerW, self.headerH)
-                header.drawBoundary(self.c)
+                if self.boundary:
+                    header.drawBoundary(self.c)
 
                 footer = Frame(self.footerXLowLeftCorner,
                                self.footerYLowLeftCorner,
                                self.footerW, self.footerH)
-                footer.drawBoundary(self.c)
+                if self.boundary:
+                    footer.drawBoundary(self.c)
 
                 f.add(item, self.c)
 
