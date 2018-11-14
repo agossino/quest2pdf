@@ -11,7 +11,7 @@ import logging
 import json
 from logging.config import dictConfig
 
-from simpletest import SingleQuest
+from singlequest import SingleQuest
 from multitest import MultiQuest
 
 def getText(file_name):
