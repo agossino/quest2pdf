@@ -25,10 +25,18 @@ class MultiQuest:
         return
 
     def _set_doc(self):
-        A4width, A4height = A4
+        self.setHeader('')
+        self.setFooter()
 
         self.boundary = False
-        
+
+        self._set_styles()
+
+        self._set_frames()
+
+        return
+
+    def _set_styles(self):
         styles = getSampleStyleSheet()
         styles.add(ParagraphStyle(name='RightHead', fontSize=10,
                                   alignment=TA_RIGHT))
@@ -41,24 +49,36 @@ class MultiQuest:
         self.leftH = styles['LeftHead']
         self.centerF = styles['CenterFooter']
 
+        return
+
+    def _set_frames(self):
+        A4width, A4height = A4
+        
         # How much of the sheet is taken by main frame
         widthFactor = 0.9
         heightFactor = 0.9
 
-        self.frameW = A4width * widthFactor
-        self.frameH = A4height * heightFactor
-        self.frameXLowLeftCorner = 0 + (A4width - self.frameW) / 2
-        self.frameYLowLeftCorner = 0 + (A4height - self.frameH) / 2
+        self.frame = {}
 
-        self.headerXLowLeftCorner = self.frameXLowLeftCorner
-        self.headerYLowLeftCorner = self.frameYLowLeftCorner + self.frameH + 1
-        self.headerW = self.frameW
-        self.headerH = (A4height - self.frameH) * 0.5
+        self.frame['main'] = {'width': A4width * widthFactor}
+        self.frame['main']['height'] = A4height * heightFactor
+        self.frame['main']['x'] = ( (A4width -
+                                     self.frame['main']['width']) / 2)
+        self.frame['main']['y'] = ( (A4height -
+                                     self.frame['main']['height']) / 2)
 
-        self.footerXLowLeftCorner = self.frameXLowLeftCorner
-        self.footerYLowLeftCorner = 0
-        self.footerW = self.frameW
-        self.footerH = (A4height - self.frameH) * 0.5
+        self.frame['head'] = {'x': self.frame['main']['x']}
+        self.frame['head']['y'] = (self.frame['main']['y'] +
+                                   self.frame['main']['height'])
+        self.frame['head']['width'] = self.frame['main']['width']
+        self.frame['head']['height'] = ( (A4height -
+                                          self.frame['main']['height']) * 0.5)
+
+        self.frame['foot'] = {'x': self.frame['main']['x']}
+        self.frame['foot']['y'] = 0
+        self.frame['foot']['width'] = self.frame['main']['width']
+        self.frame['foot']['height'] = ( (A4height -
+                                          self.frame['main']['height']) * 0.5)
 
         self.sp = Spacer(mm, mm*20)
 
@@ -68,71 +88,60 @@ class MultiQuest:
         return ''.join([item.__str__() + '\n' for item in self.questsLst])
         
     def save(self):
-        f = Frame(self.frameXLowLeftCorner,
-                  self.frameYLowLeftCorner,
-                  self.frameW, self.frameH)
-        if self.boundary:
-            f.drawBoundary(self.c)
-
-        header = Frame(self.headerXLowLeftCorner,
-                       self.headerYLowLeftCorner,
-                       self.headerW, self.headerH)
-        if self.boundary:
-            header.drawBoundary(self.c)
-
-        footer = Frame(self.footerXLowLeftCorner,
-                       self.footerYLowLeftCorner,
-                       self.footerW, self.footerH)
-        if self.boundary:
-            footer.drawBoundary(self.c)
+        main, header, footer = (self._get_frame(self.frame['main']),
+                                self._get_frame(self.frame['head']),
+                                self._get_frame(self.frame['foot']))
         
-        hPara = Paragraph(self.headerTxt, self.rightH)
-        header.add(hPara, self.c)
+        header.add(Paragraph(self.headerTxt, self.rightH),
+                   self.c)
 
-        ftext = 'Pag. ' + str(self.c.getPageNumber())
-        fPara = Paragraph(ftext, self.centerF)
-        footer.add(fPara, self.c)
+        footer.add(Paragraph(self.setFooter(), self.centerF),
+                   self.c)
 
         flowLst = [item.getFlowable()[0] for item in self.questsLst]
         
         for item in flowLst:
-            if not f.add(item, self.c):
+            if not main.add(item, self.c):
                 self.c.showPage()
-                f = Frame(self.frameXLowLeftCorner,
-                          self.frameYLowLeftCorner,
-                          self.frameW, self.frameH)
-                if self.boundary:
-                    f.drawBoundary(self.c)
+
+                main, header, footer = (self._get_frame(self.frame['main']),
+                                        self._get_frame(self.frame['head']),
+                                        self._get_frame(self.frame['foot']))
+                main.add(item, self.c)
+
+                header.add(Paragraph(self.headerTxt, self.rightH),
+                           self.c)
+
+                footer.add(Paragraph(self.setFooter(), self.centerF),
+                           self.c)
                 
-                header = Frame(self.headerXLowLeftCorner,
-                               self.headerYLowLeftCorner,
-                               self.headerW, self.headerH)
-                if self.boundary:
-                    header.drawBoundary(self.c)
-
-                footer = Frame(self.footerXLowLeftCorner,
-                               self.footerYLowLeftCorner,
-                               self.footerW, self.footerH)
-                if self.boundary:
-                    footer.drawBoundary(self.c)
-
-                f.add(item, self.c)
-
-                hPara = Paragraph(self.headerTxt, self.rightH)
-                header.add(hPara, self.c)
-
-                ftext = 'Pag. ' + str(self.c.getPageNumber())
-                fPara = Paragraph(ftext, self.centerF)
-                footer.add(fPara, self.c)
-                
-            f.add(self.sp, self.c) # spaces between questions
+            main.add(self.sp, self.c) # spaces between questions
 
         self.c.save()
 
         return
 
+    def _get_frame(self, frameCoordDict):
+        f = Frame(frameCoordDict['x'], frameCoordDict['y'],
+                  frameCoordDict['width'], frameCoordDict['height'])
+        
+        if self.boundary:
+            f.drawBoundary(self.c)
+
+        return f
+
     def setHeader(self, headerTxt):
         self.headerTxt = headerTxt
+
+        return
+
+    def setFooter(self, footerTxt=None):
+        if footerTxt is None:
+            self.footerTxt = 'Pag. ' + str(self.c.getPageNumber())
+        else:
+            self.footerTxt = str(footerTxt)
+
+        return self.footerTxt
 
 def main():
     from reportlab.pdfgen.canvas import Canvas

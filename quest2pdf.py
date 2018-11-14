@@ -12,7 +12,7 @@ import json
 from logging.config import dictConfig
 
 from singlequest import SingleQuest
-from multitest import MultiQuest
+from multiquest import MultiQuest
 
 def getText(file_name):
     with open(file_name, 'r') as csvfile:
@@ -84,7 +84,8 @@ def main():
         c.setSubject('Formazione')
 
         tests = MultiQuest(dictLst, c)
-        tests.setHeader('file: ' + fileName)
+        tests.setHeader('file: ' + fileName +
+                        ' Firma esaminando:______________')
         tests.save()
 
         with open(correctFile, 'a') as fd:
