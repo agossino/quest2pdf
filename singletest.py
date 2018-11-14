@@ -9,47 +9,65 @@ from random import shuffle
 
 class STException(Exception): pass
 
-class SingleTest:
-    '''Provide a ListFlowable of one question, an image and answers.
+class SingleQuest:
+    '''Provide a ListFlowable made of one question, an image and answers.
     At least, one question and one answer must be provided. The first
-    answer is the right one (answers ordered is shuffled)'''
-    def __init__(self, testID=1, **args):
-        '''testID: number
+    answer is the right one (answers ordered is then shuffled)'''
+    
+    def __init__(self, questID=1, **args):
+        '''questID: number
         question: string
-        answers: sequence of string
+        answers: sequence of string (the first is the good one)
         image: string (path name)
         '''
-        self.testID = testID
-        try:
-            self.question = args['question']
-            self.right = args['answers'][0]
-        except (IndexError, KeyError):
-            text = 'One question and, at least, one answer must be provided'
-            raise STException(text)
-        
-        # '' answers ara accepted but not used
-        self.wrong = [ans for ans in args['answers'][1:] if ans != '']
+        self.questID = questID
+
+        self.question, self.right, self.wrongs = self._get_items(args)
         
         try:
             self.image = args['image']
         except KeyError:
             self.image = ''
 
-        # in case of plain text, rightletter is the right sentece
-        self.rightLetter = self.right
+        # answers bullet type are capital letters
+        # if not a letters rightLetter must be changed
+        self.bType = 'A'
 
-        self.bType = 'A' # answers bullet are capital letters, if not a letters
-        # rightLetter must be changed
+        self._set_answers() # answers are shuffled and the right answers is kept
 
-        if self.wrong != []: # Multi choice or True/False question            
-            self.answerLst = self.wrong + [self.right]
+        self._set_output_str()
+
+        return
+            
+    def _get_items(self, args):
+        try:
+            question = args['question']
+            right = args['answers'][0]
+        except (IndexError, KeyError):
+            text = 'One question and, at least, one answer must be provided'
+            raise STException(text)
+        
+        # '' answers ara accepted but not used
+        wrongs = [ans for ans in args['answers'][1:] if ans != '']
+
+        return question, right, wrongs
+
+    def _set_answers(self):
+        if self.wrongs != []: # Multi choice or True/False question case         
+            self.answerLst = self.wrongs + [self.right]
             shuffle(self.answerLst)
             self.rightLetter = (chr(self.answerLst.index(self.right)
                                     + ord(self.bType)))
+        else:
+            # in case of plain text, rightletter is the right sentence
+            self.rightLetter = self.right
+        return
 
+    def _set_paragraphs(self):
+        # space for written answer, in case of plain text
         self.fillSpace = '_'
         self.fillTimes = 1000
-        self.filler = self.fillSpace * self.fillTimes # space for written answer
+        self.filler = self.fillSpace * self.fillTimes
 
         styles = getSampleStyleSheet()
         styles.add(ParagraphStyle(name='Justify', fontSize=12,
@@ -58,23 +76,25 @@ class SingleTest:
                                   spaceBefore=10,
                                   alignment=TA_JUSTIFY))
         self.just, self.ans = styles['Justify'], styles['Answer']
+        
+        return
 
-        if len(self.wrong) == 0:
-            self.type =  ' - open '
-        elif len(self.wrong) == 1:
-            self.type = ' - true/false '
+    def _set_output_str(self):
+        if len(self.wrongs) == 0:
+            self.questType =  ' - open '
+        elif len(self.wrongs) == 1:
+            self.questType = ' - true/false '
         else:
-            self.type = ' - multiple choice '
+            self.questType = ' - multiple choice '
             
         if self.image != '':
-            self.type = self.type + 'with image.'
+            self.questType = self.questType + 'with image.'
         else:
-            self.type = self.type + 'without image.'
-
+            self.questType = self.questType + 'without image.'
         return
-            
+
     def __str__(self):
-        return str(self.testID) + ': ' + self.rightLetter + self.type
+        return str(self.questID) + ': ' + self.rightLetter + self.questType
 
     def _getImage(self, name, width=50*mm):
         '''Return Image with original aspect and given width.
@@ -93,34 +113,51 @@ class SingleTest:
         return Image(str(name), width=width, height=(width * aspect)) 
 
     def getFlowable(self):
-        if self.wrong != []:
-            flowLst = [Paragraph(self.question, self.just)]
-        else: # Set filler for plain text question
-            flowLst = [Paragraph(self.question + self.filler, self.just)]
+        '''ListFlowable([ListItem(ListFlowable([question, image])),
+                         ListItem(answer1),
+                         ListItem(answer2),
+                         ...
+                         ListItem(answerN)])
+        '''        
+        self._set_paragraphs()
+
+        questLst = self._get_question_list()
 
         if self.image != '':
-            flowLst.append(self._getImage(self.image))
+            questLst.append(self._getImage(self.image))
             
-        listFlow = ListFlowable(flowLst, bulletType='bullet', start='')
+        listFlow = ListFlowable(questLst, bulletType='bullet', start='')
 
-        story = []
-                     
-        if self.wrong != []: # Multi choice or True/False question
-            listItem = [ListItem(listFlow, value=self.testID)]            
-            # First choice: A
-            listItem.append(ListItem(Paragraph(self.answerLst[0], self.ans),
-                                     bulletType=self.bType,
-                                     leftIndent=30, value=1))
+        listItem = [ListItem(listFlow, value=self.questID)]
+
+        # If Multi choice or True/False question
+        if self.wrongs != []:
+            self._add_answers(listItem)
             
-            for answer in self.answerLst[1:]: # Following choices
-                listItem.append(ListItem(Paragraph(answer, self.ans),
-                                         bulletType=self.bType, leftIndent=30))
-            story.extend([ListFlowable(listItem)])
-            return story
-        else: # Plain text question
-            listItem = [ListItem(listFlow, value=self.testID)]
-            story.extend([ListFlowable(listItem)])
-            return story
+        return [ListFlowable(listItem)]
+        
+    def _get_question_list(self):
+        if self.wrongs != []:
+            paraLst = [Paragraph(self.question, self.just)]
+            
+        else: # Set filler for plain text question
+            paraLst = [Paragraph(self.question + self.filler, self.just)]
+            
+        return paraLst
+
+    def _add_answers(self, listItem):
+        # First choice: A
+        listItem.append(ListItem(Paragraph(self.answerLst[0], self.ans),
+                                 bulletType=self.bType,
+                                 leftIndent=30, value=1))
+        
+        # Following choices: B, C ...
+        for answer in self.answerLst[1:]:
+            listItem.append(ListItem(Paragraph(answer, self.ans),
+                                     bulletType=self.bType, leftIndent=30))
+
+        return listItem
+
 
 def main():
     from reportlab.pdfgen.canvas import Canvas
@@ -128,7 +165,7 @@ def main():
     from reportlab.platypus import Frame
     from pathlib import Path
     
-    test1 = {'testID': 1,
+    quest1 = {'questID': 1,
              'question': '''Lorem ipsum dolor sit amet, consectetur adipiscing
 elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
@@ -136,23 +173,23 @@ nisi ut aliquip ex ea commodo consequat.
 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
 eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
 sunt in culpa qui officia deserunt mollit anim id est laborum.''',
-             'image': Path('/home/ago/Devel/Reportlab/image/a.png'),
+             'image': Path('image/a.png'),
              'answers': ['giusta', 'Ad astra per aspera.',
                          'Aliena vitia in oculis habemus, a tergo nostra sunt.',
                          'At pulchrum est digito monstrari et dicier: hic est!'],
              'altro 1': 'altro',
              'altro 2': 'altro'}
-    test2 = {'testID': 2,
+    quest2 = {'questID': 2,
              'question': '''Non sa niente, e crede di saper tutto.
              Questo fa chiaramente prevedere una carriera politica''',
              'image': '',
              'answers': ['giusta', '''La politica è forse l’unica professione
 per la quale non si ritiene necessaria alcuna preparazione''', '', ''],
              'altro 1': 'altro'}
-    test3 = {'testID': 3,
+    quest3 = {'questID': 3,
              'question': '''Il peggio che può capitare a un genio
 è di essere compreso''',
-             'image': Path('/home/ago/Devel/Reportlab/image/b.png'),
+             'image': Path('image/b.png'),
              'answers': ['giusta'],
              'altro 1': 'altro',
              'altro 2': 'altro'}
@@ -170,16 +207,15 @@ per la quale non si ritiene necessaria alcuna preparazione''', '', ''],
     leftH = styles['LeftHead']
     centerF = styles['CenterFooter']
     
-##    Story = [SingleTest(**test) for test in (test1, test2, test3)]
     Story = []
     sp = Spacer(mm, mm*20)
 
-    for test in (test1, test2, test3):
-        oneTest = SingleTest(**test)
-        Story.extend(oneTest.getFlowable())
-        print(oneTest)
+    for quest in (quest1, quest2, quest3):
+        oneQuest = SingleQuest(**quest)
+        Story.extend(oneQuest.getFlowable())
+        print(oneQuest)
         
-    fileName = 'output.pdf'
+    fileName = 'outputSimpleQ.pdf'
 
     c = Canvas(fileName, pagesize=A4)
     

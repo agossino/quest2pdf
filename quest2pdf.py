@@ -1,18 +1,18 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import  A4
 
 from csv import DictReader
 from random import shuffle
 from datetime import datetime
-from platform import node
-from os import getlogin
 
 import logging
 import json
 from logging.config import dictConfig
 
-from simpletest import SingleTest
-from multitest import MultiTest
+from simpletest import SingleQuest
+from multitest import MultiQuest
 
 def getText(file_name):
     with open(file_name, 'r') as csvfile:
@@ -34,38 +34,48 @@ def setDictionary(row):
     
     return output
 
-def main():
-    fname = 'loggingConf.json'
+def _get_param():
+    param = {'log file name': 'loggingConf.json',
+             'doc title': '18UH90Ageninfo',
+             'test file name': 'questFile/geninfotest25-30.csv',
+             'output doc number': 2
+             }
+    return param
 
-    with open(fname, 'r') as fd:
-        loggerConf = json.load(fd)
+def _start_logger(fileName):
+    try:
+        with open(fileName, 'r') as fd:
+            loggerConf = json.load(fd)
+    except FileNotFoundError:
+        print('file ' + fileName + ' not found.')
 
     dictConfig(loggerConf)
     
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
-    n = 10
+    return logger
 
-    host = node()
-    user = getlogin()
+def main():
+    param = _get_param()
+
+    logger = _start_logger(param['log file name'])
     
-    testFile = 'testFile/45MDStest.csv'
     hms = datetime.now().strftime('%H-%M-%S')
-    correctFile = ''.join((user, '-', host, '-correct-', hms)) + '.txt'
+    correctFile = ''.join((param['doc title'], '-correct-', hms)) + '.txt'
     logger.debug('correction file: ' + correctFile)
 
-    text = getText(testFile)
+    text = getText(param['test file name'])
     logger.debug('text[0]: ' + str(text[0]))
                  
     dictLst = [setDictionary(row) for row in text]
     logger.debug('dictLst[0]: ' + str(dictLst[0]))
     
-    for i in range(n):
+    for i in range(param['output doc number']):
         story = []
         # %f are microseconds, because of [:-4], last digits are cs
         now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')
-        fileName = ''.join((user, '-', host, '-', now))[:-4] + '.pdf'
+        fileName = ''.join((param['doc title'], '-', now))[:-4] + '.pdf'
         logger.debug('filename: ' + fileName)
 
         c = Canvas(fileName, pagesize=A4)
@@ -73,7 +83,7 @@ def main():
         c.setTitle('Esame intermedio')
         c.setSubject('Formazione')
 
-        tests = MultiTest(dictLst, c)
+        tests = MultiQuest(dictLst, c)
         tests.setHeader('file: ' + fileName)
         tests.save()
 

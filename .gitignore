@@ -108,7 +108,7 @@ share/
 # others files/dir
 Doc/
 Examples/
-testFile/
+questFile/
 image/
 *.pdf
 *.txt

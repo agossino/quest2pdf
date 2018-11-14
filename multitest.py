@@ -5,9 +5,9 @@ from reportlab.platypus import Paragraph, Frame, Spacer
 from reportlab.lib.pagesizes import  A4
 from random import shuffle
 
-from simpletest import SingleTest
+from simplequest import SingleQuest
 
-class MultiTest:
+class MultiQuest:
     '''Put more shuffled SimpleTest together and save as flowable
     '''
     def __init__(self, testsLst, c):
@@ -15,11 +15,16 @@ class MultiTest:
         
         self.testsLst = []
         for test, count in zip(testsLst, range(1, len(testsLst) + 1)):
-            sTest = SingleTest(testID=count, **test)
+            sTest = SingleQuest(testID=count, **test)
             self.testsLst.append(sTest)
             
         self.c = c
 
+        self._set_doc()
+
+        return
+
+    def _set_doc(self):
         A4width, A4height = A4
 
         self.boundary = False
@@ -139,7 +144,7 @@ nisi ut aliquip ex ea commodo consequat.
 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
 eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
 sunt in culpa qui officia deserunt mollit anim id est laborum. (4 risposte)''',
-             'image': Path('/home/ago/Devel/Reportlab/image/a.png'),
+             'image': Path('image/a.png'),
              'answers': ['giusta', 'Ad astra per aspera.',
                          'Aliena vitia in oculis habemus, a tergo nostra sunt.',
                          '''At pulchrum est digito monstrari et dicier:
@@ -154,19 +159,19 @@ per la quale non si ritiene necessaria alcuna preparazione''', '', ''],
              'altro 1': 'altro'}
     test3 = {'question': '''Il peggio che può capitare a un
 genio è di essere compreso (1 risposta)''',
-             'image': Path('/home/ago/Devel/Reportlab/image/b.png'),
+             'image': Path('image/b.png'),
              'answers': ['giusta'],
              'altro 1': 'altro',
              'altro 2': 'altro'}
 
-    fileName = 'output.pdf'
+    fileName = 'outputMultiQ.pdf'
     c = Canvas(fileName, pagesize=A4)
 
     c.setAuthor('Me')
     c.setTitle('Test esame con tre domande')
     c.setSubject('Formazione')
 
-    tests = MultiTest([test1, test2, test3], c)
+    tests = MultiQuest([test1, test2, test3], c)
     tests.setHeader('file: ' + fileName)
     tests.save()
 
