@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import argparse
+import sys
+
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import  A4
 
@@ -14,6 +17,8 @@ from logging.config import dictConfig
 from singlequest import SingleQuest
 from multiquest import MultiQuest
 
+__version__ = '0.0'
+
 def getText(file_name):
     with open(file_name, 'r') as csvfile:
         reader = DictReader(csvfile)
@@ -23,7 +28,8 @@ def getText(file_name):
 def setDictionary(row):
     '''Give the right format for SimpleTest argument.
     '''
-    output = {'question': row['question'],
+    output = {'category': row['category'],
+              'question': row['question'],
               'image': row['image']
               }
     
@@ -34,11 +40,34 @@ def setDictionary(row):
     
     return output
 
-def _get_param():
+def get_parser():
+    description = "genera PDF da un file di prova d'esame (domande a risposta multipla, vero o falso ecc.) in formato csv"
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('input', type=str, nargs='?',
+                        help='nome del file di input di domande e risposte in formato csv',
+                        default='questions.csv')
+    parser.add_argument('n', type=int, nargs='?',
+                        help='numero dei file di output da generare', default=1)
+    parser.add_argument('-p', '--prefix',
+                        help='prefisso per il file di output: se non definito è Quest, seguono data e orario fino a ms.',
+                        type=str, default='Quest')
+    parser.add_argument('-v', '--version', help='mostra la corrente versione di quest2pdf',
+                        action='store_true')
+    return parser
+
+
+def command_line_runner():
+    parser = get_parser()
+    args = vars(parser.parse_args())
+
+    if args['version']:
+        print(__version__)
+        sys.exit()
+
     param = {'log file name': 'loggingConf.json',
-             'doc title': '18UH90Ageninfo',
-             'test file name': 'questFile/geninfotest25-30.csv',
-             'output doc number': 2
+             'prefix': args['prefix'],
+             'input file name': args['input'],
+             'output doc number': args['n']
              }
     return param
 
@@ -56,16 +85,16 @@ def _start_logger(fileName):
 
     return logger
 
-def main():
-    param = _get_param()
-
+def main(param):
     logger = _start_logger(param['log file name'])
+
+    logger.debug(str(param))
     
     hms = datetime.now().strftime('%H-%M-%S')
-    correctFile = ''.join((param['doc title'], '-correct-', hms)) + '.txt'
+    correctFile = ''.join((param['prefix'], '-correct-', hms)) + '.txt'
     logger.debug('correction file: ' + correctFile)
 
-    text = getText(param['test file name'])
+    text = getText(param['input file name'])
     logger.debug('text[0]: ' + str(text[0]))
                  
     dictLst = [setDictionary(row) for row in text]
@@ -75,7 +104,7 @@ def main():
         story = []
         # %f are microseconds, because of [:-4], last digits are cs
         now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')
-        fileName = ''.join((param['doc title'], '-', now))[:-4] + '.pdf'
+        fileName = ''.join((param['prefix'], '-', now))[:-4] + '.pdf'
         logger.debug('filename: ' + fileName)
 
         c = Canvas(fileName, pagesize=A4)
@@ -95,5 +124,5 @@ def main():
     return
 
 if __name__ == '__main__':
-    main()
-
+    param = command_line_runner()
+    main(param)

@@ -10,19 +10,23 @@ from random import shuffle
 class STException(Exception): pass
 
 class SingleQuest:
-    '''Provide a ListFlowable made of one question, an image and answers.
-    At least, one question and one answer must be provided. The first
-    answer is the right one (answers ordered is then shuffled)'''
+    '''Provide a ListFlowable made of the subject, one question, an image
+    and answers.
+    At least, the subject, one question and one answer must be provided.
+    The first answer is the right one (answers ordered is then shuffled).
+    '''
     
     def __init__(self, questID=1, **args):
         '''questID: number
+        subject: string
         question: string
         answers: sequence of string (the first is the good one)
         image: string (path name)
         '''
         self.questID = questID
 
-        self.question, self.right, self.wrongs = self._get_items(args)
+        (self.subject, self.question,
+         self.right, self.wrongs) = self._get_items(args)
         
         try:
             self.image = args['image']
@@ -41,16 +45,18 @@ class SingleQuest:
             
     def _get_items(self, args):
         try:
+            subject = args['subject']
             question = args['question']
             right = args['answers'][0]
         except (IndexError, KeyError):
-            text = 'One question and, at least, one answer must be provided'
+##            text = 'subject, question and, at least, one answer must be provided'
+            text = 'materia, domanda e almento una risposta (etichette subject, question, A) devono essere fornite'
             raise STException(text)
         
         # '' answers ara accepted but not used
         wrongs = [ans for ans in args['answers'][1:] if ans != '']
 
-        return question, right, wrongs
+        return subject, question, right, wrongs
 
     def _set_answers(self):
         if self.wrongs != []: # Multi choice or True/False question case         
@@ -81,16 +87,16 @@ class SingleQuest:
 
     def _set_output_str(self):
         if len(self.wrongs) == 0:
-            self.questType =  ' - open '
+            self.questType =  ' - aperta '
         elif len(self.wrongs) == 1:
-            self.questType = ' - true/false '
+            self.questType = ' - vero/falso '
         else:
-            self.questType = ' - multiple choice '
+            self.questType = ' - scelta multipla '
             
         if self.image != '':
-            self.questType = self.questType + 'with image.'
+            self.questType = self.questType + 'con immagine.'
         else:
-            self.questType = self.questType + 'without image.'
+            self.questType = self.questType + 'senza immagine.'
         return
 
     def __str__(self):
@@ -137,11 +143,13 @@ class SingleQuest:
         return [ListFlowable(listItem)]
         
     def _get_question_list(self):
-        if self.wrongs != []:
-            paraLst = [Paragraph(self.question, self.just)]
+        subj_and_quest = self.subject + ' - ' + self.question
+        
+        if self.wrongs != []:            
+            paraLst = [Paragraph(subj_and_quest, self.just)]
             
         else: # Set filler for plain text question
-            paraLst = [Paragraph(self.question + self.filler, self.just)]
+            paraLst = [Paragraph(subj_and_quest + self.filler, self.just)]
             
         return paraLst
 
@@ -157,141 +165,3 @@ class SingleQuest:
                                      bulletType=self.bType, leftIndent=30))
 
         return listItem
-
-
-def main():
-    from reportlab.pdfgen.canvas import Canvas
-    from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
-    from reportlab.platypus import Frame
-    from pathlib import Path
-    
-    quest1 = {'questID': 1,
-             'question': '''Lorem ipsum dolor sit amet, consectetur adipiscing
-elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-sunt in culpa qui officia deserunt mollit anim id est laborum.''',
-             'image': Path('image/a.png'),
-             'answers': ['giusta', 'Ad astra per aspera.',
-                         'Aliena vitia in oculis habemus, a tergo nostra sunt.',
-                         'At pulchrum est digito monstrari et dicier: hic est!'],
-             'altro 1': 'altro',
-             'altro 2': 'altro'}
-    quest2 = {'questID': 2,
-             'question': '''Non sa niente, e crede di saper tutto.
-             Questo fa chiaramente prevedere una carriera politica''',
-             'image': '',
-             'answers': ['giusta', '''La politica è forse l’unica professione
-per la quale non si ritiene necessaria alcuna preparazione''', '', ''],
-             'altro 1': 'altro'}
-    quest3 = {'questID': 3,
-             'question': '''Il peggio che può capitare a un genio
-è di essere compreso''',
-             'image': Path('image/b.png'),
-             'answers': ['giusta'],
-             'altro 1': 'altro',
-             'altro 2': 'altro'}
-    
-    A4width, A4height = A4
-    styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='RightHead', fontSize=10,
-                              alignment=TA_RIGHT))
-    styles.add(ParagraphStyle(name='LeftHead', fontSize=10,
-                              alignment=TA_LEFT))
-    styles.add(ParagraphStyle(name='CenterFooter', fontSize=10,
-                              alignment=TA_CENTER))
-    
-    rightH = styles['RightHead']
-    leftH = styles['LeftHead']
-    centerF = styles['CenterFooter']
-    
-    Story = []
-    sp = Spacer(mm, mm*20)
-
-    for quest in (quest1, quest2, quest3):
-        oneQuest = SingleQuest(**quest)
-        Story.extend(oneQuest.getFlowable())
-        print(oneQuest)
-        
-    fileName = 'outputSimpleQ.pdf'
-
-    c = Canvas(fileName, pagesize=A4)
-    
-    c.setAuthor('Me')
-    c.setTitle('Test esame con tre domande')
-    c.setSubject('Formazione')
-
-    widthFactor = 0.9
-    heightFactor = 0.9
-
-    frameW = A4width * widthFactor
-    frameH = A4height * heightFactor
-    frameXLowLeftCorner = 0 + (A4width - frameW) / 2
-    frameYLowLeftCorner = 0 + (A4height - frameH) / 2
-
-    headerXLowLeftCorner = frameXLowLeftCorner
-    headerYLowLeftCorner = frameYLowLeftCorner + frameH + 1
-    headerW = frameW
-    headerH = (A4height - frameH) * 0.49
-
-    footerXLowLeftCorner = frameXLowLeftCorner
-    footerYLowLeftCorner = 0
-    footerW = frameW
-    footerH = (A4height - frameH) * 0.49
-
-    f = Frame(frameXLowLeftCorner, frameYLowLeftCorner,
-              frameW, frameH, showBoundary=1)
-    f.drawBoundary(c)
-
-    header = Frame(headerXLowLeftCorner, headerYLowLeftCorner,
-                   headerW, headerH)
-    header.drawBoundary(c)
-
-    footer = Frame(footerXLowLeftCorner, footerYLowLeftCorner,
-                   footerW, footerH)
-    footer.drawBoundary(c)
-
-    htext = 'file: ' + fileName    
-    hPara = Paragraph(htext, rightH)
-    header.add(hPara, c)
-
-    ftext = 'Pag. ' + str(c.getPageNumber())
-    fPara = Paragraph(ftext, centerF)
-    footer.add(fPara, c)
-
-    for item in Story:
-        if  not f.add(item, c):
-            c.showPage()
-            f = Frame(frameXLowLeftCorner, frameYLowLeftCorner,
-                      frameW, frameH, showBoundary=1)
-            f.drawBoundary(c)
-            
-            header = Frame(headerXLowLeftCorner, headerYLowLeftCorner,
-                           headerW, headerH)
-            header.drawBoundary(c)
-
-            footer = Frame(footerXLowLeftCorner, footerYLowLeftCorner,
-                   footerW, footerH)
-            footer.drawBoundary(c)
-
-            f.add(item, c)
-
-            htext = 'file: '+fileName    
-            hPara = Paragraph(htext, rightH)
-            header.add(hPara, c)
-
-            ftext = 'Pag. ' + str(c.getPageNumber())
-            fPara = Paragraph(ftext, centerF)
-            footer.add(fPara, c)
-            
-        f.add(sp, c)
-
-    c.save()
-    
-    return
-
-if __name__ == '__main__':
-    main()
-
