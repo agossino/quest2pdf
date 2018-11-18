@@ -28,7 +28,7 @@ def getText(file_name):
 def setDictionary(row):
     '''Give the right format for SimpleTest argument.
     '''
-    output = {'category': row['category'],
+    output = {'subject': row['subject'],
               'question': row['question'],
               'image': row['image']
               }
