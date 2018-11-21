@@ -72,7 +72,7 @@ class MultiQuest:
                                    self.frame['main']['height'])
         self.frame['head']['width'] = self.frame['main']['width']
         self.frame['head']['height'] = ( (A4height -
-                                          self.frame['main']['height']) * 0.5)
+                                          self.frame['main']['height']) * 0.4)
 
         self.frame['foot'] = {'x': self.frame['main']['x']}
         self.frame['foot']['y'] = 0
@@ -131,61 +131,22 @@ class MultiQuest:
         return f
 
     def setHeader(self, headerTxt):
+        '''Set document header.
+        headerTxt: string
+        return: None
+        '''
         self.headerTxt = headerTxt
 
         return
 
     def setFooter(self, footerTxt=None):
+        '''Set document footer.
+        footerTxt: string
+        return: None
+        '''
         if footerTxt is None:
             self.footerTxt = 'Pag. ' + str(self.c.getPageNumber())
         else:
             self.footerTxt = str(footerTxt)
 
         return self.footerTxt
-
-def main():
-    from reportlab.pdfgen.canvas import Canvas
-    from pathlib import Path
-    quest1 = {'question': '''Lorem ipsum dolor sit amet, consectetur adipiscing
-elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-sunt in culpa qui officia deserunt mollit anim id est laborum. (4 risposte)''',
-             'image': Path('image/a.png'),
-             'answers': ['giusta', 'Ad astra per aspera.',
-                         'Aliena vitia in oculis habemus, a tergo nostra sunt.',
-                         '''At pulchrum est digito monstrari et dicier:
-hic est!'''],
-             'altro 1': 'altro',
-             'altro 2': 'altro'}
-    quest2 = {'question': '''Non sa niente, e crede di saper tutto.
-             Questo fa chiaramente prevedere una carriera politica (2 risposte)''',
-             'image': '',
-             'answers': ['giusta', '''La politica è forse l’unica professione
-per la quale non si ritiene necessaria alcuna preparazione''', '', ''],
-             'altro 1': 'altro'}
-    quest3 = {'question': '''Il peggio che può capitare a un
-genio è di essere compreso (1 risposta)''',
-             'image': Path('image/b.png'),
-             'answers': ['giusta'],
-             'altro 1': 'altro',
-             'altro 2': 'altro'}
-
-    fileName = 'outputMultiQ.pdf'
-    c = Canvas(fileName, pagesize=A4)
-
-    c.setAuthor('Me')
-    c.setTitle('Esame con tre domande')
-    c.setSubject('Formazione')
-
-    quests = MultiQuest([quest1, quest2, quest3], c)
-    quests.setHeader('file: ' + fileName)
-    quests.save()
-
-    return
-
-if __name__ == '__main__':
-    main()
-

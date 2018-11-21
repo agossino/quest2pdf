@@ -62,19 +62,6 @@ def test_single_answers():
 
     return
 
-def test_image():
-    questDict = get_multi_quest()
-    sq = SingleQuest(**questDict)
-
-    assert sq.image == Path('image/a.png')
-
-    questDict = get_plain_quest()
-    sq = SingleQuest(**questDict)
-
-    assert sq.image == ''    
-
-    return
-
 def test_rightLetter():
     questDict = get_multi_quest()
     seed(0)
@@ -156,6 +143,13 @@ def test_image():
     sq = SingleQuest(**questDict)
 
     assert type(sq._getImage(sq.image)) == Image
+
+    assert sq.image == Path('image/test.png')
+
+    questDict = get_plain_quest()
+    sq = SingleQuest(**questDict)
+
+    assert sq.image == ''    
 
     return
 
