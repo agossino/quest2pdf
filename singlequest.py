@@ -100,7 +100,7 @@ class SingleQuest:
         return
 
     def __str__(self):
-        return str(self.questID) + ': ' + self.rightLetter + self.questType
+        return str(self.questID) + '\t ' + self.rightLetter + self.questType
 
     def _getImage(self, name, width=50*mm):
         '''Return Image with original aspect and given width.

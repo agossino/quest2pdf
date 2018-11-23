@@ -88,13 +88,29 @@ def _start_logger(fileName):
 
     return logger
 
+def lines2pdf(fileName, lstOfLines):
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.platypus import SimpleDocTemplate, Paragraph
+
+    doc = SimpleDocTemplate(fileName)
+
+    text = []
+
+    styles=getSampleStyleSheet()
+
+    for line in lstOfLines:
+        para = Paragraph(line+'\n', styles["Normal"])
+        text.append(para)
+
+    return    
+
 def main(param):
     logger = _start_logger(param['log file name'])
 
     logger.debug(str(param))
     
     hms = datetime.now().strftime('%H-%M-%S')
-    correctFile = ''.join((param['prefix'], '-correct-', hms)) + '.txt'
+    correctFile = ''.join((param['prefix'], '-correct-', hms)) + '.pdf'
     logger.debug('correction file: ' + correctFile)
 
     text = getText(param['input file name'])
@@ -120,9 +136,9 @@ def main(param):
                         ' Firma esaminando:______________')
         tests.save()
 
-        with open(correctFile, 'a') as fd:
-            fd.write(fileName + '\n')
-            fd.write(tests.__str__())
+        text = fileName + '\n' + tests.__str__()
+
+        lines2pdf(correctFile, text.split('\n'))
     
     return
 
