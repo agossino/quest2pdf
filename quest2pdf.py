@@ -19,6 +19,32 @@ from multiquest import MultiQuest
 
 __version__ = '0.0'
 
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.units import mm
+class Simpledoc:
+    def __init__(self, fileName):
+        self.doc = SimpleDocTemplate(fileName)
+
+        self.text = []
+
+        self.styles = getSampleStyleSheet()
+
+        return
+
+    def addLines(self, lstOfLines):
+        for line in lstOfLines:
+            para = Paragraph(line+'\n', self.styles["Normal"])
+            self.text.append(para)
+
+        self.text.append(Spacer(mm, mm * 20)) 
+
+        return
+
+    def close(self):
+        self.doc.build(self.text)
+        return
+
 def getText(file_name):
     with open(file_name, 'r') as csvfile:
         reader = DictReader(csvfile)
@@ -90,7 +116,8 @@ def _start_logger(fileName):
 
 def lines2pdf(fileName, lstOfLines):
     from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.platypus import SimpleDocTemplate, Paragraph
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.units import mm
 
     doc = SimpleDocTemplate(fileName)
 
@@ -101,6 +128,8 @@ def lines2pdf(fileName, lstOfLines):
     for line in lstOfLines:
         para = Paragraph(line+'\n', styles["Normal"])
         text.append(para)
+
+    text.append(Spacer(mm, mm * 20)) 
 
     return    
 
@@ -118,6 +147,8 @@ def main(param):
                  
     dictLst = [setDictionary(row) for row in text]
     logger.debug('dictLst[0]: ' + str(dictLst[0]))
+
+    simpleDoc = Simpledoc(correctFile)
     
     for i in range(param['output doc number']):
         story = []
@@ -138,7 +169,9 @@ def main(param):
 
         text = fileName + '\n' + tests.__str__()
 
-        lines2pdf(correctFile, text.split('\n'))
+        simpleDoc.addLines(text.split('\n'))
+
+    simpleDoc.close()
     
     return
 
