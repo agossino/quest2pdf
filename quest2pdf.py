@@ -3,8 +3,11 @@
 import argparse
 import sys
 
-from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import  A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import (BaseDocTemplate, Paragraph,
+                                Spacer, PageTemplate, Frame)
+from reportlab.lib.units import mm
 
 from csv import DictReader
 from random import shuffle
@@ -16,15 +19,13 @@ from logging.config import dictConfig
 
 from singlequest import SingleQuest
 from multiquest import MultiQuest
+from numberedcanvas import NumberedCanvas
 
-__version__ = '0.0'
+__version__ = '0.1'
 
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.units import mm
-class Simpledoc:
+class Basedoc:
     def __init__(self, fileName):
-        self.doc = SimpleDocTemplate(fileName)
+        self.doc = BaseDocTemplate(fileName)
 
         self.text = []
 
@@ -83,6 +84,9 @@ def get_parser():
                         action='store_true')
     return parser
 
+def get_main_frame(doc):
+    return Frame(doc.leftMargin+doc.width/2+6, doc.bottomMargin, doc.width/2-6,
+                 doc.height, id='colF')
 
 def command_line_runner():
     parser = get_parser()
@@ -114,25 +118,6 @@ def _start_logger(fileName):
 
     return logger
 
-def lines2pdf(fileName, lstOfLines):
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-    from reportlab.lib.units import mm
-
-    doc = SimpleDocTemplate(fileName)
-
-    text = []
-
-    styles=getSampleStyleSheet()
-
-    for line in lstOfLines:
-        para = Paragraph(line+'\n', styles["Normal"])
-        text.append(para)
-
-    text.append(Spacer(mm, mm * 20)) 
-
-    return    
-
 def main(param):
     logger = _start_logger(param['log file name'])
 
@@ -148,7 +133,11 @@ def main(param):
     dictLst = [setDictionary(row) for row in text]
     logger.debug('dictLst[0]: ' + str(dictLst[0]))
 
-    simpleDoc = Simpledoc(correctFile)
+    baseDoc = Basedoc(correctFile)
+
+    author = 'Giancarlo Ossino'
+    title = 'Esame intermedio'
+    subject = 'Formazione'
     
     for i in range(param['output doc number']):
         story = []
@@ -157,21 +146,29 @@ def main(param):
         fileName = ''.join((param['prefix'], '-', now))[:-4] + '.pdf'
         logger.debug('filename: ' + fileName)
 
-        c = Canvas(fileName, pagesize=A4)
-        c.setAuthor('Giancarlo Ossino')
-        c.setTitle('Esame intermedio')
-        c.setSubject('Formazione')
+        doc = BaseDocTemplate(fileName, pagesize=A4, allowSplitting=0,
+                              author=author, title=title, subject=subject)
 
-        tests = MultiQuest(dictLst, c)
-        tests.setHeader('file: ' + fileName +
-                        ' Firma esaminando:______________')
-        tests.save()
+        main_frame = get_main_frame(doc)
 
-        text = fileName + '\n' + tests.__str__()
+        questions = MultiQuest(dictLst)
 
-        simpleDoc.addLines(text.split('\n'))
+        for f in questions.get_flowables():
+            story.append(f)
+            story.append(Spacer(mm, mm*20))
 
-    simpleDoc.close()
+        doc.addPageTemplates([PageTemplate(id='1Col', frames=main_frame)])
+        doc.build(story, canvasmaker=NumberedCanvas)
+        
+##        tests.setHeader('file: ' + fileName +
+##                        ' Firma esaminando:______________')
+##        tests.save()
+##
+##        text = fileName + '\n' + tests.__str__()
+##
+##        baseDoc.addLines(text.split('\n'))
+##
+##    baseDoc.close()
     
     return
 
