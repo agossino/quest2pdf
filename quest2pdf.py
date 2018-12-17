@@ -5,7 +5,7 @@ import sys
 
 from reportlab.lib.pagesizes import  A4
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import (BaseDocTemplate, Paragraph,
+from reportlab.platypus import (SimpleDocTemplate, Paragraph,
                                 Spacer, PageTemplate, Frame)
 from reportlab.lib.units import mm
 
@@ -25,7 +25,7 @@ __version__ = '0.1'
 
 class Basedoc:
     def __init__(self, fileName):
-        self.doc = BaseDocTemplate(fileName)
+        self.doc = SimpleDocTemplate(fileName)
 
         self.text = []
 
@@ -85,7 +85,7 @@ def get_parser():
     return parser
 
 def get_main_frame(doc):
-    return Frame(doc.leftMargin+doc.width/2+6, doc.bottomMargin, doc.width/2-6,
+    return Frame(doc.leftMargin, doc.bottomMargin, doc.width,
                  doc.height, id='colF')
 
 def command_line_runner():
@@ -118,6 +118,24 @@ def _start_logger(fileName):
 
     return logger
 
+def _header_footer(canvas, doc):
+        # Save the state of our canvas so we can draw on it
+        canvas.saveState()
+        styles = getSampleStyleSheet()
+ 
+        # Header
+        header = Paragraph('This is a multi-line header.  It goes on every page.   ' * 5, styles['Normal'])
+        w, h = header.wrap(doc.width, doc.topMargin)
+        header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - h)
+ 
+        # Footer
+        footer = Paragraph('This is a multi-line footer.  It goes on every page.   ' * 5, styles['Normal'])
+        w, h = footer.wrap(doc.width, doc.bottomMargin)
+        footer.drawOn(canvas, doc.leftMargin, h)
+ 
+        # Release the canvas
+        canvas.restoreState()
+
 def main(param):
     logger = _start_logger(param['log file name'])
 
@@ -146,8 +164,8 @@ def main(param):
         fileName = ''.join((param['prefix'], '-', now))[:-4] + '.pdf'
         logger.debug('filename: ' + fileName)
 
-        doc = BaseDocTemplate(fileName, pagesize=A4, allowSplitting=0,
-                              author=author, title=title, subject=subject)
+        doc = SimpleDocTemplate(fileName, pagesize=A4, allowSplitting=0,
+                                author=author, title=title, subject=subject)
 
         main_frame = get_main_frame(doc)
 
@@ -158,7 +176,8 @@ def main(param):
             story.append(Spacer(mm, mm*20))
 
         doc.addPageTemplates([PageTemplate(id='1Col', frames=main_frame)])
-        doc.build(story, canvasmaker=NumberedCanvas)
+        doc.build(story, onFirstPage=_header_footer,
+                  onLaterPages=_header_footer, canvasmaker=NumberedCanvas)
         
 ##        tests.setHeader('file: ' + fileName +
 ##                        ' Firma esaminando:______________')
