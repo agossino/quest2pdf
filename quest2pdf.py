@@ -8,7 +8,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import (SimpleDocTemplate, Paragraph,
                                 Spacer, PageTemplate, Frame)
 from reportlab.lib.units import mm
-from exam import Exam
+from exam import ExamDoc
 
 from csv import DictReader
 from random import shuffle
@@ -81,40 +81,13 @@ def main(param):
     logger = _start_logger(param['log file name'])
 
     logger.debug(str(param))
-    
-    logger.debug('correction file: ' + correctFile)
 
     text = getText(param['input file name'])
     logger.debug('text[0]: ' + str(text[0]))
 
-    author = 'Giancarlo Ossino'
-    title = 'Esame intermedio'
-    subject = 'Formazione'
-
-    exam = Exam(text)
+    exam = ExamDoc(text)
     
-    for i in range(param['output doc number']):
-        story = []
-        # %f are microseconds, because of [:-4], last digits are cs
-        now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')
-        fileName = ''.join((param['prefix'], '-', now))[:-4] + '.pdf'
-        logger.debug('filename: ' + fileName)
-
-        doc = SimpleDocTemplate(fileName, pagesize=A4, allowSplitting=0,
-                                author=author, title=title, subject=subject)
-
-##        main_frame = get_main_frame(doc)
-
-        questions = MultiQuest(dictLst)
-
-        for f in questions.get_flowables():
-            story.append(f)
-            story.append(Spacer(mm, mm*20))
-
-##        doc.addPageTemplates([PageTemplate(id='1Col', frames=main_frame)])
-        print(reportlab.ascii())
-        doc.build(story, onFirstPage=_header1,
-                  onLaterPages=_header, canvasmaker=NumberedCanvas)
+    exam.close()
     
     return
 
