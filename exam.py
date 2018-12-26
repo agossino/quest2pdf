@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 from reportlab.lib.pagesizes import  A4
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import (SimpleDocTemplate, Paragraph,
-                                Spacer, PageTemplate, Frame)
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.units import mm
 from pathlib import Path
 from datetime import datetime
@@ -36,11 +34,20 @@ class ExamDoc:
 
         dictLst = [self._setDictionary(row) for row in quests]
 
+        self.header1 = []
+        self.header = []
+
         for i in range(nDoc):
             story = []
             # %f are microseconds, because of [:-4], last significant digits are cs
             now = datetime.now().strftime('%Y-%m-%d-T%H-%M-%S-%f')
-            examFileName = ''.join((examFile.stem, '-', now))[:-4] + '.pdf'
+##            examFileName = ''.join((examFile.stem, '-', now))[:-4] + '.pdf'
+            examFileName = ''.join((examFile.stem, '-', now)) + '.pdf'
+
+            self.header1.append(lambda d, c : self._header1(d, c,
+                                                            text=examFileName))
+            self.header.append(lambda d, c : self._header(d, c,
+                                                          text=examFileName))
             
             doc = SimpleDocTemplate(examFileName, pagesize=A4, allowSplitting=0,
                                     author=author, title=title, subject=subject)
@@ -80,14 +87,14 @@ class ExamDoc:
         return
 
 
-    def _header1(self, canvas, doc):
+    def _header1(self, canvas, doc, text='NO HEADER1'):
         # Save the state of our canvas so we can draw on it
         canvas.saveState()
         styles = getSampleStyleSheet()
-        text = 'This is a multi-line header.  It goes on 1st page. '
+        header_text = text
 
         # Header
-        header = Paragraph(text, styles['Normal'])
+        header = Paragraph(header_text, styles['Normal'])
         w, h = header.wrap(doc.width, doc.topMargin)
         header.drawOn(canvas, doc.leftMargin, doc.height + doc.bottomMargin + doc.topMargin/2 - h)
 
@@ -96,16 +103,16 @@ class ExamDoc:
 
         return
 
-    def _header(self, canvas, doc):
+    def _header(self, canvas, doc, text='NO HEADER'):
         # Save the state of our canvas so we can draw on it
         canvas.saveState()
         styles = getSampleStyleSheet()
-        text = 'This is a multi-line header.  It goes on every page.   ' * 5
+        header_text = text
 
         # Header
-        header = Paragraph(text, styles['Normal'])
+        header = Paragraph(header_text, styles['Normal'])
         w, h = header.wrap(doc.width, doc.topMargin)
-        header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - h)
+        header.drawOn(canvas, doc.leftMargin, doc.height + doc.bottomMargin + doc.topMargin/2 - h)
 
         # Release the canvas
         canvas.restoreState()
@@ -133,11 +140,12 @@ class ExamDoc:
 
         story = []
 
-        for questions, doc in zip(self.questions, self.examDoc):
-            for f in questions.get_flowables():
+        for q, doc, h1, h in zip(self.questions, self.examDoc,
+                                 self.header1, self.header):
+            for f in q.get_flowables():
                 story.append(f)
                 story.append(Spacer(mm, mm*20))
 
-            doc.build(story, onFirstPage=self._header1,
-                      onLaterPages=self._header, canvasmaker=NumberedCanvas)
+            doc.build(story, onFirstPage=h1,
+                      onLaterPages=h, canvasmaker=NumberedCanvas)
         return

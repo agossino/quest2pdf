@@ -2,24 +2,12 @@
 # -*- coding: utf-8 -*-
 import argparse
 import sys
-
-from reportlab.lib.pagesizes import  A4
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import (SimpleDocTemplate, Paragraph,
-                                Spacer, PageTemplate, Frame)
-from reportlab.lib.units import mm
-from exam import ExamDoc
-
-from csv import DictReader
-from random import shuffle
-from datetime import datetime
-
 import logging
 import json
 from logging.config import dictConfig
 
-from multiquest import MultiQuest
-from numberedcanvas import NumberedCanvas
+from exam import ExamDoc
+from csv import DictReader
 
 __version__ = '0.1'
 
@@ -76,7 +64,6 @@ def _start_logger(fileName):
 
     return logger
 
-
 def main(param):
     logger = _start_logger(param['log file name'])
 
@@ -85,7 +72,9 @@ def main(param):
     text = getText(param['input file name'])
     logger.debug('text[0]: ' + str(text[0]))
 
-    exam = ExamDoc(text)
+    exam = ExamDoc(text,
+                   nDoc=param['output doc number'],
+                   examFile=param['prefix'])
     
     exam.close()
     
