@@ -12,8 +12,8 @@ from numberedcanvas import NumberedCanvas
 
 class ExamDoc:
     def __init__(self, quests, nDoc=1,
-                 examFile='questions.pdf',
-                 correctionFile='correction.pdf'):
+                 examFile='Exam',
+                 correctionFile='Correction'):
         ##### da sistemare
         author = 'Giancarlo Ossino'
         title = 'Esame intermedio'
@@ -39,9 +39,8 @@ class ExamDoc:
 
         for i in range(nDoc):
             story = []
-            # %f are microseconds, because of [:-4], last significant digits are cs
+            # %f are microseconds
             now = datetime.now().strftime('%Y-%m-%d-T%H-%M-%S-%f')
-##            examFileName = ''.join((examFile.stem, '-', now))[:-4] + '.pdf'
             examFileName = ''.join((examFile.stem, '-', now)) + '.pdf'
 
             self.header1.append(lambda d, c : self._header1(d, c,
@@ -87,7 +86,7 @@ class ExamDoc:
         return
 
 
-    def _header1(self, canvas, doc, text='NO HEADER1'):
+    def _header1(self, canvas, doc, text=''):
         # Save the state of our canvas so we can draw on it
         canvas.saveState()
         styles = getSampleStyleSheet()
@@ -103,7 +102,7 @@ class ExamDoc:
 
         return
 
-    def _header(self, canvas, doc, text='NO HEADER'):
+    def _header(self, canvas, doc, text=''):
         # Save the state of our canvas so we can draw on it
         canvas.saveState()
         styles = getSampleStyleSheet()
