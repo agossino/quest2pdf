@@ -5,8 +5,9 @@ from singlequest import SingleQuest
 class MultiQuest:
     '''Put more shuffled Simplequest together and save as flowable
     '''
-    def __init__(self, questsLst):
-        shuffle(questsLst)
+    def __init__(self, questsLst, to_shuffle=False):
+        if to_shuffle:
+            shuffle(questsLst)
         
         self.questsLst = []
         for quest, count in zip(questsLst, range(1, len(questsLst) + 1)):

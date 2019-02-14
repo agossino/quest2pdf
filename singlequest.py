@@ -130,6 +130,7 @@ class SingleQuest:
         questLst = self._get_question_list()
 
         if self.image != '':
+            questLst.append(Spacer(mm, mm*2))
             questLst.append(self._getImage(self.image))
             
         listFlow = ListFlowable(questLst, bulletType='bullet', start='')

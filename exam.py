@@ -34,8 +34,8 @@ class ExamDoc:
 
         dictLst = [self._setDictionary(row) for row in quests]
 
-        self.header1 = []
-        self.header = []
+        self.evenHead = []
+        self.oddHead = []
 
         for i in range(nDoc):
             story = []
@@ -43,10 +43,12 @@ class ExamDoc:
             now = datetime.now().strftime('%Y-%m-%d-T%H-%M-%S-%f')
             examFileName = ''.join((examFile.stem, '-', now)) + '.pdf'
 
-            self.header1.append(lambda d, c : self._header1(d, c,
-                                                            text=examFileName))
-            self.header.append(lambda d, c : self._header(d, c,
-                                                          text=examFileName))
+            heading = ''
+
+            self.evenHead.append(lambda d, c : self._evenHead(d, c,
+                                                            text=heading))
+            self.oddHead.append(lambda d, c : self._oddHead(d, c,
+                                                          text=heading))
             
             doc = SimpleDocTemplate(examFileName, pagesize=A4, allowSplitting=0,
                                     author=author, title=title, subject=subject)
@@ -86,7 +88,7 @@ class ExamDoc:
         return
 
 
-    def _header1(self, canvas, doc, text=''):
+    def _evenHead(self, canvas, doc, text=''):
         # Save the state of our canvas so we can draw on it
         canvas.saveState()
         styles = getSampleStyleSheet()
@@ -102,7 +104,7 @@ class ExamDoc:
 
         return
 
-    def _header(self, canvas, doc, text=''):
+    def _oddHead(self, canvas, doc, text=''):
         # Save the state of our canvas so we can draw on it
         canvas.saveState()
         styles = getSampleStyleSheet()
@@ -140,7 +142,7 @@ class ExamDoc:
         story = []
 
         for q, doc, h1, h in zip(self.questions, self.examDoc,
-                                 self.header1, self.header):
+                                 self.evenHead, self.oddHead):
             for f in q.get_flowables():
                 story.append(f)
                 story.append(Spacer(mm, mm*20))
