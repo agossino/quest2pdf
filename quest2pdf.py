@@ -29,9 +29,9 @@ def get_parser():
                         help='prefisso per il file con le domande (predefinito Esame); seguono data e orario fino a ms.',
                         type=str, default='Esame')
     parser.add_argument('-c', '--correction',
-                        help="prefisso per il file con le correzioni (predefiniti Corretto); segue l'orario fino a ms.",
-                        type=str, default='Corretto')
-    parser.add_argument('-l', '--logfile', help='file di log (predefinito loggingConf.json).',
+                        help="prefisso per il file con le correzioni (predefiniti Correttore); eguono data e orario fino a ms.",
+                        type=str, default='Correttore')
+    parser.add_argument('-l', '--conflogfile', help='file di configurazione del log (predefinito loggingConf.json).',
                         action='store_true', default='loggingConf.json')
     parser.add_argument('-v', '--version', help='mostra la corrente versione di quest2pdf',
                         action='store_true')
@@ -45,7 +45,7 @@ def command_line_runner():
         print(__version__)
         sys.exit()
 
-    param = {'log file name': 'loggingConf.json',
+    param = {'log file name': args['conflogfile'],
              'exam': args['exam'],
              'correction': args['correction'],
              'input file name': args['input'],

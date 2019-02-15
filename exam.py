@@ -21,8 +21,8 @@ class ExamDoc:
 
         correctionFile = Path(correctionFile)
 
-        hms = datetime.now().strftime('%H-%M-%S')
-        correctionFile = ''.join((correctionFile.stem, '-', hms)) + '.pdf'    
+        now = datetime.now().strftime('%Y-%m-%d-T%H-%M-%S-%f')
+        correctionFile = ''.join((correctionFile.stem, '-', now)) + '.pdf'    
         self.correctionDoc = SimpleDocTemplate(correctionFile)
         self.correctionText = []    
 
