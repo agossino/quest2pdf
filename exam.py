@@ -13,7 +13,9 @@ from numberedcanvas import NumberedCanvas
 class ExamDoc:
     def __init__(self, quests, nDoc=1,
                  examFile='Exam',
-                 correctionFile='Correction'):
+                 correctionFile='Correction',
+                 to_shuffle=False,
+                 heading=False):
         ##### da sistemare
         author = 'Giancarlo Ossino'
         title = 'Esame intermedio'
@@ -43,7 +45,10 @@ class ExamDoc:
             now = datetime.now().strftime('%Y-%m-%d-T%H-%M-%S-%f')
             examFileName = ''.join((examFile.stem, '-', now)) + '.pdf'
 
-            heading = ''
+            if heading is False:
+                heading = ''
+            elif heading is True:
+                heading = examFileName
 
             self.evenHead.append(lambda d, c : self._evenHead(d, c,
                                                             text=heading))
@@ -54,7 +59,7 @@ class ExamDoc:
                                     author=author, title=title, subject=subject)
             self.examDoc.append(doc)
 
-            self.questions.append(MultiQuest(dictLst))
+            self.questions.append(MultiQuest(dictLst, to_shuffle))
 
             self._fillCorrectionFile(examFileName)
 

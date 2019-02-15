@@ -29,10 +29,14 @@ def get_parser():
                         help='prefisso per il file con le domande (predefinito Esame); seguono data e orario fino a ms.',
                         type=str, default='Esame')
     parser.add_argument('-c', '--correction',
-                        help="prefisso per il file con le correzioni (predefiniti Correttore); eguono data e orario fino a ms.",
+                        help="prefisso per il file correttore (predefinito Correttore); seguono data e orario fino a ms.",
                         type=str, default='Correttore')
-    parser.add_argument('-l', '--conflogfile', help='file di configurazione del log (predefinito loggingConf.json).',
-                        action='store_true', default='loggingConf.json')
+    parser.add_argument('-l', '--conflogfile', help='file di configurazione del registro (predefinito loggingConf.json).',
+                        default='loggingConf.json')
+    parser.add_argument('-s', '--shuffle', help="se fornito mischia l'ordine delle domande",
+                        action='store_true')
+    parser.add_argument('-p', '--page_heading', help="testo di intestazione che compare all'inizio di ogni pagina (se non inidicato è il nome del file)",
+                        nargs='?', const=True, default=False)
     parser.add_argument('-v', '--version', help='mostra la corrente versione di quest2pdf',
                         action='store_true')
     return parser
@@ -45,11 +49,13 @@ def command_line_runner():
         print(__version__)
         sys.exit()
 
-    param = {'log file name': args['conflogfile'],
+    param = {'conf log file name': args['conflogfile'],
              'exam': args['exam'],
              'correction': args['correction'],
              'input file name': args['input'],
-             'output doc number': args['n']
+             'output doc number': args['n'],
+             'to be shuffled': args['shuffle'],
+             'page heading': args['page_heading']             
              }
     return param
 
@@ -58,7 +64,7 @@ def _start_logger(fileName):
         with open(fileName, 'r') as fd:
                 loggerConf = json.load(fd)
     except FileNotFoundError:
-        print('file di log' + fileName + " non trovato: indicare un file di log con l'opzione -l")
+        print('file di log' + fileName + " non trovato: indicare un file di configurazione con l'opzione -l")
         raise
 
     dictConfig(loggerConf)
@@ -69,7 +75,7 @@ def _start_logger(fileName):
     return logger
 
 def main(param):
-    logger = _start_logger(param['log file name'])
+    logger = _start_logger(param['conf log file name'])
 
     logger.debug(str(param))
 
@@ -79,7 +85,10 @@ def main(param):
     exam = ExamDoc(text,
                    nDoc=param['output doc number'],
                    examFile=param['exam'],
-                   correctionFile=param['correction'])
+                   correctionFile=param['correction'],
+                   to_shuffle=param['to be shuffled'],
+                   heading=param['page heading']
+                   )
     
     exam.close()
     
