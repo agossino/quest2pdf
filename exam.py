@@ -6,6 +6,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.units import mm
 from pathlib import Path
 from datetime import datetime
+import os
 
 from multiquest import MultiQuest
 from numberedcanvas import NumberedCanvas
@@ -17,8 +18,8 @@ class ExamDoc:
                  to_shuffle=False,
                  heading=False):
         ##### da sistemare
-        author = 'Giancarlo Ossino'
-        title = 'Esame intermedio'
+        author = os.getlogin() + '@' + os.uname().nodename
+        title = examFile
         subject = 'Formazione'
 
         correctionFile = Path(correctionFile)
