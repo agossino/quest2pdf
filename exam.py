@@ -7,6 +7,7 @@ from reportlab.lib.units import mm
 from pathlib import Path
 from datetime import datetime
 import os
+import platform
 
 from multiquest import MultiQuest
 from numberedcanvas import NumberedCanvas
@@ -18,7 +19,7 @@ class ExamDoc:
                  to_shuffle=False,
                  heading=False):
         ##### da sistemare
-        author = os.getlogin() + '@' + os.uname().nodename
+        author = os.getlogin() + '@' + platform.node()
         title = examFile
         subject = 'Formazione'
 
