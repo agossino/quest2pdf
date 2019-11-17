@@ -113,3 +113,5 @@ image/
 *.pdf
 *.txt
 
+# mypy
+.mypy_cache/
