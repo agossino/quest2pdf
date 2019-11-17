@@ -1,3 +1,3 @@
 test:
-	PYTHONPATH=test/ pytest3
-PHONY: test
+	PYTHONPATH=src/ pytest-3 tests/
+.PHONY: test
