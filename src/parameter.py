@@ -164,7 +164,7 @@ def cli_parser():
                         default='comma')
     parser.add_argument('-v', '--version',
                         help='mostra la corrente versione.',
-                        action='version', version='%(prog)s 0.2.1')
+                        action='version', version='%(prog)s 0.2.2')
     return parser
 
 def param_parser():

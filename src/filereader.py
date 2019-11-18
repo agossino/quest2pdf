@@ -4,6 +4,7 @@
 import logging
 import csv
 from typing import List, Dict, Optional
+from itertools import chain
 # from collections import OrderedDict
 # Value 'OrderedDict' is unsubscriptable
 
@@ -21,12 +22,29 @@ class CSVReader:
         self.encoding: str = encoding
         self.delimiter: str = delimiter
 
-        try:
-            self._read()
-        except UnicodeDecodeError as err:
-            msg: str = ('Reading ' + self.file_name + ' ' +
-                        'encoding ' + self.encoding + ' ')
-            LOGGER.error(msg, str(err))
+        alternate_encodings: str = ("utf_16",
+                                    "ascii",
+                                    "cp037",
+                                    "cp437",
+                                    "cp850",
+                                    "cp858",
+                                    "cp1140",
+                                    "cp1250",
+                                    "cp1252",
+                                    "latin_1",
+                                    "iso8859_15"
+                                    )
+
+        for encoding in chain((self.encoding,),
+                              alternate_encodings):
+            try:
+                self._read()
+                break
+            except UnicodeDecodeError as err:
+                msg: str = ('Reading ' + self.file_name + ' ' +
+                            'encoding ' + self.encoding + ' ')
+                LOGGER.error(msg, str(err))
+                continue
             raise
 
     def to_dictlist(self) -> List[Dict[str, str]]:
