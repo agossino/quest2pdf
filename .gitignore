@@ -115,3 +115,7 @@ image/
 
 # mypy
 .mypy_cache/
+
+# pycharm
+.idea/
+

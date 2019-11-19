@@ -13,39 +13,21 @@ LOGGER = logging.getLogger(LOG_NAME)
 
 class CSVReader:
     """Convert from a Comma Separated Value file to different
-    format.
+    formats.
     """
     def __init__(self, file_name: str,
                  encoding: str = 'utf-8',
                  delimiter: str = ','):
         self.file_name: str = file_name
-        std_encoding: str = encoding
+        encoding: str = encoding
         self.delimiter: str = delimiter
 
-        alternate_encodings: str = ("utf_16",
-                                    "ascii",
-                                    "cp037",
-                                    "cp437",
-                                    "cp850",
-                                    "cp858",
-                                    "cp1140",
-                                    "cp1250",
-                                    "cp1252",
-                                    "latin_1",
-                                    "iso8859_15"
-                                    )
-
-        for current_encoding in chain((std_encoding,),
-                               alternate_encodings):
-            try:
-                self._read(current_encoding)
-                break
-            except UnicodeError as err:
-                msg: str = ("Reading %s encoding %s: %s")
-                LOGGER.error(msg, self.file_name, current_encoding, err)
-                if current_encoding == alternate_encodings[-1]:
-                    raise
-                continue
+        try:
+            self._read(encoding)
+        except UnicodeError as err:
+            msg: str = "Reading %s encoding %s: %s"
+            LOGGER.error(msg, self.file_name, current_encoding, err)
+            raise
 
     def to_dictlist(self) -> List[Dict[str, str]]:
         """Return a list of dictionaries with the file contents.
