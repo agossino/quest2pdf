@@ -16,7 +16,11 @@ def main():
                           param['delimiter'])
     text = inputFile.to_dictlist()
 
-    logger.debug('text[0]: ' + str(text[0]))
+    if text:
+        logger.debug("first row: %s", str(text[0]))
+    else:
+        logger.debug("first row empty.")
+        exit(1)
 
     exam = ExamDoc(text,
                    nDoc=param['number'],

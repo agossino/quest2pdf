@@ -19,7 +19,7 @@ class CSVReader:
                  encoding: str = 'utf-8',
                  delimiter: str = ','):
         self.file_name: str = file_name
-        self.encoding: str = encoding
+        std_encoding: str = encoding
         self.delimiter: str = delimiter
 
         alternate_encodings: str = ("utf_16",
@@ -35,35 +35,35 @@ class CSVReader:
                                     "iso8859_15"
                                     )
 
-        for encoding in chain((self.encoding,),
-                              alternate_encodings):
+        for current_encoding in chain((std_encoding,),
+                               alternate_encodings):
             try:
-                self._read()
+                self._read(current_encoding)
                 break
-            except UnicodeDecodeError as err:
-                msg: str = ('Reading ' + self.file_name + ' ' +
-                            'encoding ' + self.encoding + ' ')
-                LOGGER.error(msg, str(err))
+            except UnicodeError as err:
+                msg: str = ("Reading %s encoding %s: %s")
+                LOGGER.error(msg, self.file_name, current_encoding, err)
+                if current_encoding == alternate_encodings[-1]:
+                    raise
                 continue
-            raise
 
     def to_dictlist(self) -> List[Dict[str, str]]:
         """Return a list of dictionaries with the file contents.
         """
         return self.rows
 
-    def _read(self, err: Optional[str] = None) -> None:
+    def _read(self, encoding: str, err: Optional[str] = None) -> None:
         """Read the file and fill self.rows.
         """
         try:
             with open(self.file_name, 'r',
-                      encoding=self.encoding, errors=err) as csvfile:
+                      encoding=encoding, errors=err) as csvfile:
                 cvs_reader = csv.DictReader(csvfile,
                                             delimiter=self.delimiter)
                 self.rows: List[Dict[str, str]]
                 self.rows = [row for row in cvs_reader]
         except FileNotFoundError:
-            LOGGER.critical(self.file_name, ' file di imput non trovato')
+            LOGGER.critical("File di imput %s non trovato.", self.file_name)
             raise
 
 if __name__ == "__main__":
