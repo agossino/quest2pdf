@@ -8,9 +8,13 @@ from pathlib import Path
 from datetime import datetime
 import os
 import platform
+import logging
 
 from multiquest import MultiQuest
 from numberedcanvas import NumberedCanvas
+
+LOGNAME = 'quest2pdf.' + __name__
+LOGGER = logging.getLogger(LOGNAME)
 
 class ExamDoc:
     def __init__(self, quests, nDoc=1,
@@ -68,15 +72,18 @@ class ExamDoc:
         return
 
     def _setDictionary(self, row):
-        '''Give the right format for SimpleTest argument.
-        '''
-        output = {'subject': row['subject'],
-                  'question': row['question'],
-                  'image': row['image']
-                  }
-        
-        answerKeys = ('A', 'B', 'C', 'D')
-        answers = [row[key] for key in answerKeys]
+        """Give the right format for SimpleTest argument.
+        """
+        try:
+            output = {"subject": row['subject'],
+                      'question': row['question'],
+                      'image': row['image']
+                      }
+            answerKeys = ('A', 'B', 'C', 'D')
+            answers = [row[key] for key in answerKeys]
+        except KeyError:
+            LOGGER.critical("Chiave non ammessa: %s", row)
+            raise
 
         output['answers'] = answers
         

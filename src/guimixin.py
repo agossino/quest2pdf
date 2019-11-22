@@ -21,7 +21,7 @@ class GuiMixin:
         return askyesno(title, text)  # return True or False
 
     def notdone(self):
-        showerror('Not implemented', 'Option not available')
+        showerror('Non implementato', 'Opzione non disponibile')
 
     def quit(self):
         ans = self.question('Verify quit', 'Are you sure you want to quit?')
@@ -152,16 +152,14 @@ class MainWindow(Tk, _window, GuiMixin):
         self.configBorders(app, kind, iconfile)
 
     def quit(self):
-        print("quit")
         if self.okayToQuit():                                # threads running?
-            ans = self.question('Verify quit', 'Are you sure you want to quit?')
+            ans = self.question('Verifica uscita', 'Sei sicuro di voler terminare?')
             if ans:
                 self.destroy()                               # quit whole app
         else:
-            self.showinfo(self.__app, 'Quit not allowed')    # or in okayToQuit?
+            self.showinfo(self.__app, 'Terminazione non permessa')
 
-    def destroy(self):                                       # exit app silently
-        print("Destroy")
+    def destroy(self):
         Tk.quit(self)                                        # redef if exit ops
 
     def okayToQuit(self):                                    # redef me if used

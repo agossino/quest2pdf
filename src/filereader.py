@@ -26,7 +26,7 @@ class CSVReader:
             self._read(encoding)
         except UnicodeError as err:
             msg: str = "Reading %s encoding %s: %s"
-            LOGGER.error(msg, self.file_name, current_encoding, err)
+            LOGGER.error(msg, self.file_name, encoding, err)
             raise
 
     def to_dictlist(self) -> List[Dict[str, str]]:

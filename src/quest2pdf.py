@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logging
 import parameter
 from filereader import CSVReader
-from tkinter import Button, mainloop
+from tkinter import Menu
 from guimixin import MainWindow
 from exam import ExamDoc
 
@@ -12,37 +12,55 @@ logger = logging.getLogger(logName)
 
 class contentmix(MainWindow):
     def __init__(self):
-        MainWindow.__init__(self, 'mixin', 'Main')
-        Button(self, text="open", command=self.read_input_file).pack()
-        Button(self, text='Say hello', command=self.say_hello).pack()
-        Button(self, text='Quit', command=self.quit).pack()
-        Button(self, text='Fast quit', command=self.destroy).pack()
-
-    def say_hello(self):
-        self.infobox("Hello box", "Hello!!")
+        MainWindow.__init__(self, __file__)
+        self.geometry("500x500")
+        menu = Menu(self)
+        self.config(menu=menu)
+        file = Menu(menu)
+        file.add_command(label='Apri', command=self.read_input_file)
+        file.add_command(label='Termina', command=self.quit)
+        menu.add_cascade(label='File', menu=file)
+        # Button(self, text="Apri file", command=self.read_input_file).pack()
+        # Button(self, text='Termina', command=self.quit).pack()
 
     def read_input_file(self):
         param = parameter.param_parser()
         input_file = self.enter_openfile()
-        file_content = CSVReader(input_file,
-                                 param['encoding'],
-                                 param['delimiter'])
-        list_of_records = file_content.to_dictlist()
+        try:
+            file_content = CSVReader(input_file,
+                                     param['encoding'],
+                                     param['delimiter'])
+        except Exception as err:
+            self.errorbox(err)
+            raise
 
-        if list_of_records:
-            logger.debug("first row: %s", str(list_of_records[0]))
-        else:
+        try:
+            list_of_records = file_content.to_dictlist()
+        except Exception as err:
+            self.errorbox(err)
+            raise
+
+        if not list_of_records:
             logger.debug("first row empty.")
             exit(1)
 
-        exam = ExamDoc(list_of_records,
-                       nDoc=param['number'],
-                       examFile=param['exam'],
-                       correctionFile=param['correction'],
-                       to_shuffle=param['shuffle'],
-                       heading=param['page_heading']
-                       )
-        exam.close()
+        try:
+            exam = ExamDoc(list_of_records,
+                           nDoc=param['number'],
+                           examFile=param['exam'],
+                           correctionFile=param['correction'],
+                           to_shuffle=param['shuffle'],
+                           heading=param['page_heading']
+                           )
+        except Exception as err:
+            self.errorbox(err)
+            raise
+
+        try:
+            exam.close()
+        except Exception as err:
+            self.errorbox(err)
+            raise
 
 
 if __name__ == '__main__':

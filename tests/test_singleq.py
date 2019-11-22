@@ -105,27 +105,6 @@ def test_bType():
 
     return
 
-def test_output_str():
-    questDict = get_multi_quest()
-    sq = SingleQuest(**questDict)
-
-    output = sq.__str__()
-
-    assert 'scelta multipla' in output
-    assert 'aperta' not in output
-    assert 'vero/falso' not in output
-    assert 'con immagine' in output
-
-    questDict['answers'] = ['vero', 'falso']
-    sq = SingleQuest(**questDict)
-
-    output = sq.__str__()
-
-    assert 'scelta multipla' not in output
-    assert 'aperta' not in output
-    assert 'vero/falso' in output
-    assert 'con immagine' in output
-
     questDict = get_plain_quest()
     sq = SingleQuest(**questDict)
 
