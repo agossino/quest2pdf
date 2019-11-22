@@ -18,7 +18,7 @@ class ExamDoc:
                  correctionFile='Correction',
                  to_shuffle=False,
                  heading=False):
-        ##### da sistemare
+
         author = os.getlogin() + '@' + platform.node()
         title = examFile
         subject = 'Formazione'
