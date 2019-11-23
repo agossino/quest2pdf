@@ -3,25 +3,36 @@
 import logging
 import parameter
 from filereader import CSVReader
-from tkinter import Menu
+from tkinter import Menu, Label, YES, BOTH
 from guimixin import MainWindow
 from exam import ExamDoc
 
 logName = 'quest2pdf'
 logger = logging.getLogger(logName)
 
+def main():
+    """Reads parameter and start loop.
+    """
+    param = parameter.param_parser()
+    logger.debug(str(param))
+
+    c = contentmix()
+    c.mainloop()
+
+
 class contentmix(MainWindow):
     def __init__(self):
         MainWindow.__init__(self, __file__)
         self.geometry("500x500")
+        wellcome = "Da tabella a PDF: converte un file di domande"
+        wellcome += "a scelta multipla in formato Comma Separated Value in PDF."
+        Label(self, text=wellcome, wraplength=500).pack(expand=YES, fill=BOTH)
         menu = Menu(self)
         self.config(menu=menu)
         file = Menu(menu)
         file.add_command(label='Apri', command=self.read_input_file)
         file.add_command(label='Termina', command=self.quit)
         menu.add_cascade(label='File', menu=file)
-        # Button(self, text="Apri file", command=self.read_input_file).pack()
-        # Button(self, text='Termina', command=self.quit).pack()
 
     def read_input_file(self):
         param = parameter.param_parser()
@@ -64,9 +75,7 @@ class contentmix(MainWindow):
 
 
 if __name__ == '__main__':
-    c = contentmix()
-    c.mainloop()
-
+    main()
 # def main():
 #     param = parameter.param_parser()
 #     logger.debug(str(param))
