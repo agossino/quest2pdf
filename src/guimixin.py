@@ -6,7 +6,8 @@ with a Frame (or a subclass derived from Frame) for its quit method
 ###############################################################################
 """
 
-from tkinter import *
+import os, glob
+from tkinter import Tk, Toplevel, Frame
 from tkinter.messagebox import *
 from tkinter.filedialog import *
 
@@ -31,7 +32,7 @@ class GuiMixin:
     def help(self):
         self.infobox('RTFM', 'See figure 1...')  # override this better
 
-    def select_openfile(self, file="", dir="."):  # use standard dialogs
+    def select_openfile(self, file="", dir="."):
         return askopenfilename(initialdir=dir, initialfile=file)
 
     def select_savefile(self, file="", dir="."):
@@ -51,42 +52,6 @@ class GuiMixin:
         new.iconname("browser")
         text.insert('0.0', open(filename, 'r').read())
 
-    def enter_openfile(self):  # a new top-level window
-        win = Toplevel()  # with 2 row frames + ok button
-        win.title("Seleziona il file delle domande")
-        selection = self._form_row(win, label='file delle domande')
-        Button(win, text='OK', command=win.destroy).pack()
-        win.grab_set()
-        win.focus_set()  # go modal: mouse grab, keyboard focus, wait
-        win.wait_window()  # wait till destroy; else returns now
-        return selection.get()  # fetch linked var values
-
-    """"
-    Example 10-9. PP4E\Gui\ShellGui\formrows.py
-    create a label+entry row frame, with optional file open browse button;
-    this is a separate module because it can save code in other programs too;
-    caller (or callbacks here): retain returned linked var while row is in use;
-    """
-
-    def _form_row(self, parent, label, width=15, browse=True, extend=False):
-        var = StringVar()
-        row = Frame(parent)
-        lab = Label(row, text=label + '?', relief=RIDGE, width=width)
-        ent = Entry(row, relief=SUNKEN, textvariable=var)
-        row.pack(fill=X)  # uses packed row frames
-        lab.pack(side=LEFT)  # and fixed-width labels
-        ent.pack(side=LEFT, expand=YES, fill=X)  # or use grid(row, col)
-        if browse:
-            btn = Button(row, text='browse...')
-            btn.pack(side=RIGHT)
-            if not extend:
-                btn.config(command=
-                           lambda: var.set(self.select_openfile() or var.get()))
-            else:
-                btn.config(command=
-                           lambda: var.set(var.get() + ' ' + self.select_openfile()))
-        return var
-
 """
 ###############################################################################
 Classes that encapsulate top-level interfaces.
@@ -98,15 +63,12 @@ to the right than) app-specific classes: else, subclass gets methods here
 ###############################################################################
 """
 
-import os, glob
-from tkinter import Tk, Toplevel, Frame, YES, BOTH, RIDGE
-
 class _window:
     """
     mixin shared by main and pop-up windows
     """
-    foundicon = None                                       # shared by all inst
-    iconpatt  = '*.ico'                                    # may be reset
+    foundicon = None
+    iconpatt  = '*.ico'
     iconmine  = 'py.ico'
 
     def configBorders(self, app, kind, iconfile):
@@ -149,6 +111,8 @@ class MainWindow(Tk, _window, GuiMixin):
         self.findIcon()
         Tk.__init__(self)
         self.__app = app
+        print(app)
+        print(kind)
         self.configBorders(app, kind, iconfile)
 
     def quit(self):
