@@ -5,6 +5,7 @@ import logging
 import logging.config
 import json
 import pathlib
+from _version import __version__
 
 logName = 'quest2pdf.' + __name__
 logger = logging.getLogger(logName)
@@ -164,12 +165,12 @@ def cli_parser():
                         default='comma')
     parser.add_argument('-v', '--version',
                         help='mostra la corrente versione.',
-                        action='version', version='%(prog)s 2.0.0')
+                        action='version', version="%(prog)s {version}".format(version=__version__))
     return parser
 
 def param_parser():
     '''Arguments from command line have precedence over the ones
-    coming from configurazion file.
+    coming from configuration file.
     '''
     default_delim = ','
     delimiters = {'colon': ':',

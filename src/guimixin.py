@@ -7,7 +7,7 @@ with a Frame (or a subclass derived from Frame) for its quit method
 """
 
 import os, glob
-from tkinter import Tk, Toplevel, Frame
+import tkinter.scrolledtext as tk_st
 from tkinter.messagebox import *
 from tkinter.filedialog import *
 
@@ -30,9 +30,12 @@ class GuiMixin:
             Frame.quit(self)  # quit not recursive!
 
     def help(self):
-        self.infobox('RTFM', 'See figure 1...')  # override this better
+        self.infobox('RTFM', 'See figure 1...')
 
-    def select_openfile(self, file="", dir="."):
+    def handbook(self, file_name: str) -> None:
+        self.browser(file_name)
+
+    def select_openfile(self, file="", dir=".") -> str:
         return askopenfilename(initialdir=dir, initialfile=file)
 
     def select_savefile(self, file="", dir="."):
@@ -43,10 +46,11 @@ class GuiMixin:
         myclass = self.__class__  # instance's (lowest) class object
         myclass(new, *args)  # attach/run instance to new window
 
-    def browser(self, filename):  # if tkinter.scrolledtext
+    def browser(self, filename):
         new = Toplevel()  # included for reference
-        text = ScrolledText(new, height=30, width=85)
-        text.config(font=('courier', 10, 'normal'))
+        text = tk_st.ScrolledText(new, height=30, width=85)
+        #text.config(font=('courier', 10, 'normal'))
+        text.config(font=14)
         text.pack(expand=YES, fill=BOTH)
         new.title("Text Viewer")
         new.iconname("browser")
@@ -111,8 +115,6 @@ class MainWindow(Tk, _window, GuiMixin):
         self.findIcon()
         Tk.__init__(self)
         self.__app = app
-        print(app)
-        print(kind)
         self.configBorders(app, kind, iconfile)
 
     def quit(self):

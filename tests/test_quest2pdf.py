@@ -1,26 +1,37 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from reportlab.platypus import (SimpleDocTemplate, Paragraph,
-                                Spacer, PageTemplate, Frame)
+import os
+from reportlab.platypus import (SimpleDocTemplate, Paragraph,                                Spacer, PageTemplate, Frame)
 from reportlab.lib.pagesizes import  A4
-
 from multiquest import MultiQuest
 
-import reportlab
 
 def test_f():
     q1, q2, q3 = get_multi_quest(), get_plain_quest(),  get_truefalse_quest()
     
     mq = MultiQuest([q1, q2, q3])
 
+    file_name = 'test.pdf'
+
     story = []
 
-    doc = SimpleDocTemplate('test.pdf', pagesize=A4, allowSplitting=0)
+    doc = SimpleDocTemplate(file_name, pagesize=A4, allowSplitting=0)
 
     for f in mq.get_flowables():
         story.append(f)
 
     doc.build(story)
+
+    try:
+        with open(file_name, 'rb') as handler:
+            data = handler.read()
+    except:
+        pass
+    finally:
+        os.remove(file_name)
+
+    assert data
+
     
 def get_multi_quest():
     quest = {'subject': 'easy',
