@@ -49,7 +49,7 @@ class contentmix(MainWindow):
         menu.add_cascade(label="File", menu=file)
 
         info = Menu(menu)
-        info.add_command(label="Aiuto", command=self.show_help)
+        info.add_command(label="Aiuto", command=self.show_handbook)
         info.add_command(label="Versione", command=self.show_version)
         menu.add_cascade(label="Info", menu=info)
 
@@ -72,8 +72,9 @@ class contentmix(MainWindow):
             raise
 
         if not list_of_records:
-            LOGGER.debug("first row empty.")
-            exit(1)
+            LOGGER.warning("Empty rows.")
+            self.errorbox("dati non validi")
+            return
 
         try:
             exam = ExamDoc(list_of_records,
@@ -85,7 +86,9 @@ class contentmix(MainWindow):
                            )
             exam.close()
         except Exception as err:
-            self.errorbox(err)
+            LOGGER.critical("CSVReader failed: %s %s",
+                            err.__class__, err)
+            self.errorbox(utility.exception_printer(err))
             raise
 
         self.data_queue.put("end")
@@ -96,12 +99,19 @@ class contentmix(MainWindow):
         self.infobox("Versione", "{app_name}: {version}".format(app_name=Path(__file__).stem,
                                                                 version=__version__))
 
-    def show_help(self) -> None:
+    def show_handbook(self) -> None:
         """Show handbook/how-to (long text).
         """
         help_file_name: str = "help.txt"
         script_path: Path = Path(__file__).resolve().parent
-        self.handbook(str(script_path.joinpath(help_file_name)))
+        try:
+            self.handbook(str(script_path.joinpath(help_file_name)))
+        except Exception as err:
+            LOGGER.critical("Handbook opening failed: %s %s",
+                            err.__class__, err)
+            self.errorbox(utility.exception_printer(err))
+            raise
+
 
 
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+from  pathlib import Path
 from reportlab.platypus import (SimpleDocTemplate, Paragraph,                                Spacer, PageTemplate, Frame)
 from reportlab.lib.pagesizes import  A4
 from multiquest import MultiQuest
@@ -34,9 +35,11 @@ def test_f():
 
     
 def get_multi_quest():
+    image_file =  'image/test.png'
+    script_path: Path = Path(__file__).resolve().parent
     quest = {'subject': 'easy',
              'question': 'Lorem ipsum dolor sit amet',
-             'image': 'image/test.png',
+             'image': str(script_path.joinpath(image_file)),
              'answers': ['giusta', 'Ad astra per aspera.',
                          'Aliena vitia in oculis habemus',
                          '',

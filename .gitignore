@@ -105,13 +105,9 @@ venv.bak/
 bin/
 include/
 share/
+
 # others files/dir
-Doc/
-Examples/
-questFile/
-image/
-*.pdf
-*.txt
+Example_questfile/
 
 # mypy
 .mypy_cache/

@@ -47,14 +47,15 @@ class GuiMixin:
         myclass(new, *args)  # attach/run instance to new window
 
     def browser(self, filename):
-        new = Toplevel()  # included for reference
-        text = tk_st.ScrolledText(new, height=30, width=85)
-        #text.config(font=('courier', 10, 'normal'))
+        new = Toplevel()
+        new.title("Aiuto")
+        text = tk_st.ScrolledText(new, wrap=WORD,
+                                  height=30, width=85)
         text.config(font=14)
         text.pack(expand=YES, fill=BOTH)
-        new.title("Text Viewer")
         new.iconname("browser")
         text.insert('0.0', open(filename, 'r').read())
+        text.config(state=DISABLED)
 
 """
 ###############################################################################

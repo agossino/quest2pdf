@@ -123,7 +123,7 @@ def test_image():
 
     assert type(sq._getImage(sq.image)) == Image
 
-    assert sq.image == Path('image/test.png')
+    assert sq.image.name == Path('image/test.png').name
 
     questDict = get_plain_quest()
     sq = SingleQuest(**questDict)
@@ -199,9 +199,11 @@ def test_flowable():
     return
 
 def get_multi_quest():
+    image_file = 'image/test.png'
+    script_path: Path = Path(__file__).resolve().parent
     quest = {'subject': 'easy',
              'question': 'Lorem ipsum dolor sit amet',
-             'image': Path('image/test.png'),
+             'image': script_path.joinpath(image_file),
              'answers': ['giusta', 'Ad astra per aspera.',
                          'Aliena vitia in oculis habemus',
                          '',

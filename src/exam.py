@@ -79,7 +79,7 @@ class ExamDoc:
                       'question': row['question'],
                       'image': row['image']
                       }
-            answerKeys = ('A', 'B', 'C', 'D')
+            answerKeys = ('A', 'B', 'C', 'D') # TODO da 2 a n opzioni
             answers = [row[key] for key in answerKeys]
         except KeyError:
             LOGGER.critical("Chiave non ammessa: %s", row)
