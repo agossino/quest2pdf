@@ -33,7 +33,8 @@ class GuiMixin:
         self.infobox('RTFM', 'See figure 1...')
 
     def handbook(self, file_name: str) -> None:
-        self.browser(file_name)
+        title: str = "Guida"
+        self.browser(file_name, title)
 
     def select_openfile(self, file="", dir=".") -> str:
         return askopenfilename(initialdir=dir, initialfile=file)
@@ -46,15 +47,15 @@ class GuiMixin:
         myclass = self.__class__  # instance's (lowest) class object
         myclass(new, *args)  # attach/run instance to new window
 
-    def browser(self, filename):
+    def browser(self, filename: str, title: str) -> None:
         new = Toplevel()
-        new.title("Aiuto")
+        new.title(title)
         text = tk_st.ScrolledText(new, wrap=WORD,
                                   height=30, width=85)
         text.config(font=14)
         text.pack(expand=YES, fill=BOTH)
         new.iconname("browser")
-        text.insert('0.0', open(filename, 'r').read())
+        text.insert('0.0', open(filename, 'r', encoding="utf-8").read())
         text.config(state=DISABLED)
 
 """

@@ -49,7 +49,7 @@ class contentmix(MainWindow):
         menu.add_cascade(label="File", menu=file)
 
         info = Menu(menu)
-        info.add_command(label="Aiuto", command=self.show_handbook)
+        info.add_command(label="Guida", command=self.show_handbook)
         info.add_command(label="Versione", command=self.show_version)
         menu.add_cascade(label="Info", menu=info)
 
