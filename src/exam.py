@@ -18,23 +18,25 @@ LOGGER = logging.getLogger(LOGNAME)
 
 class ExamDoc:
     def __init__(self, quests, nDoc=1,
-                 examFile='Exam',
-                 correctionFile='Correction',
+                 exam_filename='Exam',
+                 correction_filename='Correction',
+                 destination=None,
                  to_shuffle=False,
                  heading=False):
 
         author = os.getlogin() + '@' + platform.node()
-        title = examFile
+        title = exam_filename
         subject = 'Formazione'
 
-        correctionFile = Path(correctionFile)
+        correction_file = Path(correction_filename)
 
         now = datetime.now().strftime('%Y-%m-%d-T%H-%M-%S-%f')
-        correctionFile = ''.join((correctionFile.stem, '-', now)) + '.pdf'    
-        self.correctionDoc = SimpleDocTemplate(correctionFile)
+        correction_filename = ''.join((correction_file.stem, '-', now)) + '.pdf'
+        correction_filepath = Path(destination) / correction_filename
+        self.correctionDoc = SimpleDocTemplate(str(correction_filepath))
         self.correctionText = []    
 
-        examFile = Path(examFile)
+        exam_filename = Path(exam_filename)
 
         self.examDoc = []
 
@@ -49,25 +51,26 @@ class ExamDoc:
             story = []
             # %f are microseconds
             now = datetime.now().strftime('%Y-%m-%d-T%H-%M-%S-%f')
-            examFileName = ''.join((examFile.stem, '-', now)) + '.pdf'
+            exam_filename = ''.join((exam_filename.stem, '-', now)) + '.pdf'
+            exam_filepath = Path(destination) / exam_filename
 
             if heading is False:
                 heading = ''
             elif heading is True:
-                heading = examFileName
+                heading = exam_filename
 
             self.evenHead.append(lambda d, c : self._evenHead(d, c,
                                                             text=heading))
             self.oddHead.append(lambda d, c : self._oddHead(d, c,
                                                           text=heading))
             
-            doc = SimpleDocTemplate(examFileName, pagesize=A4, allowSplitting=0,
+            doc = SimpleDocTemplate(str(exam_filepath), pagesize=A4, allowSplitting=0,
                                     author=author, title=title, subject=subject)
             self.examDoc.append(doc)
 
             self.questions.append(MultiQuest(dictLst, to_shuffle))
 
-            self._fillCorrectionFile(examFileName)
+            self._fillCorrectionFile(exam_filename)
 
         return
 
@@ -150,7 +153,7 @@ class ExamDoc:
 
         return
 
-    def close(self):
+    def close(self) -> bool:
         self.correctionDoc.build(self.correctionText)
 
         story = []
@@ -163,4 +166,4 @@ class ExamDoc:
 
             doc.build(story, onFirstPage=h1,
                       onLaterPages=h, canvasmaker=NumberedCanvas)
-        return
+        return True

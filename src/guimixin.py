@@ -7,13 +7,14 @@ with a Frame (or a subclass derived from Frame) for its quit method
 """
 
 import os, glob
+from typing import Tuple
 import tkinter.scrolledtext as tk_st
 from tkinter.messagebox import *
 from tkinter.filedialog import *
 
 class GuiMixin:
-    def infobox(self, title, text, *args):  # use standard dialogs
-        return showinfo(title, text)  # *args for bkwd compat
+    def infobox(self, title, text, *args):
+        return showinfo(title, text)
 
     def errorbox(self, text):
         showerror('Error!', text)
@@ -42,6 +43,9 @@ class GuiMixin:
     def select_savefile(self, file="", dir="."):
         return asksaveasfilename(initialfile=file, initialdir=dir)
 
+    def select_folder(self, title="Seleziona una cartella", initialdir=os.getcwd()):
+        return askdirectory(title=title, initialdir=initialdir)
+
     def clone(self, args=()):  # optional constructor args
         new = Toplevel()  # make new in-process version of me
         myclass = self.__class__  # instance's (lowest) class object
@@ -57,6 +61,44 @@ class GuiMixin:
         new.iconname("browser")
         text.insert('0.0', open(filename, 'r', encoding="utf-8").read())
         text.config(state=DISABLED)
+
+    def enter_openfile(self) -> Tuple[str, str]:
+        win = Toplevel()
+        win.title("Seleziona sorgente e destinazione")
+        file_label = "file di testo (CVS)"
+        folder_label = "cartella di destinazione"
+        label_width = max(len(file_label), len(folder_label))
+        file_selection = self._form_row(win, label=file_label,
+                                        open_function=self.select_openfile,
+                                        width=label_width)
+        folder_selection = self._form_row(win, label=folder_label,
+                                          open_function=self.select_folder,
+                                          width=label_width)
+        Button(win, text='OK', command=win.destroy).pack()
+        win.grab_set()
+        win.focus_set()  # go modal: mouse grab, keyboard focus, wait
+        win.wait_window()  # wait till destroy; else returns now
+        return file_selection.get(), folder_selection.get()
+
+    def _form_row(self, parent, label, open_function,
+                  width=15, browse=True, extend=False):
+        var = StringVar()
+        row = Frame(parent)
+        lab = Label(row, text=label, relief=RIDGE, width=width)
+        ent = Entry(row, relief=SUNKEN, textvariable=var)
+        row.pack(fill=X)  # uses packed row frames
+        lab.pack(side=LEFT)  # and fixed-width labels
+        ent.pack(side=LEFT, expand=YES, fill=X)  # or use grid(row, col)
+        if browse:
+            btn = Button(row, text='sfoglia ...')
+            btn.pack(side=RIGHT)
+            if not extend:
+                btn.config(command=
+                           lambda: var.set(open_function() or var.get()))
+            else:
+                btn.config(command=
+                           lambda: var.set(var.get() + ' ' + open_function()))
+        return var
 
 """
 ###############################################################################

@@ -54,11 +54,11 @@ class contentmix(MainWindow):
         menu.add_cascade(label="Info", menu=info)
 
     def read_input_file(self):
-        input_file = self.select_openfile()
+        input_file, output_folder = self.enter_openfile()
         if input_file:
-            _thread.start_new_thread(self.to_pdf, (input_file,))
+            _thread.start_new_thread(self.to_pdf, (input_file,output_folder))
 
-    def to_pdf(self, input_file):
+    def to_pdf(self, input_file, output_folder):
         try:
             file_content = CSVReader(input_file,
                                      self.parameters['encoding'],
@@ -79,17 +79,20 @@ class contentmix(MainWindow):
         try:
             exam = ExamDoc(list_of_records,
                            nDoc=self.parameters['number'],
-                           examFile=self.parameters['exam'],
-                           correctionFile=self.parameters['correction'],
+                           exam_filename=self.parameters['exam'],
+                           correction_filename=self.parameters['correction'],
+                           destination=output_folder,
                            to_shuffle=self.parameters['shuffle'],
                            heading=self.parameters['page_heading']
                            )
-            exam.close()
+            outcome = exam.close()
         except Exception as err:
             LOGGER.critical("CSVReader failed: %s %s",
                             err.__class__, err)
             self.errorbox(utility.exception_printer(err))
             raise
+        if outcome:
+            self.infobox("Avviso", "Conversione effettuata")
 
         self.data_queue.put("end")
 

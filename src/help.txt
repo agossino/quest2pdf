@@ -5,9 +5,9 @@ B Roma.
 C L'Italia non ha capitale.
 D Morterone.
 
-I file generati sono in PDF. Ogni quesito è numerato partendo da uno. Ogni risposta è preceduta da una lettera, partendo da A. Ogni pagina è numerata ed è anche indicato il numero totale di pagine.
+I file generati sono in PDF. Ogni quesito è numerato partendo da uno. Ogni risposta è preceduta da una lettera maiuscola, partendo da A. Ogni pagina è numerata ed è anche indicato il numero totale di pagine.
 
-Per ottenere il questionario, bisogna fornire un file in formato Comma Separated Value, ovvero un file di testo con dei campi separati da una virgola. La prima riga di deve contenere i nomi dei campi che seguiranno nelle righe successive. I nomi, obbligatori, sono:
+Per ottenere il questionario, bisogna fornire un file di testo in formato Comma Separated Value. Questo è un file di testo con dei campi separati, di solito, da una virgola. Il separatore è modificabile tra punto e virgola, tabulazione ecc. La prima riga di deve contenere le etichette dei campi che seguiranno nelle righe successive. I nomi, obbligatori, sono:
 subject (questo campo rappresenta l'argomento del quesito e compare prima di ogni domanda);
 question (la domanda);
 A (la risposta corretta);
