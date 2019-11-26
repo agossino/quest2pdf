@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import re
-from typing import List
+from typing import List, Dict
+from pathlib import Path
 
 
 def exception_printer(exeption_instance: Exception) -> str:
@@ -15,3 +16,12 @@ def exception_printer(exeption_instance: Exception) -> str:
                 + str(exeption_instance))
     except IndexError:
         return str(exeption_instance)
+
+def add_path_to_image(ref_path: str, dicts: List[Dict[str, str]]) -> None:
+    """Add the reference path to the image file name in item "image"
+    """
+    for row in dicts:
+        if row['image']:
+            row["image"] = str(Path(ref_path) / row["image"])
+
+

@@ -17,7 +17,7 @@ class GuiMixin:
         return showinfo(title, text)
 
     def errorbox(self, text):
-        showerror('Error!', text)
+        showerror('Errore!', text)
 
     def question(self, title, text, *args):
         return askyesno(title, text)  # return True or False
@@ -56,7 +56,7 @@ class GuiMixin:
         new.title(title)
         text = tk_st.ScrolledText(new, wrap=WORD,
                                   height=30, width=85)
-        text.config(font=14)
+        #text.config(font=14)
         text.pack(expand=YES, fill=BOTH)
         new.iconname("browser")
         text.insert('0.0', open(filename, 'r', encoding="utf-8").read())
@@ -75,6 +75,7 @@ class GuiMixin:
                                           open_function=self.select_folder,
                                           width=label_width)
         Button(win, text='OK', command=win.destroy).pack()
+        # TODO addo Abort button
         win.grab_set()
         win.focus_set()  # go modal: mouse grab, keyboard focus, wait
         win.wait_window()  # wait till destroy; else returns now

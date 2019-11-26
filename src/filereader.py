@@ -49,7 +49,13 @@ class CSVReader:
             raise
 
 if __name__ == "__main__":
-    READER = CSVReader("domande.csv")
+    import sys
+    if len(sys.argv) < 2:
+        print("Please provide a file name on the command line.")
+        exit(1)
+    READER = CSVReader(sys.argv[1])
+    x = [dict(i) for i in READER.to_dictlist()]
+    print(x)
     print("type: ", type(READER.to_dictlist()))
     print("first 2 elements:")
     for elm in READER.to_dictlist()[:2]:

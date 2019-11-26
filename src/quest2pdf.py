@@ -54,9 +54,13 @@ class contentmix(MainWindow):
         menu.add_cascade(label="Info", menu=info)
 
     def read_input_file(self):
-        input_file, output_folder = self.enter_openfile()
-        if input_file:
-            _thread.start_new_thread(self.to_pdf, (input_file,output_folder))
+        while True:
+            input_file, output_folder = self.enter_openfile()
+            if input_file and output_folder:
+                _thread.start_new_thread(self.to_pdf, (input_file, output_folder))
+                break
+            # TODO in case of abort, exit from this dialog
+            self.errorbox("Indicare sorgente e destinazione")
 
     def to_pdf(self, input_file, output_folder):
         try:
@@ -75,6 +79,9 @@ class contentmix(MainWindow):
             LOGGER.warning("Empty rows.")
             self.errorbox("dati non validi")
             return
+
+        utility.add_path_to_image(Path(input_file).parent,
+                                  list_of_records)
 
         try:
             exam = ExamDoc(list_of_records,
