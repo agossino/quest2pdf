@@ -90,6 +90,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# pyvenv
+pyvenv.cfg
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -105,6 +108,7 @@ venv.bak/
 bin/
 include/
 share/
+lib64
 
 # others files/dir
 Example_questfile/

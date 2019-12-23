@@ -6,4 +6,7 @@ clean:
 	find . -type d -name '__pycache__' -execdir rm -rf {} +
 	find . -name '*.log' -execdir rm -f {} +
 
-.PHONY: test clean
+build:
+	python3 setup.py sdist bdist_wheel
+
+.PHONY: test clean build
