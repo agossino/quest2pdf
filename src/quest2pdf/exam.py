@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from reportlab.lib.pagesizes import  A4
 from reportlab.lib.styles import getSampleStyleSheet
@@ -167,3 +167,63 @@ class ExamDoc:
             doc.build(story, onFirstPage=h1,
                       onLaterPages=h, canvasmaker=NumberedCanvas)
         return True
+
+
+class Question:
+    def __init__(self, text: str = ""):
+        self.text: str = text
+        self.image: Path = Path(".")
+        self.subject: str = ""
+        self.level: int = 0
+
+    @property
+    def text(self) -> str:
+        return self._text
+
+    @text.setter
+    def text(self, text: str):
+        if isinstance(text, str):
+            self._text = text
+        else:
+            raise TypeError(f"{text} in not a string")
+
+    @property
+    def image(self) -> Path:
+        return self._image
+
+    @image.setter
+    def image(self, file_path: str):
+        if isinstance(file_path, Path):
+            self._image = file_path
+        else:
+            raise TypeError(f"{file_path} is not a Path")
+
+    @property
+    def subject(self) -> str:
+        return self._subject
+
+    @subject.setter
+    def subject(self, name: str):
+        if isinstance(name, str):
+            self._subject = name
+        else:
+            raise TypeError(f"{name} is not a string")
+
+    @property
+    def level(self) -> int:
+        return self._level
+
+    @level.setter
+    def level(self, value: int):
+        if isinstance(value, int):
+            self._level = value
+        else:
+            raise TypeError(f"{value} is not a string")
+
+
+if __name__ == "__main__":
+    q = Question("ciao")
+    setattr(q, "image", "x")
+    print(getattr(q, "image"))
+
+
