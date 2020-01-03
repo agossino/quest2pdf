@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# TODO
+# Question attribute type_of_question
+# open_ended, yes_no, multi_choice
+# based on number of alternative answers provided
+
 from pathlib import Path
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 import logging
 from random import shuffle
 
 
 LOGNAME = "quest2pdf." + __name__
 LOGGER = logging.getLogger(LOGNAME)
+LETTER_A = "A"
 
 
 class Answer:
@@ -20,29 +27,18 @@ class Answer:
         return self._text
 
     @text.setter
-    def text(self, text: str):
+    def text(self, text: str) -> None:
         if isinstance(text, str):
             self._text = text
         else:
             raise TypeError(f"{text} is not a string")
 
     @property
-    def is_correct(self) -> bool:
-        return self._is_correct
-
-    @is_correct.setter
-    def is_correct(self, value: bool):
-        if isinstance(value, bool):
-            self._is_correct = value
-        else:
-            raise TypeError(f"{value} is not a Path")
-
-    @property
     def image(self) -> Path:
         return self._image
 
     @image.setter
-    def image(self, file_path: str):
+    def image(self, file_path: Path) -> None:
         if isinstance(file_path, Path):
             self._image = file_path
         else:
@@ -56,14 +52,16 @@ class Question:
         self.subject: str = ""
         self.level: int = 0
         self._answers: List[Answer] = []
-        self._correct_answer = None
+        self._correct_answer: Optional[Answer] = None  # setter bypassed
+        self._correct_index: Optional[int] = None  # setter bypassed
+        self._correct_letter: Optional[str] = None  # setter bypassed
 
     @property
     def text(self) -> str:
         return self._text
 
     @text.setter
-    def text(self, text: str):
+    def text(self, text: str) -> None:
         if isinstance(text, str):
             self._text = text
         else:
@@ -74,7 +72,7 @@ class Question:
         return self._image
 
     @image.setter
-    def image(self, file_path: str):
+    def image(self, file_path: Path) -> None:
         if isinstance(file_path, Path):
             self._image = file_path
         else:
@@ -85,7 +83,7 @@ class Question:
         return self._subject
 
     @subject.setter
-    def subject(self, name: str):
+    def subject(self, name: str) -> None:
         if isinstance(name, str):
             self._subject = name
         else:
@@ -103,7 +101,7 @@ class Question:
             raise TypeError(f"{value} is not a string")
 
     @property
-    def answers(self) -> Tuple[Answer]:
+    def answers(self) -> Tuple[Answer, ...]:
         return tuple(self._answers)
 
     def add_answer(self, answer: Answer, is_correct: bool = True) -> None:
@@ -112,25 +110,70 @@ class Question:
         are set accordingly to is_correct.
         """
         if isinstance(answer, Answer):
-            self._correct_answer = self._set_correctness(answer, is_correct)
+            correct_answer = self._get_correct_answer(answer, is_correct)
             self._answers.append(answer)
+            self.correct_answer = correct_answer
         else:
             raise TypeError(f"{answer} is not an Answer")
 
     @property
-    def correct_answer(self) -> Answer:
+    def correct_answer(self) -> Optional[Answer]:
         return self._correct_answer
 
-    def _set_correctness(self, answer: Answer, is_correct: bool) -> Answer:
-        if len(self._answers) == 0 or is_correct:
+    @correct_answer.setter
+    def correct_answer(self, value: Answer) -> None:
+        if value in self._answers:
+            self._correct_answer = value
+        else:
+            raise ValueError(f"{value} is not already added")
+        pointer = self._answers.index(self._correct_answer)
+        self._correct_index = pointer
+        self._correct_letter = chr(ord(LETTER_A) + pointer)
+
+    @property
+    def correct_index(self) -> Optional[int]:
+        return self._correct_index
+
+    @correct_index.setter
+    def correct_index(self, value: int) -> None:
+        try:
+            self._correct_answer = self._answers[value]
+        except IndexError as index_error:
+            raise ValueError(f"no answer with index {value}") from index_error
+        self._correct_index = value
+        self._correct_letter = chr(ord(LETTER_A) + value)
+
+    @property
+    def correct_letter(self) -> Optional[str]:
+        return self._correct_letter
+
+    @correct_letter.setter
+    def correct_letter(self, value: str) -> None:
+        """Set the correct answer according to the given letter,
+        where the first answer added is labeled A"""
+        try:
+            pointer = ord(value) - ord(LETTER_A)
+            self._correct_answer = self._answers[pointer]
+        except IndexError as index_error:
+            raise ValueError(f"no answer with letter {value}") from index_error
+        self._correct_index = pointer
+        self._correct_letter = chr(ord(LETTER_A) + pointer)
+
+    def _get_correct_answer(self, answer: Answer, is_correct: bool) -> Answer:
+        """Return the correct answer: if no other answers are already added
+        or the given is_correct is True, the given answer is returned,
+        otherwise the stored correct answer is returned."""
+        if self._correct_answer is None or is_correct:
             return answer
         else:
             return self._correct_answer
 
     def shuffle(self) -> None:
-        shuffle(self._answers)
-        ix = self._answers.index(self._correct_answer)
-        print(ix, chr(ord("A") + ix))
+        if self._correct_answer:
+            shuffle(self._answers)
+            pointer = self._answers.index(self._correct_answer)
+            self._correct_index = pointer
+            self._correct_letter = chr(ord(LETTER_A) + pointer)
 
 
 if __name__ == "__main__":
@@ -148,3 +191,4 @@ if __name__ == "__main__":
     seed(1)
     q.shuffle()
     q.shuffle()
+    print(q.correct_answer, q.correct_letter, q.correct_index)
