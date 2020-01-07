@@ -137,22 +137,21 @@ def test_question_answer_add2():
     q.add_answer(a2)
 
     assert q.answers == (a1, a2)
-    assert q.correct_index == 1
-    assert q.correct_letter == "B"
+    assert q.correct_index == 0
+    assert q.correct_letter == "A"
 
 
 def test_question_answer_correct2():
-    """Test correctness of the first
-    answer added when the successive
-    is set to wrong
+    """Test correctness of the last
+    answer added when is set to correct
     """
     q = exam.Question("Who are you?")
     a1 = exam.Answer("That's me.")
     a2 = exam.Answer("That's not me.")
     q.add_answer(a2)
-    q.add_answer(a1, False)
+    q.add_answer(a1, True)
 
-    assert q.correct_answer == a2
+    assert q.correct_answer == a1
 
 
 def test_question_answer_correct3():
@@ -206,14 +205,52 @@ def test_question_shuffle():
     a3 = exam.Answer("That's him")
     a4 = exam.Answer("That's her.")
     q.add_answer(a1)
-    q.add_answer(a2)
+    q.add_answer(a2, True)
     q.add_answer(a3)
-    q.add_answer(a4, False)
+    q.add_answer(a4)
 
     assert q.answers == (a1, a2, a3, a4)
     random.seed(1)
     q.shuffle()
     assert q.answers == (a4, a1, a3, a2)
-    assert q.correct_answer == a3
-    assert q.correct_index == 2
-    assert  q.correct_letter == "C"
+    assert q.correct_answer == a2
+    assert q.correct_index == 3
+    assert  q.correct_letter == "D"
+
+
+@pytest.mark.parametrize(
+    "iterator, q_text, q_subject",
+    [(iter(("d1", "s1")),
+      "d1", "s1"),
+     (iter(("", "s1")),
+      "", "s1")
+     ],
+)
+def test_load1(iterator, q_text, q_subject):
+    quest = exam.Question()
+    quest.load_sequentially(iterator)
+
+    assert quest.text == q_text
+    assert quest.subject == q_subject
+
+
+@pytest.mark.parametrize(
+    "iterator, q_text, q_subject, q_image, a1_text, a1_image, a2_text, a2_image",
+    [(iter(("d1", "s1", "i1", "a11", "ai11", "a12", "ai12")),
+      "d1", "s1", Path("i1"), "a11", Path("ai11"), "a12", Path("ai12")),
+     (iter(("", "s1", "", "a11", "ai11", "", "ai12")),
+      "", "s1", Path("."), "a11", Path("ai11"), "", Path("ai12"))
+     ],
+)
+def test_load2(iterator, q_text, q_subject, q_image,
+              a1_text, a1_image, a2_text, a2_image):
+    quest = exam.Question()
+    quest.load_sequentially(iterator)
+
+    assert quest.text == q_text
+    assert quest.subject == q_subject
+    assert quest.image == q_image
+    assert quest.answers[0].text == a1_text
+    assert quest.answers[0].image == a1_image
+    assert quest.answers[1].text == a2_text
+    assert quest.answers[1].image == a2_image
