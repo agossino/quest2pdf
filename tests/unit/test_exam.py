@@ -254,3 +254,22 @@ def test_load2(iterator, q_text, q_subject, q_image,
     assert quest.answers[0].image == a1_image
     assert quest.answers[1].text == a2_text
     assert quest.answers[1].image == a2_image
+
+@pytest.fixture
+def set_questions():
+    quest1 = exam.Question("Who?")
+    quest2 = exam.Question("What?")
+    quest3 = exam.Question("When?")
+
+    return quest1, quest2, quest3
+
+def test_exam0():
+    ex = exam.Exam()
+
+    assert ex.questions == tuple()
+
+
+def test_exam1(set_questions):
+    ex = exam.Exam(set_questions[1:])
+
+    assert ex.questions == set_questions

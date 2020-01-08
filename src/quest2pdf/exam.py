@@ -7,8 +7,8 @@
 # based on number of alternative answers provided
 
 from pathlib import Path
-from typing import (Tuple, List, Optional, Iterator,
-                    Mapping, Any, Sequence, Callable)
+from typing import (Tuple, List, Optional, Iterator, TypeVar,
+                    Mapping, Any, Sequence, Callable, cast)
 import logging
 from random import shuffle
 
@@ -16,24 +16,6 @@ from random import shuffle
 LOGNAME = "quest2pdf." + __name__
 LOGGER = logging.getLogger(LOGNAME)
 LETTER_A = "A"
-
-
-class SorterSelector:
-    """Provide an iterator to the decorated function
-    with only the values with the keys given in the
-    decorator arguments, and with the given order.
-    """
-    def __init__(self, sequence_of_keys_to_be_in: Sequence[str]):
-        self._sequence: Sequence[str] = sequence_of_keys_to_be_in
-
-    def __call__(self,
-                 function: Callable[Iterator[Any], None]) -> Mapping[str, Any]:
-        def wrapper(mapping: Mapping[str, Any]) -> Callable[[Iterator[Any]], None]:
-            iterator: Iterator[Any] = (mapping[key] for key in self._sequence)
-            return function(iterator)
-
-        return wrapper
-
 
 class Answer:
     def __init__(self, text: str = ""):
@@ -210,3 +192,37 @@ class Question:
                 answer.image = Path(next(iterator))
         except StopIteration:
             pass
+
+
+class Exam:
+    question = Question()
+
+    def __init__(self, *args):
+        self._questions: List[Question] = list(*args)
+        self._attribute_selection: Sequence = ()
+
+    @property
+    def questions(self):
+        return tuple(self._questions)
+
+    def set_selection(self, selection: Sequence) -> None:
+        self._attribute_selection = selection
+    def _loader(self, row):
+        q=Question()
+        iterator = (row[key] for key in self._attribute_selection)
+        q.load_sequentially(iterator)
+        return q
+    def from_csv(self, file_path: Path):
+        with file_path.open() as csv_file:
+            reader = csv.DictReader(csv_file)
+            self._questions = list(map(self._loader, reader))
+    def __str__(self):
+        output: List[str] = []
+        for q in self._questions:
+            output.append(f"domanda: {q.text}\nsoggetto: {q.subject}")
+            output.append(f"\nimmagine: {q.image}\ncorretta {q.correct_letter}")
+            for i, a in enumerate(q.answers):
+                letter = chr(ord("A") + i)
+                output.append(f"\nrisposta {letter}: {a.text}")
+                output.append(f"\nimmagine: {a.image}")
+        return "".join(output)
