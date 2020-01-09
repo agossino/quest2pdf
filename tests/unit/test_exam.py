@@ -8,7 +8,7 @@ def test_answer_text1():
     a = exam.Answer()
     expected = ""
 
-    assert a.text == ""
+    assert a.text == expected
 
 
 def test_answer_text2():
@@ -235,15 +235,15 @@ def test_load1(iterator, q_text, q_subject):
 
 
 @pytest.mark.parametrize(
-    "iterator, q_text, q_subject, q_image, a1_text, a1_image, a2_text, a2_image",
-    [(iter(("d1", "s1", "i1", "a11", "ai11", "a12", "ai12")),
-      "d1", "s1", Path("i1"), "a11", Path("ai11"), "a12", Path("ai12")),
-     (iter(("", "s1", "", "a11", "ai11", "", "ai12")),
-      "", "s1", Path("."), "a11", Path("ai11"), "", Path("ai12"))
+    "iterator, q_text, q_subject, q_image, q_level, a1_text, a1_image, a2_text, a2_image",
+    [(iter(("d1", "s1", "i1", 1, "a11", "ai11", "a12", "ai12")),
+      "d1", "s1", Path("i1"), 1, "a11", Path("ai11"), "a12", Path("ai12")),
+     (iter(("", "s1", "", 2, "a11", "ai11", "", "ai12")),
+      "", "s1", Path("."), 2, "a11", Path("ai11"), "", Path("ai12"))
      ],
 )
-def test_load2(iterator, q_text, q_subject, q_image,
-              a1_text, a1_image, a2_text, a2_image):
+def test_load2(iterator, q_text, q_subject, q_image, q_level,
+               a1_text, a1_image, a2_text, a2_image):
     quest = exam.Question()
     quest.load_sequentially(iterator)
 
@@ -255,21 +255,50 @@ def test_load2(iterator, q_text, q_subject, q_image,
     assert quest.answers[1].text == a2_text
     assert quest.answers[1].image == a2_image
 
+
 @pytest.fixture
 def set_questions():
-    quest1 = exam.Question("Who?")
-    quest2 = exam.Question("What?")
-    quest3 = exam.Question("When?")
+    return (exam.Question(),
+            exam.Question("Who?"),
+            exam.Question("What?"),
+            exam.Question("When?"))
 
-    return quest1, quest2, quest3
 
-def test_exam0():
+def test_exam(set_questions):
     ex = exam.Exam()
 
     assert ex.questions == tuple()
 
 
-def test_exam1(set_questions):
-    ex = exam.Exam(set_questions[1:])
+def test_exam_init(set_questions):
+    ex1 = exam.Exam(set_questions[1])
+    ex2 = exam.Exam(set_questions[1],
+                    set_questions[2])
 
-    assert ex.questions == set_questions
+    assert ex1.questions == (set_questions[1],)
+    assert ex2.questions == (set_questions[1],
+                             set_questions[2])
+
+
+def test_exam_add_question1(set_questions):
+    ex = exam.Exam()
+    ex.add_question(set_questions[0])
+
+    assert ex.questions == (set_questions[0],)
+
+
+def test_exam_add_question2(set_questions):
+    ex = exam.Exam()
+    ex.add_question(set_questions[2])
+    ex.add_question(set_questions[3])
+
+    assert ex.questions == (set_questions[2],
+                            set_questions[3])
+
+
+def test_exam_questions_setter(set_questions):
+    ex = exam.Exam()
+    ex.questions = (set_questions[2], set_questions[3])
+
+    assert ex.questions == (set_questions[2],
+                            set_questions[3])

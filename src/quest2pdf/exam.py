@@ -7,9 +7,10 @@
 # based on number of alternative answers provided
 
 from pathlib import Path
-from typing import (Tuple, List, Optional, Iterator, TypeVar,
-                    Mapping, Any, Sequence, Callable, cast)
+from typing import (Tuple, List, Optional, Iterator, Iterable,
+                    Any, Sequence)
 import logging
+import csv
 from random import shuffle
 
 
@@ -18,6 +19,8 @@ LOGGER = logging.getLogger(LOGNAME)
 LETTER_A = "A"
 
 class Answer:
+    """An answer with optional image.
+    """
     def __init__(self, text: str = ""):
         self.text: str = text
         self.image: Path = Path(".")
@@ -28,6 +31,8 @@ class Answer:
 
     @text.setter
     def text(self, text: str) -> None:
+        """Text is the answer.
+        """
         if isinstance(text, str):
             self._text = text
         else:
@@ -39,6 +44,8 @@ class Answer:
 
     @image.setter
     def image(self, file_path: Path) -> None:
+        """Image can help or can be the answer.
+        """
         if isinstance(file_path, Path):
             self._image = file_path
         else:
@@ -46,6 +53,10 @@ class Answer:
 
 
 class Question:
+    """Question is the question with the correct answer. Optionally it can
+    have image, the subject (math, science ...), an integer representing
+    the level of difficulty.
+    """
     def __init__(self, text: str = ""):
         self.text: str = text
         self.image: Path = Path(".")
@@ -62,6 +73,8 @@ class Question:
 
     @text.setter
     def text(self, text: str) -> None:
+        """Text is the question.
+        """
         if isinstance(text, str):
             self._text = text
         else:
@@ -73,6 +86,8 @@ class Question:
 
     @image.setter
     def image(self, file_path: Path) -> None:
+        """Image cha help or can be the question itself.
+        """
         if isinstance(file_path, Path):
             self._image = file_path
         else:
@@ -84,6 +99,8 @@ class Question:
 
     @subject.setter
     def subject(self, name: str) -> None:
+        """The subject of the question.
+        """
         if isinstance(name, str):
             self._subject = name
         else:
@@ -95,10 +112,12 @@ class Question:
 
     @level.setter
     def level(self, value: int) -> None:
+        """The level of difficulty.
+        """
         if isinstance(value, int):
             self._level = value
         else:
-            raise TypeError(f"{value} is not a string")
+            raise TypeError(f"{value} is not an int")
 
     @property
     def answers(self) -> Tuple[Answer, ...]:
@@ -107,7 +126,7 @@ class Question:
     def add_answer(self, answer: Answer, is_correct: bool = False) -> None:
         """Add an Answer. As side effect, correct answer is set.
         The first answer is the correct one: successive answers
-        are set accordingly to is_correct.
+        are set accordingly to is_correct argument.
         """
         if isinstance(answer, Answer):
             correct_answer = self._get_correct_answer(answer, is_correct)
@@ -118,6 +137,8 @@ class Question:
 
     @property
     def correct_answer(self) -> Optional[Answer]:
+        """Set the given answer as the correct one.
+        """
         return self._correct_answer
 
     @correct_answer.setter
@@ -136,6 +157,8 @@ class Question:
 
     @correct_index.setter
     def correct_index(self, value: int) -> None:
+        """Set the correct answer given its index.
+        """
         try:
             self._correct_answer = self._answers[value]
         except IndexError as index_error:
@@ -179,12 +202,13 @@ class Question:
 
     def load_sequentially(self, iterator: Iterator[Any]) -> None:
         """Load all the attribute sequentially
-        from iterator.
+        from iterator. Not string value are casted.
         """
         try:
             self.text = next(iterator)
             self.subject = next(iterator)
             self.image = Path(next(iterator))
+            self.level = int(next(iterator))
             while True:
                 answer = Answer()
                 answer.text = next(iterator)
@@ -195,32 +219,51 @@ class Question:
 
 
 class Exam:
-    question = Question()
-
+    """Exam is a sequence of Question managed as a whole.
+    """
     def __init__(self, *args):
-        self._questions: List[Question] = list(*args)
+        self._questions: List[Question] = list()
+        list(map(self.add_question, args))
         self._attribute_selection: Sequence = ()
 
     @property
-    def questions(self):
+    def questions(self) -> Tuple[Question]:
         return tuple(self._questions)
 
-    def set_selection(self, selection: Sequence) -> None:
+    @questions.setter
+    def questions(self, values: Iterable[Question]) -> None:
+        """Set all the questions given a sequence of them.
+        """
+        list(map(self.add_question, values))
+
+    def add_question(self, question: Question) -> None:
+        """Add one question to the sequence.
+        """
+        if isinstance(question, Question):
+            self._questions.append(question)
+        else:
+            raise TypeError(f"{question} is not a Question")
+
+    def set_selection(self, selection: Sequence[str]) -> None:
         self._attribute_selection = selection
+
     def _loader(self, row):
-        q=Question()
+        quest = Question()
         iterator = (row[key] for key in self._attribute_selection)
-        q.load_sequentially(iterator)
-        return q
+        quest.load_sequentially(iterator)
+        return quest
+
     def from_csv(self, file_path: Path):
         with file_path.open() as csv_file:
             reader = csv.DictReader(csv_file)
             self._questions = list(map(self._loader, reader))
+
     def __str__(self):
         output: List[str] = []
         for q in self._questions:
             output.append(f"domanda: {q.text}\nsoggetto: {q.subject}")
-            output.append(f"\nimmagine: {q.image}\ncorretta {q.correct_letter}")
+            output.append(f"\nimmagine: {q.image}\nlivello: {q.level}")
+            output.append(f"\ncorretta: {q.correct_letter}")
             for i, a in enumerate(q.answers):
                 letter = chr(ord("A") + i)
                 output.append(f"\nrisposta {letter}: {a.text}")
