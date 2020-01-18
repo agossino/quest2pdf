@@ -2,30 +2,43 @@
 # -*- coding: utf-8 -*-
 
 # TODO
+# answers setter in question, like question setter in Exam
 # Question attribute type_of_question
 # open_ended, yes_no, multi_choice
 # based on number of alternative answers provided
 
 from pathlib import Path
-from typing import (Tuple, List, Optional, Iterator, Iterable,
-                    Any, Sequence, Callable)
+from typing import (
+    Tuple,
+    List,
+    Optional,
+    Iterator,
+    Iterable,
+    Any,
+    Sequence,
+    Callable,
+    Mapping,
+    Union,
+)
 import logging
 import csv
 from random import shuffle
 
-
+CasterType = Callable[[Any], Any]
 LOGNAME = "quest2pdf." + __name__
 LOGGER = logging.getLogger(LOGNAME)
 LETTER_A = "A"
 
+
 class Answer:
     """An answer with optional image.
     """
+
     def __init__(self, text: str = ""):
         self.text: str = text
         self.image: Path = Path(".")
         self._attr_load_sequence: Tuple[str, ...] = ("text", "image")
-        self._type_caster_sequence: Tuple[Callable, ...] = (str, Path)
+        self._type_caster_sequence: Tuple[CasterType, ...] = (str, Path)
 
     @property
     def text(self) -> str:
@@ -42,37 +55,42 @@ class Answer:
 
     @property
     def image(self) -> Path:
+        """Image associated with the answer: it can help or
+        can be the answer.
+        """
         return self._image
 
     @image.setter
     def image(self, file_path: Path) -> None:
-        """Image can help or can be the answer.
-        """
         if isinstance(file_path, Path):
             self._image = file_path
         else:
             raise TypeError(f"{file_path} is not a Path")
 
     @property
-    def attr_load_sequence(self):
+    def attr_load_sequence(self) -> Tuple[str, ...]:
+        """Answer can be set by load_sequentially method: this attribute
+        return the order the attribute are set"""
         return self._attr_load_sequence
 
     @property
-    def type_caster_sequence(self):
+    def type_caster_sequence(self) -> Tuple[CasterType, ...]:
         return self._type_caster_sequence
 
     def load_sequentially(self, iterator: Iterator[Any]) -> None:
-        """Load all the attribute sequentially
-        from iterator.
+        """Load all the attribute sequentially from iterator.
         """
         attribute_iterator: Iterator[str] = iter(self.attr_load_sequence)
-        caster_iterator: Iterator[Callable] = iter(self._type_caster_sequence)
-        try:
-            while True:
-                setattr(self, next(attribute_iterator),
-                        next(caster_iterator)(next(iterator)))
-        except StopIteration:
-            pass
+        caster_iterator: Iterator[CasterType] = iter(self._type_caster_sequence)
+
+        attribute: Union[str, False] = next(attribute_iterator, False)
+        caster: Union[CasterType, False] = next(caster_iterator, False)
+
+        while attribute and caster:
+            setattr(self, attribute, caster(next(iterator)))
+
+            attribute = next(attribute_iterator, False)
+            caster = next(caster_iterator, False)
 
 
 class Question:
@@ -80,6 +98,7 @@ class Question:
     have image, the subject (math, science ...), an integer representing
     the level of difficulty.
     """
+
     def __init__(self, text: str = ""):
         self.text: str = text
         self.image: Path = Path(".")
@@ -160,12 +179,12 @@ class Question:
 
     @property
     def correct_answer(self) -> Optional[Answer]:
-        """Set the given answer as the correct one.
-        """
         return self._correct_answer
 
     @correct_answer.setter
     def correct_answer(self, value: Answer) -> None:
+        """Set the given answer as the correct one.
+        """
         if value in self._answers:
             self._correct_answer = value
         else:
@@ -234,9 +253,8 @@ class Question:
             self.level = int(next(iterator))
             while True:
                 answer = Answer()
-                answer.text = next(iterator)
                 self.add_answer(answer)
-                answer.image = Path(next(iterator))
+                answer.load_sequentially(iterator)
         except StopIteration:
             pass
 
@@ -244,13 +262,14 @@ class Question:
 class Exam:
     """Exam is a sequence of Question managed as a whole.
     """
-    def __init__(self, *args):
+
+    def __init__(self, *args: Question):
         self._questions: List[Question] = list()
         list(map(self.add_question, args))
-        self._attribute_selection: Sequence = ()
+        self._attribute_selection: Sequence[str] = ()
 
     @property
-    def questions(self) -> Tuple[Question]:
+    def questions(self) -> Tuple[Question, ...]:
         return tuple(self._questions)
 
     @questions.setter
@@ -270,16 +289,16 @@ class Exam:
     def set_selection(self, selection: Sequence[str]) -> None:
         self._attribute_selection = selection
 
-    def _quest_loader(self, row):
+    def _quest_loader(self, row: Mapping[str, Any]) -> Question:
         quest = Question()
         iterator = (row[key] for key in self._attribute_selection)
         quest.load_sequentially(iterator)
         return quest
 
-    def load(self, iterable: Iterable):
+    def load(self, iterable: Iterable[Mapping[str, Any]]) -> None:
         self._questions = list(map(self._quest_loader, iterable))
 
-    def __str__(self):
+    def __str__(self) -> str:
         output: List[str] = []
         for q in self._questions:
             output.append(f"domanda: {q.text}\nsoggetto: {q.subject}")

@@ -48,13 +48,51 @@ def test_answer_set(attribute, expected):
     assert getattr(a, attribute) == expected
 
 
-def test_answer_load():
+def test_answer_load0():
+    a = exam.Answer()
+    expected = tuple()
+    i = iter(expected)
+    try:
+        a.load_sequentially(i)
+    except StopIteration:
+        pass
+
+    assert a.text == ""
+    assert a.image == Path(".")
+
+
+def test_answer_load1():
     a = exam.Answer()
     expected = ("Answer text",)
-    a.load_sequentially(iter(expected))
+    i = iter(expected)
+    try:
+        a.load_sequentially(i)
+    except StopIteration:
+        pass
 
     assert a.text == expected[0]
     assert a.image == Path(".")
+
+
+def test_answer_load2():
+    a = exam.Answer()
+    expected = ("Answer text", r"home/mydir/image.jpg")
+    i = iter(expected)
+    a.load_sequentially(i)
+
+    assert a.text == expected[0]
+    assert a.image == Path(expected[1])
+
+
+def test_answer_load3():
+    a = exam.Answer()
+    expected = ("Answer text", "home/mydir/image.jpg", "rest")
+    i = iter(expected)
+    a.load_sequentially(i)
+
+    assert a.text == expected[0]
+    assert a.image == Path(expected[1])
+    assert next(i) == expected[2]
 
 
 def test_question_get_text1():
@@ -267,6 +305,20 @@ def test_question_load2(iterator, q_text, q_subject, q_image, q_level,
     assert quest.answers[0].image == a1_image
     assert quest.answers[1].text == a2_text
     assert quest.answers[1].image == a2_image
+
+
+def test_question_load3():
+    quest = exam.Question()
+    sequence = ("Text", "Subject", "dir/ec/tor/y", 1, "Answer")
+    iterator = iter(sequence)
+    quest.load_sequentially(iterator)
+
+    assert quest.text == sequence[0]
+    assert quest.subject == sequence[1]
+    assert quest.image == Path(sequence[2])
+    assert quest.level == sequence[3]
+    assert quest.answers[0].text == sequence[4]
+    assert quest.answers[0].image == Path(".")
 
 
 @pytest.fixture
