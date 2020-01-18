@@ -8,7 +8,7 @@
 
 from pathlib import Path
 from typing import (Tuple, List, Optional, Iterator, Iterable,
-                    Any, Sequence)
+                    Any, Sequence, Callable)
 import logging
 import csv
 from random import shuffle
@@ -24,6 +24,8 @@ class Answer:
     def __init__(self, text: str = ""):
         self.text: str = text
         self.image: Path = Path(".")
+        self._attr_load_sequence: Tuple[str, ...] = ("text", "image")
+        self._type_caster_sequence: Tuple[Callable, ...] = (str, Path)
 
     @property
     def text(self) -> str:
@@ -50,6 +52,27 @@ class Answer:
             self._image = file_path
         else:
             raise TypeError(f"{file_path} is not a Path")
+
+    @property
+    def attr_load_sequence(self):
+        return self._attr_load_sequence
+
+    @property
+    def type_caster_sequence(self):
+        return self._type_caster_sequence
+
+    def load_sequentially(self, iterator: Iterator[Any]) -> None:
+        """Load all the attribute sequentially
+        from iterator.
+        """
+        attribute_iterator: Iterator[str] = iter(self.attr_load_sequence)
+        caster_iterator: Iterator[Callable] = iter(self._type_caster_sequence)
+        try:
+            while True:
+                setattr(self, next(attribute_iterator),
+                        next(caster_iterator)(next(iterator)))
+        except StopIteration:
+            pass
 
 
 class Question:
@@ -202,7 +225,7 @@ class Question:
 
     def load_sequentially(self, iterator: Iterator[Any]) -> None:
         """Load all the attribute sequentially
-        from iterator. Not string value are casted.
+        from iterator.
         """
         try:
             self.text = next(iterator)
@@ -247,16 +270,14 @@ class Exam:
     def set_selection(self, selection: Sequence[str]) -> None:
         self._attribute_selection = selection
 
-    def _loader(self, row):
+    def _quest_loader(self, row):
         quest = Question()
         iterator = (row[key] for key in self._attribute_selection)
         quest.load_sequentially(iterator)
         return quest
 
-    def from_csv(self, file_path: Path):
-        with file_path.open() as csv_file:
-            reader = csv.DictReader(csv_file)
-            self._questions = list(map(self._loader, reader))
+    def load(self, iterable: Iterable):
+        self._questions = list(map(self._quest_loader, iterable))
 
     def __str__(self):
         output: List[str] = []

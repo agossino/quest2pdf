@@ -13,17 +13,21 @@ def test_answer_text1():
 
 def test_answer_text2():
     text = "Roma"
-    q = exam.Answer(text)
+    a = exam.Answer(text)
 
-    assert q.text == text
+    assert a.text == text
 
 
-@pytest.mark.parametrize("attribute, expected", [("image", Path("."))])
-def test_answer_get(attribute, expected):
-    text = "Po"
-    q = exam.Answer(text)
+def test_answer_get():
+    text = "my answer"
+    a = exam.Answer(text)
+    expected_image = Path(".")
+    expected_attr_load_sequence = ('text', 'image')
+    expected_type_caster_sequence = (str, Path)
 
-    assert getattr(q, attribute) == expected
+    assert a.image == expected_image
+    assert a.attr_load_sequence == expected_attr_load_sequence
+    assert a.type_caster_sequence == expected_type_caster_sequence
 
 
 @pytest.mark.parametrize(
@@ -35,13 +39,22 @@ def test_answer_get(attribute, expected):
     ],
 )
 def test_answer_set(attribute, expected):
-    q = exam.Answer()
+    a = exam.Answer()
     try:
-        setattr(q, attribute, expected)
+        setattr(a, attribute, expected)
     except TypeError:
         assert False
 
-    assert getattr(q, attribute) == expected
+    assert getattr(a, attribute) == expected
+
+
+def test_answer_load():
+    a = exam.Answer()
+    expected = ("Answer text",)
+    a.load_sequentially(iter(expected))
+
+    assert a.text == expected[0]
+    assert a.image == Path(".")
 
 
 def test_question_get_text1():
@@ -226,7 +239,7 @@ def test_question_shuffle():
       "", "s1")
      ],
 )
-def test_load1(iterator, q_text, q_subject):
+def test_question_load1(iterator, q_text, q_subject):
     quest = exam.Question()
     quest.load_sequentially(iterator)
 
@@ -242,8 +255,8 @@ def test_load1(iterator, q_text, q_subject):
       "", "s1", Path("."), 2, "a11", Path("ai11"), "", Path("ai12"))
      ],
 )
-def test_load2(iterator, q_text, q_subject, q_image, q_level,
-               a1_text, a1_image, a2_text, a2_image):
+def test_question_load2(iterator, q_text, q_subject, q_image, q_level,
+                        a1_text, a1_image, a2_text, a2_image):
     quest = exam.Question()
     quest.load_sequentially(iterator)
 
@@ -302,3 +315,10 @@ def test_exam_questions_setter(set_questions):
 
     assert ex.questions == (set_questions[2],
                             set_questions[3])
+
+
+# def test_exam_load():
+#     ex = exam.Exam()
+#     ex.load()
+#
+#     assert ex.questions == tuple(set_questions)
