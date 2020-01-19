@@ -20,6 +20,7 @@ from typing import (
     Mapping,
     Union,
 )
+from typing_extensions import Literal
 import logging
 import csv
 from random import shuffle
@@ -85,14 +86,22 @@ class Answer:
         attribute_iterator: Iterator[str] = iter(self.attr_load_sequence)
         caster_iterator: Iterator[CasterType] = iter(self._type_caster_sequence)
 
-        attribute: Union[str, False] = next(attribute_iterator, False)
-        caster: Union[CasterType, False] = next(caster_iterator, False)
+        attribute: Union[str, Literal[False]] = next(attribute_iterator, False)
+        caster: Union[CasterType, Literal[False]] = next(caster_iterator, False)
 
         while attribute and caster:
             setattr(self, attribute, caster(next(iterator)))
 
             attribute = next(attribute_iterator, False)
             caster = next(caster_iterator, False)
+
+    def __str__(self) -> str:
+        output: List[str, ...] = [f"{self.__class__}\n"]
+        for attribute in self._attr_load_sequence:
+            label: str = attribute
+            value: Any = getattr(self, attribute)
+            output.append(f"{label}: {value}\n")
+        return "".join(output)
 
 
 class Question:
@@ -277,8 +286,8 @@ class Question:
         attribute_iterator: Iterator[str] = iter(self.attr_load_sequence)
         caster_iterator: Iterator[CasterType] = iter(self._type_caster_sequence)
 
-        attribute: Union[str, False] = next(attribute_iterator, False)
-        caster: Union[CasterType, False] = next(caster_iterator, False)
+        attribute: Union[str, Literal[False]] = next(attribute_iterator, False)
+        caster: Union[CasterType, Literal[False]] = next(caster_iterator, False)
 
         try:
             while attribute and caster:
@@ -293,6 +302,17 @@ class Question:
                 answer.load_sequentially(iterator)
         except StopIteration:
             pass
+
+    def __str__(self) -> str:
+        output: List[str, ...] = [f"{self.__class__}\n"]
+        for attribute in self._attr_load_sequence:
+            label: str = attribute
+            value: Any = getattr(self, attribute)
+            output.append(f"{label}: {value}\n")
+        for ordinal, answer in enumerate(self.answers):
+            output.append(f"{chr(ord(LETTER_A) + ordinal)} - ")
+            output.append(answer.__str__())
+        return "".join(output)
 
 
 class Exam:
@@ -341,11 +361,5 @@ class Exam:
     def __str__(self) -> str:
         output: List[str] = []
         for q in self._questions:
-            output.append(f"domanda: {q.text}\nsoggetto: {q.subject}")
-            output.append(f"\nimmagine: {q.image}\nlivello: {q.level}")
-            output.append(f"\ncorretta: {q.correct_letter}")
-            for i, a in enumerate(q.answers):
-                letter = chr(ord("A") + i)
-                output.append(f"\nrisposta {letter}: {a.text}")
-                output.append(f"\nimmagine: {a.image}")
+            output.append(q.__str__())
         return "".join(output)
