@@ -2,6 +2,7 @@ import exam
 import pytest
 from pathlib import Path
 import random
+import csv
 
 
 def test_answer_text1():
@@ -387,8 +388,21 @@ def test_exam_questions_setter(set_questions):
     assert set_questions[3] in ex.questions
 
 
-# def test_exam_load():
-#     ex = exam.Exam()
-#     ex.load()
-#
-#     assert ex.questions == tuple(set_questions)
+def test_exam_load1():
+    ex = exam.Exam()
+    ex.load(iter(()))
+
+    assert ex.questions == tuple()
+
+
+def test_exam_load2():
+    ex = exam.Exam()
+    with open("tests/unit/questions.csv", "r") as fh:
+        reader = csv.DictReader(fh)
+        ex.load(reader)
+
+    print(ex)
+    assert ex.questions[0].text == "ab"
+    assert ex.questions[0].subject == "ac"
+    assert ex.questions[0].image == Path("ad")
+    assert ex.questions[0].level == 1

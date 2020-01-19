@@ -349,14 +349,17 @@ class Exam:
     def set_selection(self, selection: Sequence[str]) -> None:
         self._attribute_selection = selection
 
-    def _quest_loader(self, row: Mapping[str, Any]) -> Question:
-        quest = Question()
-        iterator = (row[key] for key in self._attribute_selection)
-        quest.load_sequentially(iterator)
-        return quest
-
     def load(self, iterable: Iterable[Mapping[str, Any]]) -> None:
-        self._questions = list(map(self._quest_loader, iterable))
+        for row in iterable:
+            if self._attribute_selection:
+                data = [row[key] for key in self._attribute_selection]
+            else:
+                data = [row[key] for key in row]
+            if data:
+                quest = Question()
+                self.add_question(quest)
+                iterator = iter(data)
+                quest.load_sequentially(iterator)
 
     def __str__(self) -> str:
         output: List[str] = []
