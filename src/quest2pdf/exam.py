@@ -78,7 +78,9 @@ class Answer:
         return self._type_caster_sequence
 
     def load_sequentially(self, iterator: Iterator[Any]) -> None:
-        """Load all the attribute sequentially from iterator.
+        """Load all the attribute sequentially from iterator. Return
+        when all attribute are filled. If the elements in the iterator
+        are less then the attributes, StopIteration is not caught.
         """
         attribute_iterator: Iterator[str] = iter(self.attr_load_sequence)
         caster_iterator: Iterator[CasterType] = iter(self._type_caster_sequence)
@@ -108,6 +110,13 @@ class Question:
         self._correct_answer: Optional[Answer] = None  # setter bypassed
         self._correct_index: Optional[int] = None  # setter bypassed
         self._correct_letter: Optional[str] = None  # setter bypassed
+        self._attr_load_sequence: Tuple[str, ...] = (
+            "text",
+            "subject",
+            "image",
+            "level",
+        )
+        self._type_caster_sequence: Tuple[CasterType, ...] = (str, str, Path, int)
 
     @property
     def text(self) -> str:
@@ -164,6 +173,17 @@ class Question:
     @property
     def answers(self) -> Tuple[Answer, ...]:
         return tuple(self._answers)
+
+    @answers.setter
+    def answers(self, values: Iterable[Answer]) -> None:
+        """Set answers given a sequence of them, overriding any
+        previous data.
+        """
+        # Reset
+        self._answers = []
+        self._correct_answer = None
+
+        list(map(self.add_answer, values))
 
     def add_answer(self, answer: Answer, is_correct: bool = False) -> None:
         """Add an Answer. As side effect, correct answer is set.
@@ -224,6 +244,14 @@ class Question:
         self._correct_index = pointer
         self._correct_letter = chr(ord(LETTER_A) + pointer)
 
+    @property
+    def attr_load_sequence(self) -> Tuple[str, ...]:
+        return self._attr_load_sequence
+
+    @property
+    def type_caster_sequence(self) -> Tuple[CasterType, ...]:
+        return self._type_caster_sequence
+
     def _get_correct_answer(self, answer: Answer, is_correct: bool) -> Answer:
         """Return the correct answer: if no other answers are already added
         or the given is_correct is True, the given answer is returned,
@@ -243,14 +271,22 @@ class Question:
             self._correct_letter = chr(ord(LETTER_A) + pointer)
 
     def load_sequentially(self, iterator: Iterator[Any]) -> None:
-        """Load all the attribute sequentially
-        from iterator.
+        """Load all the attribute sequentially from iterator. Returns when
+        iterator is exhausted and StopIteration is caught.
         """
+        attribute_iterator: Iterator[str] = iter(self.attr_load_sequence)
+        caster_iterator: Iterator[CasterType] = iter(self._type_caster_sequence)
+
+        attribute: Union[str, False] = next(attribute_iterator, False)
+        caster: Union[CasterType, False] = next(caster_iterator, False)
+
         try:
-            self.text = next(iterator)
-            self.subject = next(iterator)
-            self.image = Path(next(iterator))
-            self.level = int(next(iterator))
+            while attribute and caster:
+                setattr(self, attribute, caster(next(iterator)))
+
+                attribute = next(attribute_iterator, False)
+                caster = next(caster_iterator, False)
+
             while True:
                 answer = Answer()
                 self.add_answer(answer)
@@ -274,8 +310,12 @@ class Exam:
 
     @questions.setter
     def questions(self, values: Iterable[Question]) -> None:
-        """Set all the questions given a sequence of them.
+        """Set questions given a sequence of them, overriding any
+        previous data.
         """
+        # Reset
+        self._questions = []
+
         list(map(self.add_question, values))
 
     def add_question(self, question: Question) -> None:

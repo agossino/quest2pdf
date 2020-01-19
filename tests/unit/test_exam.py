@@ -118,7 +118,9 @@ def test_question_set_text2():
         ("answers", tuple()),
         ("correct_answer", None),
         ("correct_index", None),
-        ("correct_letter", None)
+        ("correct_letter", None),
+        ("attr_load_sequence", ("text", "subject", "image", "level")),
+        ("type_caster_sequence", (str, str, Path, int))
     ],
 )
 def test_question_get(attribute, expected):
@@ -162,6 +164,19 @@ def test_question_answer_add():
     q.add_answer(a)
 
     assert a in q.answers
+
+
+def test_question_answer_setter():
+    q = exam.Question("Who are you?")
+    a = exam.Answer("That's me.")
+    q.add_answer(a)
+    b = exam.Answer("I do not know.")
+    c = exam.Answer("Somebody else.")
+    q.answers = (b, c)
+
+    assert a not in q.answers
+    assert b in q.answers
+    assert c in q.answers
 
 
 def test_question_answer_correct1():
@@ -271,8 +286,8 @@ def test_question_shuffle():
 
 @pytest.mark.parametrize(
     "iterator, q_text, q_subject",
-    [(iter(("d1", "s1")),
-      "d1", "s1"),
+    [(iter(("q1", "s1")),
+      "q1", "s1"),
      (iter(("", "s1")),
       "", "s1")
      ],
@@ -297,6 +312,7 @@ def test_question_load2(iterator, q_text, q_subject, q_image, q_level,
                         a1_text, a1_image, a2_text, a2_image):
     quest = exam.Question()
     quest.load_sequentially(iterator)
+    print(quest.answers)
 
     assert quest.text == q_text
     assert quest.subject == q_subject
@@ -363,10 +379,12 @@ def test_exam_add_question2(set_questions):
 
 def test_exam_questions_setter(set_questions):
     ex = exam.Exam()
+    ex.add_question(set_questions[1])
     ex.questions = (set_questions[2], set_questions[3])
 
-    assert ex.questions == (set_questions[2],
-                            set_questions[3])
+    assert set_questions[1] not in ex.questions
+    assert set_questions[2] in ex.questions
+    assert set_questions[3] in ex.questions
 
 
 # def test_exam_load():
