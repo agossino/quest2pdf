@@ -406,3 +406,12 @@ def test_exam_load2():
     assert ex.questions[0].subject == "ac"
     assert ex.questions[0].image == Path("ad")
     assert ex.questions[0].level == 1
+    assert ex.questions[0].answers[0].text == "ae"
+    assert ex.questions[0].answers[0].image == Path("af")
+    assert ex.questions[0].answers[1].text == "ag"
+    assert ex.questions[1].text == "ba"
+    assert ex.questions[1].answers[1].text == "bg"
+    assert ex.questions[1].answers[1].image == Path(".")
+    with pytest.raises(IndexError):
+        ex.questions[1].answers[2].text
+    assert ex.questions[2].answers[1].text == "cg"

@@ -322,7 +322,7 @@ class Exam:
     def __init__(self, *args: Question):
         self._questions: List[Question] = list()
         list(map(self.add_question, args))
-        self._attribute_selection: Sequence[str] = ()
+        self._attribute_selector: Tuple[Optional[str]] = ()
 
     @property
     def questions(self) -> Tuple[Question, ...]:
@@ -338,6 +338,15 @@ class Exam:
 
         list(map(self.add_question, values))
 
+    @property
+    def attribute_selector(self) -> Tuple[Optional[str]]:
+        return self._attribute_selector
+
+    @attribute_selector.setter
+    def attribute_selector(self, selection: Iterable[str]) -> None:
+        self._attribute_selector = tuple(str(item) for item in selection)
+
+
     def add_question(self, question: Question) -> None:
         """Add one question to the sequence.
         """
@@ -346,13 +355,10 @@ class Exam:
         else:
             raise TypeError(f"{question} is not a Question")
 
-    def set_selection(self, selection: Sequence[str]) -> None:
-        self._attribute_selection = selection
-
     def load(self, iterable: Iterable[Mapping[str, Any]]) -> None:
         for row in iterable:
-            if self._attribute_selection:
-                data = [row[key] for key in self._attribute_selection]
+            if self._attribute_selector:
+                data = [row[key] for key in self._attribute_selector]
             else:
                 data = [row[key] for key in row]
             if data:
