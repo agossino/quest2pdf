@@ -388,6 +388,22 @@ def test_exam_questions_setter(set_questions):
     assert set_questions[3] in ex.questions
 
 
+def test_exam_attribute_selector1():
+    ex = exam.Exam()
+
+    assert ex.attribute_selector == ()
+
+
+def test_exam_attribute_selector2():
+    ex = exam.Exam()
+    expected = ("hello", "2", "times")
+    ex.attribute_selector = (expected[0],
+                             int(expected[1]),
+                             expected[2])
+
+    assert ex.attribute_selector == expected
+
+
 def test_exam_load1():
     ex = exam.Exam()
     ex.load(iter(()))
@@ -397,11 +413,10 @@ def test_exam_load1():
 
 def test_exam_load2():
     ex = exam.Exam()
-    with open("tests/unit/questions.csv", "r") as fh:
+    with open("tests/unit/questions1.csv", "r") as fh:
         reader = csv.DictReader(fh)
         ex.load(reader)
 
-    print(ex)
     assert ex.questions[0].text == "ab"
     assert ex.questions[0].subject == "ac"
     assert ex.questions[0].image == Path("ad")
@@ -413,5 +428,33 @@ def test_exam_load2():
     assert ex.questions[1].answers[1].text == "bg"
     assert ex.questions[1].answers[1].image == Path(".")
     with pytest.raises(IndexError):
-        ex.questions[1].answers[2].text
+        assert ex.questions[1].answers[2].text == ""
     assert ex.questions[2].answers[1].text == "cg"
+
+
+def test_exam_load3():
+    ex = exam.Exam()
+    ex.attribute_selector = ("field C",
+                             "field F",
+                             "void",
+                             "field G",
+                             "field A",
+                             "void",
+                             "field B",
+                             "void",
+                             "field D")
+    with open("tests/unit/questions2.csv", "r") as fh:
+        reader = csv.DictReader(fh)
+        ex.load(reader)
+
+    assert ex.questions[0].text == "T"
+    assert ex.questions[0].subject == "S"
+    assert ex.questions[0].image == Path(".")
+    assert ex.questions[0].level == 2
+    assert ex.questions[0].answers[0].text == "A1"
+    assert ex.questions[0].answers[0].image == Path(".")
+    assert ex.questions[0].answers[1].text == "A2"
+    assert ex.questions[0].answers[1].image == Path(".")
+    assert ex.questions[0].answers[2].text == "A3"
+    with pytest.raises(IndexError):
+        assert ex.questions[1].answers[2].image == Path(".")

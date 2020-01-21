@@ -346,7 +346,6 @@ class Exam:
     def attribute_selector(self, selection: Iterable[str]) -> None:
         self._attribute_selector = tuple(str(item) for item in selection)
 
-
     def add_question(self, question: Question) -> None:
         """Add one question to the sequence.
         """
