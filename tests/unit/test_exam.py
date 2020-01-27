@@ -424,11 +424,12 @@ def test_exam_load2():
     assert ex.questions[0].answers[0].text == "ae"
     assert ex.questions[0].answers[0].image == Path("af")
     assert ex.questions[0].answers[1].text == "ag"
+    assert ex.questions[0].answers[1].image == Path(".")  # Not provided in cvs file
     assert ex.questions[1].text == "ba"
     assert ex.questions[1].answers[1].text == "bg"
-    assert ex.questions[1].answers[1].image == Path(".")
+    assert ex.questions[1].answers[1].image == Path(".")  # Not provided in cvs file
     with pytest.raises(IndexError):
-        assert ex.questions[1].answers[2].text == ""
+        assert ex.questions[1].answers[2].text == ""  # Not provided in cvs file
     assert ex.questions[2].answers[1].text == "cg"
 
 
@@ -458,3 +459,20 @@ def test_exam_load3():
     assert ex.questions[0].answers[2].text == "A3"
     with pytest.raises(IndexError):
         assert ex.questions[1].answers[2].image == Path(".")
+
+
+def test_serialize():
+    ex = exam.Exam()
+    with open("tests/unit/questions1.csv", "r") as fh:
+        reader = csv.DictReader(fh)
+        ex.load(reader)
+
+    data = []
+    try:
+        for element in ex.serialize():
+            data.append(element)
+    except exam.StopQuestion:
+        pass
+    expected = ["ab", "ac", Path("ad"), 1, "ae", Path("af"), "ag", Path(".")]
+
+    assert data == expected

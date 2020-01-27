@@ -112,8 +112,8 @@ class Question:
 
     def __init__(self, text: str = ""):
         self.text: str = text
-        self.image: Path = Path(".")
         self.subject: str = ""
+        self.image: Path = Path(".")
         self.level: int = 0
         self._answers: List[Answer] = []
         self._correct_answer: Optional[Answer] = None  # setter bypassed
@@ -315,6 +315,10 @@ class Question:
         return "".join(output)
 
 
+class StopQuestion(Exception):
+    """Raised each time serialize ends a question."""
+    pass
+
 class Exam:
     """Exam is a sequence of Question managed as a whole.
     """
@@ -365,6 +369,17 @@ class Exam:
                 self.add_question(quest)
                 iterator = iter(data)
                 quest.load_sequentially(iterator)
+
+    def serialize(self):
+        for question in self.questions:
+            yield question.text
+            yield question.subject
+            yield question.image
+            yield question.level
+            for answer in question.answers:
+                yield answer.text
+                yield answer.image
+            raise StopQuestion
 
     def __str__(self) -> str:
         output: List[str] = []
