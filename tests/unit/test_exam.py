@@ -93,7 +93,18 @@ def test_answer_load3():
 
     assert a.text == expected[0]
     assert a.image == Path(expected[1])
-    assert next(i) == expected[2]
+    assert next(i) == expected[2]  # the last element is still available
+
+
+def test_answer_print():
+    a = exam.Answer()
+    text = "Answer text"
+    image = "home/mydir/image.jpg"
+    i = iter((text, image))
+    a.load_sequentially(i)
+
+    assert f"text: {text}" in a.__str__()
+    assert f"image: {image}" in a.__str__()
 
 
 def test_question_get_text1():
@@ -294,6 +305,8 @@ def test_question_shuffle():
      ],
 )
 def test_question_load1(iterator, q_text, q_subject):
+    """load only question text and subject.
+    """
     quest = exam.Question()
     quest.load_sequentially(iterator)
 
@@ -311,6 +324,8 @@ def test_question_load1(iterator, q_text, q_subject):
 )
 def test_question_load2(iterator, q_text, q_subject, q_image, q_level,
                         a1_text, a1_image, a2_text, a2_image):
+    """load question and two answers.
+    """
     quest = exam.Question()
     quest.load_sequentially(iterator)
     print(quest.answers)
@@ -325,6 +340,9 @@ def test_question_load2(iterator, q_text, q_subject, q_image, q_level,
 
 
 def test_question_load3():
+    """load question and only answer text;
+    answer image checked for default value.
+    """
     quest = exam.Question()
     sequence = ("Text", "Subject", "dir/ec/tor/y", 1, "Answer")
     iterator = iter(sequence)
@@ -336,6 +354,25 @@ def test_question_load3():
     assert quest.level == sequence[3]
     assert quest.answers[0].text == sequence[4]
     assert quest.answers[0].image == Path(".")
+
+
+def test_question_print():
+    quest = exam.Question()
+    quest_text ="Text"
+    quest_subject = "Subject"
+    quest_image = "dir/ec/tor/y"
+    quest_level = 1
+    answer_text = "Answer"
+    iterator = iter((quest_text, quest_subject, quest_image, quest_level,
+                     answer_text))
+    quest.load_sequentially(iterator)
+
+    assert f"text: {quest.text}" in quest.__str__()
+    assert f"subject: {quest_subject}" in quest.__str__()
+    assert f"image: {quest_image}" in quest.__str__()
+    assert f"level: {quest_level}" in quest.__str__()
+    assert f"text: {answer_text}" in quest.__str__()
+    assert f"image: ." in quest.__str__()
 
 
 @pytest.fixture
@@ -460,19 +497,36 @@ def test_exam_load3():
     with pytest.raises(IndexError):
         assert ex.questions[1].answers[2].image == Path(".")
 
-
-def test_serialize():
+def test_exam_print():
     ex = exam.Exam()
-    with open("tests/unit/questions1.csv", "r") as fh:
+    ex.attribute_selector = ("field A",
+                             "void",
+                             "void",
+                             "field D",
+                             "void",
+                             "field F")
+
+    with open("tests/unit/questions3.csv", "r") as fh:
         reader = csv.DictReader(fh)
         ex.load(reader)
 
-    data = []
-    try:
-        for element in ex.serialize():
-            data.append(element)
-    except exam.StopQuestion:
-        pass
-    expected = ["ab", "ac", Path("ad"), 1, "ae", Path("af"), "ag", Path(".")]
+    assert f"text: ab" in ex.__str__()
+    assert f"level: 1" in ex.__str__()
+    assert f"image: ." in ex.__str__()
 
-    assert data == expected
+
+# def test_serialize():
+#     ex = exam.Exam()
+#     with open("tests/unit/questions1.csv", "r") as fh:
+#         reader = csv.DictReader(fh)
+#         ex.load(reader)
+#
+#     data = []
+#     try:
+#         for element in ex.serialize():
+#             data.append(element)
+#     except exam.StopQuestion:
+#         pass
+#     expected = ["ab", "ac", Path("ad"), 1, "ae", Path("af"), "ag", Path(".")]
+#
+#     assert data == expected
