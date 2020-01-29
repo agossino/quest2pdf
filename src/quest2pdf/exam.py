@@ -319,6 +319,7 @@ class StopQuestion(Exception):
     """Raised each time serialize ends a question."""
     pass
 
+
 class Exam:
     """Exam is a sequence of Question managed as a whole.
     """
