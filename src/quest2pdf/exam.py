@@ -78,14 +78,14 @@ class ExamDoc:
         """Give the right format for SimpleTest argument.
         """
         try:
-            output = {"subject": row['subject'],
+            output = {"subject": row.get('subject', ""),
                       'question': row['question'],
-                      'image': row['image']
+                      'image': row.get('image', "")
                       }
             answerKeys = ('A', 'B', 'C', 'D') # TODO da 2 a n opzioni
             answers = [row[key] for key in answerKeys]
         except KeyError:
-            LOGGER.critical("Chiave non ammessa: %s", row)
+            LOGGER.critical("Chiave non trovata: %s", row)
             raise
 
         output['answers'] = answers

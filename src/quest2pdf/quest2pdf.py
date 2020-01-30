@@ -80,10 +80,9 @@ class contentmix(MainWindow):
             self.errorbox("dati non validi")
             return
 
-        utility.add_path_to_image(Path(input_file).parent,
-                                  list_of_records)
-
         try:
+            utility.add_path_to_image(Path(input_file).parent,
+                                      list_of_records)
             exam = ExamDoc(list_of_records,
                            nDoc=self.parameters['number'],
                            exam_filename=self.parameters['exam'],

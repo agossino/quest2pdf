@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 from pathlib import Path
-from reportlab.platypus import (SimpleDocTemplate, Paragraph,                                Spacer, PageTemplate, Frame)
+from reportlab.platypus import SimpleDocTemplate
 from reportlab.lib.pagesizes import  A4
 from multiquest import MultiQuest
 from utility import add_path_to_image
@@ -16,8 +16,8 @@ def test_add_path_to_image():
 
     add_path_to_image(ref_path, dict_of_lists)
 
-    expected[0]["image"] = str(Path(ref_path) / dict_of_lists[0]["image"])
     expected[1]["image"] = str(Path(ref_path) / dict_of_lists[1]["image"])
+    expected[2]["image"] = str(Path(ref_path) / dict_of_lists[2]["image"])
 
     assert dict_of_lists == expected
 
@@ -48,19 +48,20 @@ def test_f():
     assert data
 
 def get_dictlist() -> List[Dict[str, str]]:
-    return [{'subject': '46 Integration and Display System',
-             'question': 'Da quale dispositivo è possibile conoscere la condizione di ecc?',
-             'A': 'Dalla pagina Avionic.', 'B': 'Dalla posizione dei selettori.',
-             'C': 'Dalla colorazione.', 'D': 'La condizione di Master non è conoscibile.',
-             'image': 'b.png'},
-            {'subject': '46 Integration and Display System',
-             'question': "L'accesso alle pagine, è sempre possibile?",
-             'A': 'No, è possibile solo in modalità Operational.', 'B': 'No, è possibile solo in modalità Piloting.',
-             'C': 'Sì.', 'D': 'No, è possibile solo in modalità Maintenance.', 'image': 'image/a.png'},
-            {'subject': '46 Integration and Display System',
-             'question': 'Quali impianti sono collegati in uscita?',
-             'A': 'I Display', 'B': 'Quattro Function Dispaly, due Keyboard Unit',
-             'C': 'I due interni', 'D': 'I due Display esterni', 'image': ''}]
+    return [{'subject': 'math',
+             'question': 'who?',
+             'A': 'no', 'B': 'yes',
+             'C': 'yes no', 'D': 'maybe'},
+            {'subject': 'grammar',
+             'question': "where?",
+             'A': 'here', 'B': 'there',
+             'C': 'somewhere', 'D': 'somewhere',
+             'image': 'image/a.png'},
+            {'subject': 'system',
+             'question': 'what?',
+             'A': 'this', 'B': 'that',
+             'C': 'none', 'D': 'all',
+             'image': ''}]
 
 def get_multi_quest():
     image_file =  'image/test.png'

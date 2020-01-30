@@ -21,7 +21,9 @@ def add_path_to_image(ref_path: str, dicts: List[Dict[str, str]]) -> None:
     """Add the reference path to the image file name in item "image"
     """
     for row in dicts:
-        if row['image']:
+        try:
             row["image"] = str(Path(ref_path) / row["image"])
+        except KeyError:
+            pass
 
 
