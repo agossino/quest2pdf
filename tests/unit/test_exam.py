@@ -178,7 +178,34 @@ def test_question_answer_add():
     assert a in q.answers
 
 
+def test_question_answer_add2():
+    """Test two answers addition
+    and correctness
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer("That's me.")
+    a2 = exam.Answer("That's not me.")
+    q.add_answer(a1)
+    q.add_answer(a2)
+
+    assert q.answers == (a1, a2)
+    assert q.correct_index == 0
+    assert q.correct_letter == "A"
+
+
+def test_question_answer_add_wrong():
+    """Test wrong answer addition
+    """
+    q = exam.Question("Who are you?")
+    a = "That's me."
+    with pytest.raises(TypeError):
+        q.add_answer(a)
+
+
 def test_question_answer_setter():
+    """Test tuple addition and removal
+    previous addition
+    """
     q = exam.Question("Who are you?")
     a = exam.Answer("That's me.")
     q.add_answer(a)
@@ -204,22 +231,20 @@ def test_question_answer_correct1():
     assert q.correct_letter == "A"
 
 
-def test_question_answer_add2():
-    """Test two answers addition
-    and correctness
+def test_question_answer_correct2():
+    """Test correctness of the first
+    answer added when two are added
     """
     q = exam.Question("Who are you?")
     a1 = exam.Answer("That's me.")
     a2 = exam.Answer("That's not me.")
-    q.add_answer(a1)
     q.add_answer(a2)
+    q.add_answer(a1)
 
-    assert q.answers == (a1, a2)
-    assert q.correct_index == 0
-    assert q.correct_letter == "A"
+    assert q.correct_answer == a2
 
 
-def test_question_answer_correct2():
+def test_question_answer_correct3():
     """Test correctness of the last
     answer added when is set to correct
     """
@@ -232,7 +257,7 @@ def test_question_answer_correct2():
     assert q.correct_answer == a1
 
 
-def test_question_answer_correct3():
+def test_question_answer_correct4():
     """Test ineffectiveness of correct setting
     for the first answer added
     """
@@ -241,6 +266,55 @@ def test_question_answer_correct3():
     q.add_answer(a1, False)
 
     assert q.correct_answer == a1
+
+
+def test_question_correct_answer_set():
+    """Test set correct answer
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer("That's me.")
+    a2 = exam.Answer("That's not me.")
+    q.add_answer(a1)
+    q.add_answer(a2)
+    q.correct_answer = a2
+
+    assert q.correct_answer == a2
+
+def test_question_correct_answer_set_invalid():
+    """Test set invalid correct answer
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer("That's me.")
+    a2 = exam.Answer("That's not me.")
+    a3 = "That is"
+    q.add_answer(a1)
+    q.add_answer(a2)
+    with pytest.raises(ValueError):
+        q.correct_answer = a3
+
+
+def test_question_correct_index_set_invalid():
+    """Test set invalid correct answer index
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer("That's me.")
+    a2 = exam.Answer("That's not me.")
+    q.add_answer(a1)
+    q.add_answer(a2)
+    with pytest.raises(ValueError):
+        q.correct_index = 2
+
+
+def test_question_correct_letter_set_invalid():
+    """Test set invalid correct answer letter
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer("That's me.")
+    a2 = exam.Answer("That's not me.")
+    q.add_answer(a1)
+    q.add_answer(a2)
+    with pytest.raises(ValueError):
+        q.correct_letter = "Z"
 
 
 A1 = exam.Answer("That's me.")
@@ -260,6 +334,8 @@ A4 = exam.Answer("That's her.")
 def test_question_set_correct(attribute_set, expected,
                               attribute1_get, expected1,
                               attribute2_get, expected2):
+    """Test set correct answer by answer, index and letter
+    """
     q = exam.Question("Who are you?")
     q.add_answer(A1)
     q.add_answer(A2)
@@ -276,7 +352,36 @@ def test_question_set_correct(attribute_set, expected,
     assert getattr(q, attribute2_get) == expected2
 
 
-def test_question_shuffle():
+def test_question_shuffle1():
+    """Test shuffle with no question added
+    """
+    q = exam.Question("Who are you?")
+    random.seed(1)
+    q.shuffle()
+
+    assert q.answers == ()
+    assert q.correct_answer is None
+    assert q.correct_index is None
+    assert q.correct_letter is None
+
+
+def test_question_shuffle2():
+    """Test shuffle with one question added
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer("That's me.")
+    q.add_answer(a1)
+    random.seed(1)
+    q.shuffle()
+
+    assert q.correct_answer == a1
+    assert q.correct_index == 0
+    assert q.correct_letter == "A"
+
+
+def test_question_shuffle3():
+    """Test shuffle with more question added
+    """
     q = exam.Question("Who are you?")
     a1 = exam.Answer("That's me.")
     a2 = exam.Answer("That's not me.")
@@ -286,10 +391,9 @@ def test_question_shuffle():
     q.add_answer(a2, True)
     q.add_answer(a3)
     q.add_answer(a4)
-
-    assert q.answers == (a1, a2, a3, a4)
     random.seed(1)
     q.shuffle()
+
     assert q.answers == (a4, a1, a3, a2)
     assert q.correct_answer == a2
     assert q.correct_index == 3
@@ -357,6 +461,8 @@ def test_question_load3():
 
 
 def test_question_print():
+    """test __str__ method
+    """
     quest = exam.Question()
     quest_text ="Text"
     quest_subject = "Subject"
@@ -383,13 +489,17 @@ def set_questions():
             exam.Question("When?"))
 
 
-def test_exam(set_questions):
+def test_exam():
+    """test Exam with no args
+    """
     ex = exam.Exam()
 
     assert ex.questions == tuple()
 
 
 def test_exam_init(set_questions):
+    """test Exam with one and two arguments
+    """
     ex1 = exam.Exam(set_questions[1])
     ex2 = exam.Exam(set_questions[1],
                     set_questions[2])
@@ -399,14 +509,27 @@ def test_exam_init(set_questions):
                              set_questions[2])
 
 
-def test_exam_add_question1(set_questions):
+def test_exam_add_question1():
+    """test add wrong question
+    """
+    ex = exam.Exam()
+    not_a_question = "This is not a question"
+    with pytest.raises(TypeError):
+        ex.add_question(not_a_question)
+
+
+def test_exam_add_question2(set_questions):
+    """test add one question
+    """
     ex = exam.Exam()
     ex.add_question(set_questions[0])
 
     assert ex.questions == (set_questions[0],)
 
 
-def test_exam_add_question2(set_questions):
+def test_exam_add_question3(set_questions):
+    """test add two questions
+    """
     ex = exam.Exam()
     ex.add_question(set_questions[2])
     ex.add_question(set_questions[3])
@@ -415,7 +538,18 @@ def test_exam_add_question2(set_questions):
                             set_questions[3])
 
 
+def test_exam_questions_getter():
+    """test question get with no question;
+    question get with contents is tested before
+    """
+    ex = exam.Exam()
+
+    assert len(ex.questions) == 0
+
+
+# TODO
 def test_exam_questions_setter(set_questions):
+    """test question set after"""
     ex = exam.Exam()
     ex.add_question(set_questions[1])
     ex.questions = (set_questions[2], set_questions[3])

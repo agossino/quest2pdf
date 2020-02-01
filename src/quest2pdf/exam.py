@@ -216,7 +216,7 @@ class Question:
         if value in self._answers:
             self._correct_answer = value
         else:
-            raise ValueError(f"{value} is not already added")
+            raise ValueError(f"correct_answer argument has never been added")
         pointer = self._answers.index(self._correct_answer)
         self._correct_index = pointer
         self._correct_letter = chr(ord(LETTER_A) + pointer)
