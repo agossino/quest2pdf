@@ -1,6 +1,7 @@
 import exam
 import pytest
 from pathlib import Path
+from _collections import OrderedDict
 import random
 import csv
 
@@ -280,6 +281,7 @@ def test_question_correct_answer_set():
 
     assert q.correct_answer == a2
 
+
 def test_question_correct_answer_set_invalid():
     """Test set invalid correct answer
     """
@@ -509,6 +511,46 @@ def test_exam_init(set_questions):
                              set_questions[2])
 
 
+def test_exam_questions_getter():
+    """test question get with no question;
+    question get with contents is tested before
+    """
+    ex = exam.Exam()
+
+    assert len(ex.questions) == 0
+
+
+def test_exam_questions_setter(set_questions):
+    """test question set; question added before disappear
+    """
+    ex = exam.Exam()
+    ex.add_question(set_questions[1])
+    ex.questions = (set_questions[2], set_questions[3])
+
+    assert set_questions[1] not in ex.questions
+    assert set_questions[2] in ex.questions
+    assert set_questions[3] in ex.questions
+
+
+def test_exam_attribute_selector1():
+    """test attribute_selector default value"""
+    ex = exam.Exam()
+
+    assert ex.attribute_selector == ()
+
+
+def test_exam_attribute_selector2():
+    """test attribute_selector set and type conversion
+    """
+    ex = exam.Exam()
+    expected = ("hello", "2", "times")
+    ex.attribute_selector = (expected[0],
+                             int(expected[1]),
+                             expected[2])
+
+    assert ex.attribute_selector == expected
+
+
 def test_exam_add_question1():
     """test add wrong question
     """
@@ -538,44 +580,9 @@ def test_exam_add_question3(set_questions):
                             set_questions[3])
 
 
-def test_exam_questions_getter():
-    """test question get with no question;
-    question get with contents is tested before
-    """
-    ex = exam.Exam()
-
-    assert len(ex.questions) == 0
-
-
-# TODO
-def test_exam_questions_setter(set_questions):
-    """test question set after"""
-    ex = exam.Exam()
-    ex.add_question(set_questions[1])
-    ex.questions = (set_questions[2], set_questions[3])
-
-    assert set_questions[1] not in ex.questions
-    assert set_questions[2] in ex.questions
-    assert set_questions[3] in ex.questions
-
-
-def test_exam_attribute_selector1():
-    ex = exam.Exam()
-
-    assert ex.attribute_selector == ()
-
-
-def test_exam_attribute_selector2():
-    ex = exam.Exam()
-    expected = ("hello", "2", "times")
-    ex.attribute_selector = (expected[0],
-                             int(expected[1]),
-                             expected[2])
-
-    assert ex.attribute_selector == expected
-
-
 def test_exam_load1():
+    """test empty iterable
+    """
     ex = exam.Exam()
     ex.load(iter(()))
 
@@ -583,8 +590,10 @@ def test_exam_load1():
 
 
 def test_exam_load2():
+    """test without setting _attribute_selector
+    """
     ex = exam.Exam()
-    with open("tests/unit/questions1.csv", "r") as fh:
+    with open("tests/unit/resources/questions1.csv", "r") as fh:
         reader = csv.DictReader(fh)
         ex.load(reader)
 
@@ -605,6 +614,23 @@ def test_exam_load2():
 
 
 def test_exam_load3():
+    """test without setting _attribute_selector
+    and missing row
+    """
+    ex = exam.Exam()
+    reader = (OrderedDict([]),
+              OrderedDict([("A", "What?"), ("B", "topic")]))
+    ex.load(reader)
+
+    print(ex)
+
+    assert ex.questions[0].text == "What?"
+    assert ex.questions[0].subject == "topic"
+
+
+def test_exam_load4():
+    """test setting _attribute_selector
+    """
     ex = exam.Exam()
     ex.attribute_selector = ("field C",
                              "field F",
@@ -615,7 +641,7 @@ def test_exam_load3():
                              "field B",
                              "void",
                              "field D")
-    with open("tests/unit/questions2.csv", "r") as fh:
+    with open("tests/unit/resources/questions2.csv", "r") as fh:
         reader = csv.DictReader(fh)
         ex.load(reader)
 
@@ -631,6 +657,7 @@ def test_exam_load3():
     with pytest.raises(IndexError):
         assert ex.questions[1].answers[2].image == Path(".")
 
+
 def test_exam_print():
     ex = exam.Exam()
     ex.attribute_selector = ("field A",
@@ -640,27 +667,10 @@ def test_exam_print():
                              "void",
                              "field F")
 
-    with open("tests/unit/questions3.csv", "r") as fh:
+    with open("tests/unit/resources/questions3.csv", "r") as fh:
         reader = csv.DictReader(fh)
         ex.load(reader)
 
     assert f"text: ab" in ex.__str__()
     assert f"level: 1" in ex.__str__()
     assert f"image: ." in ex.__str__()
-
-
-# def test_serialize():
-#     ex = exam.Exam()
-#     with open("tests/unit/questions1.csv", "r") as fh:
-#         reader = csv.DictReader(fh)
-#         ex.load(reader)
-#
-#     data = []
-#     try:
-#         for element in ex.serialize():
-#             data.append(element)
-#     except exam.StopQuestion:
-#         pass
-#     expected = ["ab", "ac", Path("ad"), 1, "ae", Path("af"), "ag", Path(".")]
-#
-#     assert data == expected

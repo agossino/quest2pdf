@@ -370,17 +370,6 @@ class Exam:
                 iterator = iter(data)
                 quest.load_sequentially(iterator)
 
-    def serialize(self):
-        for question in self.questions:
-            yield question.text
-            yield question.subject
-            yield question.image
-            yield question.level
-            for answer in question.answers:
-                yield answer.text
-                yield answer.image
-            raise StopQuestion
-
     def __str__(self) -> str:
         output: List[str] = []
         for q in self._questions:
