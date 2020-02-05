@@ -5,6 +5,8 @@ from _collections import OrderedDict
 import random
 import csv
 
+RESOURCES = Path("tests/unit/resources")
+
 
 def test_answer_text1():
     a = exam.Answer()
@@ -418,6 +420,12 @@ def test_question_load1(iterator, q_text, q_subject):
 
     assert quest.text == q_text
     assert quest.subject == q_subject
+    assert quest.image == Path(".")
+    assert quest.level == 0
+    with pytest.raises(IndexError):
+        assert quest.answers[0].text == ""
+    with pytest.raises(IndexError):
+        assert quest.answers[0].image == Path("")
 
 
 @pytest.mark.parametrize(
@@ -443,6 +451,10 @@ def test_question_load2(iterator, q_text, q_subject, q_image, q_level,
     assert quest.answers[0].image == a1_image
     assert quest.answers[1].text == a2_text
     assert quest.answers[1].image == a2_image
+    with pytest.raises(IndexError):
+        assert quest.answers[2].text == ""
+    with pytest.raises(IndexError):
+        assert quest.answers[2].image == Path(".")
 
 
 def test_question_load3():
@@ -460,6 +472,10 @@ def test_question_load3():
     assert quest.level == sequence[3]
     assert quest.answers[0].text == sequence[4]
     assert quest.answers[0].image == Path(".")
+    with pytest.raises(IndexError):
+        assert quest.answers[1].text == ""
+    with pytest.raises(IndexError):
+        assert quest.answers[1].image == Path(".")
 
 
 def test_question_print():
@@ -592,8 +608,9 @@ def test_exam_load1():
 def test_exam_load2():
     """test without setting _attribute_selector
     """
+    file_name = RESOURCES / "questions1.csv"
     ex = exam.Exam()
-    with open("tests/unit/resources/questions1.csv", "r") as fh:
+    with open(str(file_name), "r") as fh:
         reader = csv.DictReader(fh)
         ex.load(reader)
 
@@ -604,13 +621,16 @@ def test_exam_load2():
     assert ex.questions[0].answers[0].text == "ae"
     assert ex.questions[0].answers[0].image == Path("af")
     assert ex.questions[0].answers[1].text == "ag"
-    assert ex.questions[0].answers[1].image == Path(".")  # Not provided in cvs file
+    assert ex.questions[0].answers[1].image == Path(".")  # default value
     assert ex.questions[1].text == "ba"
     assert ex.questions[1].answers[1].text == "bg"
-    assert ex.questions[1].answers[1].image == Path(".")  # Not provided in cvs file
+    assert ex.questions[1].answers[1].image == Path(".")  # default value
+    assert ex.questions[2].answers[1].text == "cg"
     with pytest.raises(IndexError):
         assert ex.questions[1].answers[2].text == ""  # Not provided in cvs file
-    assert ex.questions[2].answers[1].text == "cg"
+    with pytest.raises(IndexError):
+        assert ex.questions[3].answers[1].text == ""
+
 
 
 def test_exam_load3():
@@ -631,6 +651,7 @@ def test_exam_load3():
 def test_exam_load4():
     """test setting _attribute_selector
     """
+    file_name = RESOURCES / "questions2.csv"
     ex = exam.Exam()
     ex.attribute_selector = ("field C",
                              "field F",
@@ -641,7 +662,7 @@ def test_exam_load4():
                              "field B",
                              "void",
                              "field D")
-    with open("tests/unit/resources/questions2.csv", "r") as fh:
+    with open(str(file_name), "r") as fh:
         reader = csv.DictReader(fh)
         ex.load(reader)
 
@@ -654,11 +675,15 @@ def test_exam_load4():
     assert ex.questions[0].answers[1].text == "A2"
     assert ex.questions[0].answers[1].image == Path(".")
     assert ex.questions[0].answers[2].text == "A3"
+    assert ex.questions[0].answers[2].image == Path(".")
+    with pytest.raises(IndexError):
+        assert ex.questions[0].answers[3].text == ""
     with pytest.raises(IndexError):
         assert ex.questions[1].answers[2].image == Path(".")
 
 
 def test_exam_print():
+    file_name = RESOURCES / "questions3.csv"
     ex = exam.Exam()
     ex.attribute_selector = ("field A",
                              "void",
@@ -667,7 +692,7 @@ def test_exam_print():
                              "void",
                              "field F")
 
-    with open("tests/unit/resources/questions3.csv", "r") as fh:
+    with open(str(file_name), "r") as fh:
         reader = csv.DictReader(fh)
         ex.load(reader)
 

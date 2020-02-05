@@ -297,8 +297,8 @@ class Question:
 
             while True:
                 answer = Answer()
-                self.add_answer(answer)
                 answer.load_sequentially(iterator)
+                self.add_answer(answer)
         except StopIteration:
             pass
 

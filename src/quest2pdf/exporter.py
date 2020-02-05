@@ -6,7 +6,7 @@ from reportlab.lib.units import mm
 from reportlab.lib import utils
 from pathlib import Path
 
-from rlwrapper import Style, separator
+from rlwrapper import Style, separator, get_std_aspect_image
 
 class RLInterface:
     def __init__(self, input_generator, output_file: str):
@@ -68,22 +68,9 @@ class RLInterface:
 
             doc.build(self._listFlowable)
 
-    def _original_ratio_img(self, name: str, width: int = 50 * mm) -> Image:
-        """Return Image with original ratio and given width.
-        """
-        try:
-            img = utils.ImageReader(str(name))
-        except:
-            print('Errore nella lettura di ', str(name))
-            raise
-        iw, ih = img.getSize()
-        aspect = ih / float(iw)
-
-        return Image(str(name), width=width, height=(width * aspect))
-
     def _get_item_set(self, item):
         if item.image != Path("."):
-            image = self._original_ratio_img(item.image, width=80)
+            image = get_std_aspect_image(item.image, width=80)
             question = [Paragraph(item.text,
                                   self._spaceAfter25_style['Normal']),
                         image]
