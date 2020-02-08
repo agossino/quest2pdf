@@ -15,12 +15,11 @@ from typing import (
     Iterator,
     Iterable,
     Any,
-    Sequence,
     Callable,
     Mapping,
     Union,
 )
-from typing_extensions import Literal
+
 import logging
 from random import shuffle
 
@@ -85,14 +84,14 @@ class Answer:
         attribute_iterator: Iterator[str] = iter(self.attr_load_sequence)
         caster_iterator: Iterator[CasterType] = iter(self._type_caster_sequence)
 
-        attribute: Union[str, Literal[False]] = next(attribute_iterator, False)
-        caster: Union[CasterType, Literal[False]] = next(caster_iterator, False)
+        attribute: Optional[str] = next(attribute_iterator, None)
+        caster: Optional[CasterType] = next(caster_iterator, None)
 
-        while attribute and caster:
+        while attribute is not None and caster is not None:
             setattr(self, attribute, caster(next(iterator)))
 
-            attribute = next(attribute_iterator, False)
-            caster = next(caster_iterator, False)
+            attribute = next(attribute_iterator, None)
+            caster = next(caster_iterator, None)
 
     def __str__(self) -> str:
         output: List[str] = [f"{self.__class__}\n"]
@@ -285,20 +284,20 @@ class Question:
         attribute_iterator: Iterator[str] = iter(self.attr_load_sequence)
         caster_iterator: Iterator[CasterType] = iter(self._type_caster_sequence)
 
-        attribute: Union[str, Literal[False]] = next(attribute_iterator, False)
-        caster: Union[CasterType, Literal[False]] = next(caster_iterator, False)
+        attribute: Optional[str] = next(attribute_iterator, None)
+        caster: Optional[CasterType] = next(caster_iterator, None)
 
         try:
-            while attribute and caster:
+            while attribute is not None and caster is not None:
                 setattr(self, attribute, caster(next(iterator)))
 
-                attribute = next(attribute_iterator, False)
-                caster = next(caster_iterator, False)
+                attribute = next(attribute_iterator, None)
+                caster = next(caster_iterator, None)
 
             self._load_answers(iterator)
 
         except StopIteration:
-            print("load_sequentially")
+            pass
 
     def _load_answers(self, iterator: Iterator[Any]) -> None:
         """Load answers. An answer is filled even if there are not enough elements
@@ -342,7 +341,7 @@ class Exam:
     def __init__(self, *args: Question):
         self._questions: List[Question] = list()
         list(map(self.add_question, args))
-        self._attribute_selector: Tuple[Optional[str]] = ()
+        self._attribute_selector: Tuple[str, ...] = ()
 
     @property
     def questions(self) -> Tuple[Question, ...]:
@@ -359,7 +358,7 @@ class Exam:
         list(map(self.add_question, values))
 
     @property
-    def attribute_selector(self) -> Tuple[Optional[str]]:
+    def attribute_selector(self) -> Tuple[str, ...]:
         return self._attribute_selector
 
     @attribute_selector.setter

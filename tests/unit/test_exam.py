@@ -3,9 +3,6 @@ import pytest
 from pathlib import Path
 from _collections import OrderedDict
 import random
-import csv
-
-RESOURCES = Path("tests/unit/resources")
 
 
 def test_answer_text1():
