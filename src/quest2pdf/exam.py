@@ -95,7 +95,7 @@ class Answer:
             caster = next(caster_iterator, False)
 
     def __str__(self) -> str:
-        output: List[str, ...] = [f"{self.__class__}\n"]
+        output: List[str] = [f"{self.__class__}\n"]
         for attribute in self._attr_load_sequence:
             label: str = attribute
             value: Any = getattr(self, attribute)
@@ -295,15 +295,36 @@ class Question:
                 attribute = next(attribute_iterator, False)
                 caster = next(caster_iterator, False)
 
-            while True:
-                answer = Answer()
-                answer.load_sequentially(iterator)
-                self.add_answer(answer)
+            self._load_answers(iterator)
+
         except StopIteration:
-            pass
+            print("load_sequentially")
+
+    def _load_answers(self, iterator: Iterator[Any]) -> None:
+        """Load answers. An answer is filled even if there are not enough elements
+        in the iterator. Returns when iterator is exhausted
+        and StopIteration is caught.
+        """
+        iterator_top_items: List[str] = []
+        try:
+            while True:
+                answer: Answer = Answer()
+                iterator_top_items.append(next(iterator))
+                iterator_top_items.append(next(iterator))
+                answer.load_sequentially(iter(iterator_top_items))
+                self.add_answer(answer)
+                iterator_top_items = []
+        except StopIteration:
+            if len(iterator_top_items) != 0:
+                try:
+                    answer.load_sequentially(iter(iterator_top_items))
+                except StopIteration:
+                    pass
+                self.add_answer(answer)
+            raise
 
     def __str__(self) -> str:
-        output: List[str, ...] = [f"{self.__class__}\n"]
+        output: List[str] = [f"{self.__class__}\n"]
         for attribute in self._attr_load_sequence:
             label: str = attribute
             value: Any = getattr(self, attribute)
@@ -312,11 +333,6 @@ class Question:
             output.append(f"{chr(ord(LETTER_A) + ordinal)} - ")
             output.append(answer.__str__())
         return "".join(output)
-
-
-class StopQuestion(Exception):
-    """Raised each time serialize ends a question."""
-    pass
 
 
 class Exam:

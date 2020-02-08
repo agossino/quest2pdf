@@ -53,6 +53,8 @@ def test_answer_set(attribute, expected):
 
 
 def test_answer_load0():
+    """test empty iterator: load default values
+    """
     a = exam.Answer()
     expected = tuple()
     i = iter(expected)
@@ -66,6 +68,8 @@ def test_answer_load0():
 
 
 def test_answer_load1():
+    """test load only text: image has default value
+    """
     a = exam.Answer()
     expected = ("Answer text",)
     i = iter(expected)
@@ -79,6 +83,8 @@ def test_answer_load1():
 
 
 def test_answer_load2():
+    """test load answer and image
+    """
     a = exam.Answer()
     expected = ("Answer text", r"home/mydir/image.jpg")
     i = iter(expected)
@@ -89,6 +95,8 @@ def test_answer_load2():
 
 
 def test_answer_load3():
+    """test iterator bigger then answer: check last value availability
+    """
     a = exam.Answer()
     expected = ("Answer text", "home/mydir/image.jpg", "rest")
     i = iter(expected)
@@ -413,7 +421,8 @@ def test_question_shuffle3():
      ],
 )
 def test_question_load1(iterator, q_text, q_subject):
-    """load only question text and subject.
+    """load question text and subject; check for default image,  level
+    and no answer.
     """
     quest = exam.Question()
     quest.load_sequentially(iterator)
@@ -434,8 +443,7 @@ def test_question_load1(iterator, q_text, q_subject):
       "d1", "s1", Path("i1"), 1, "a11", Path("ai11"), "a12", Path("ai12")),
      (iter(("", "s1", "", 2, "a11", "ai11", "", "ai12")),
       "", "s1", Path("."), 2, "a11", Path("ai11"), "", Path("ai12"))
-     ],
-)
+     ],)
 def test_question_load2(iterator, q_text, q_subject, q_image, q_level,
                         a1_text, a1_image, a2_text, a2_image):
     """load question and two answers.
@@ -482,7 +490,7 @@ def test_question_print():
     """test __str__ method
     """
     quest = exam.Question()
-    quest_text ="Text"
+    quest_text = "Text"
     quest_subject = "Subject"
     quest_image = "dir/ec/tor/y"
     quest_level = 1
@@ -605,32 +613,47 @@ def test_exam_load1():
     assert ex.questions == tuple()
 
 
-def test_exam_load2():
+@pytest.mark.parametrize(("iterator, text0, subject0, image0, level0, a00_text, a00_image, a01_text, a01_image, "
+                          + "text1, subject1, image1, level1, a10_text, a10_image, a11_text, a11_image"),
+                         [((OrderedDict([('field A', 'ab'), ('field B', 'ac'), ('field C', 'ad'), ('field D', '1'),
+                                        ('field E', 'ae'), ('field F', 'af'), ('field G', 'ag')]),
+                            OrderedDict([('field A', 'ba'), ('field B', 'bc'), ('field C', 'bd'), ('field D', '2'),
+                                        ('field E', 'be'), ('field F', 'bf'), ('field G', 'bg')])),
+                           "ab", "ac", Path("ad"), 1, "ae", Path("af"), "ag", Path("."),
+                           "ba", "bc", Path("bd"), 2, "be", Path("bf",), "bg", Path("."))])
+def test_exam_load2(iterator, text0, subject0, image0, level0, a00_text, a00_image, a01_text, a01_image,
+                    text1, subject1, image1, level1, a10_text, a10_image, a11_text, a11_image):
     """test without setting _attribute_selector
+    2 rows -> 2 questions with 2 answers each but second answer image is not provided
     """
-    file_name = RESOURCES / "questions1.csv"
     ex = exam.Exam()
-    with open(str(file_name), "r") as fh:
-        reader = csv.DictReader(fh)
-        ex.load(reader)
+    ex.load(iterator)
 
-    assert ex.questions[0].text == "ab"
-    assert ex.questions[0].subject == "ac"
-    assert ex.questions[0].image == Path("ad")
-    assert ex.questions[0].level == 1
-    assert ex.questions[0].answers[0].text == "ae"
-    assert ex.questions[0].answers[0].image == Path("af")
-    assert ex.questions[0].answers[1].text == "ag"
-    assert ex.questions[0].answers[1].image == Path(".")  # default value
-    assert ex.questions[1].text == "ba"
-    assert ex.questions[1].answers[1].text == "bg"
-    assert ex.questions[1].answers[1].image == Path(".")  # default value
-    assert ex.questions[2].answers[1].text == "cg"
-    with pytest.raises(IndexError):
-        assert ex.questions[1].answers[2].text == ""  # Not provided in cvs file
-    with pytest.raises(IndexError):
-        assert ex.questions[3].answers[1].text == ""
+    assert ex.questions[0].text == text0  # first question
+    assert ex.questions[0].subject == subject0
+    assert ex.questions[0].image == image0
+    assert ex.questions[0].level == level0
+    assert ex.questions[0].answers[0].text == a00_text
+    assert ex.questions[0].answers[0].image == a00_image
+    assert ex.questions[0].answers[1].text == a01_text
+    assert ex.questions[0].answers[1].image == a01_image  # default value
 
+    assert ex.questions[1].text == text1  # second question
+    assert ex.questions[1].subject == subject1
+    assert ex.questions[1].image == image1
+    assert ex.questions[1].level == level1
+    assert ex.questions[1].answers[0].text == a10_text
+    assert ex.questions[1].answers[0].image == a10_image
+    assert ex.questions[1].answers[1].text == a11_text
+    assert ex.questions[1].answers[1].image == a11_image  # default value
+
+    # third answer of second question is not provided
+    with pytest.raises(IndexError):
+        assert ex.questions[1].answers[2].text == ""
+
+    # third question is not provided
+    with pytest.raises(IndexError):
+        assert ex.questions[2].text == ""  # Not provided
 
 
 def test_exam_load3():
@@ -648,10 +671,16 @@ def test_exam_load3():
     assert ex.questions[0].subject == "topic"
 
 
-def test_exam_load4():
+@pytest.mark.parametrize(("iterator, text, subject, image, level, "
+                          + "a0_text, a0_image, a1_text, a1_image, a2_text, a2_image"),
+                         [((OrderedDict([('field A', 'A1'), ('field B', 'A2'), ('field C', 'T'),
+                                         ('field D', 'A3'), ('field E', 'A4'), ('field F', 'S'),
+                                         ('field G', 2), ('void', '')]),),
+                           "T", "S", Path("."), 2, "A1", Path("."), "A2", Path("."), "A3", Path("."))])
+def test_exam_load4(iterator, text, subject, image, level,
+                    a0_text, a0_image, a1_text, a1_image, a2_text, a2_image):
     """test setting _attribute_selector
     """
-    file_name = RESOURCES / "questions2.csv"
     ex = exam.Exam()
     ex.attribute_selector = ("field C",
                              "field F",
@@ -662,40 +691,42 @@ def test_exam_load4():
                              "field B",
                              "void",
                              "field D")
-    with open(str(file_name), "r") as fh:
-        reader = csv.DictReader(fh)
-        ex.load(reader)
+    ex.load(iterator)
 
-    assert ex.questions[0].text == "T"
-    assert ex.questions[0].subject == "S"
-    assert ex.questions[0].image == Path(".")
-    assert ex.questions[0].level == 2
-    assert ex.questions[0].answers[0].text == "A1"
-    assert ex.questions[0].answers[0].image == Path(".")
-    assert ex.questions[0].answers[1].text == "A2"
-    assert ex.questions[0].answers[1].image == Path(".")
-    assert ex.questions[0].answers[2].text == "A3"
-    assert ex.questions[0].answers[2].image == Path(".")
+    assert ex.questions[0].text == text
+    assert ex.questions[0].subject == subject
+    assert ex.questions[0].image == image
+    assert ex.questions[0].level == level
+    assert ex.questions[0].answers[0].text == a0_text
+    assert ex.questions[0].answers[0].image == a0_image
+    assert ex.questions[0].answers[1].text == a1_text
+    assert ex.questions[0].answers[1].image == a1_image
+    assert ex.questions[0].answers[2].text == a2_text
+    assert ex.questions[0].answers[2].image == a2_image
+
+    # no further elements loaded
     with pytest.raises(IndexError):
         assert ex.questions[0].answers[3].text == ""
     with pytest.raises(IndexError):
         assert ex.questions[1].answers[2].image == Path(".")
 
 
-def test_exam_print():
-    file_name = RESOURCES / "questions3.csv"
+@pytest.mark.parametrize("iterator, text, q_image, level, a_image",
+                         [((OrderedDict([('field A', 'A1'), ('field B', 'A2'), ('field C', 'T'),
+                                         ('field D', 'A3'), ('field E', 'A4'), ('field F', 'S'),
+                                         ('field G', 2), ('void', '')]),),
+                           f"text: A1", f"image: .", f"level: 2", f"image: S")])
+def test_exam_print(iterator, text, q_image, level, a_image):
     ex = exam.Exam()
     ex.attribute_selector = ("field A",
                              "void",
                              "void",
-                             "field D",
+                             "field G",
                              "void",
                              "field F")
+    ex.load(iterator)
 
-    with open(str(file_name), "r") as fh:
-        reader = csv.DictReader(fh)
-        ex.load(reader)
-
-    assert f"text: ab" in ex.__str__()
-    assert f"level: 1" in ex.__str__()
-    assert f"image: ." in ex.__str__()
+    assert text in ex.__str__()
+    assert q_image in ex.__str__()
+    assert level in ex.__str__()
+    assert a_image in ex.__str__()
