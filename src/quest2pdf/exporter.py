@@ -1,34 +1,15 @@
-from reportlab.platypus import (SimpleDocTemplate, Paragraph,
-                                ListFlowable, Spacer,
-                                Image, ListItem)
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.units import mm
-from reportlab.lib import utils
-from pathlib import Path
+from rlwrapper import PDFDoc
 
-from rlwrapper import Style, separator, get_std_aspect_image
 
 class RLInterface:
     def __init__(self, input_generator, output_file: str):
-        """Item set is made of one top item (sublevel is 0)
-        and 0 or more nested items (sublevel is 1).
-        This class print sequence of item set in pdf.
+        """Item set is made of one topitem and 0 or more nesteditems.
+        This class print sequence of item set (topitem, nesteditem) in pdf.
         """
         self.file_name = output_file
         self.input = input_generator
         self._first_item = 0
-
-        self._style = Style()
-
-        self._spaceAfter50_style = getSampleStyleSheet()
-        self._spaceAfter50_style["Normal"].spaceAfter = 50
-
-        self._spaceAfter25_style = getSampleStyleSheet()
-        self._spaceAfter25_style["Normal"].spaceAfter = 25
-
-
-        self._question_set_separator = separator
-        self._listFlowable = []
+        self._doc = PDFDoc(output_file)
 
     def build(self) -> None:
         ordinal = self._first_item
@@ -37,55 +18,28 @@ class RLInterface:
             item = next(self.input)
 
             assert item.sublevel == 0
-            item_set = self._get_item_set(item)
+            self._doc.add_item(item)
 
             ordinal += 1
-            is_following_a_0_item = True
+            is_following_a_topitem = True
 
             while True:
                 item = next(self.input)
 
                 if item.sublevel == 0:
-
-                    self._append_item_set(item_set, ordinal)
-
-                    item_set = self._get_item_set(item)
+                    self._doc.build_last_ins_item(ordinal)
+                    self._doc.add_item(item)
 
                     ordinal += 1
-                    is_following_a_0_item = True
+                    is_following_a_topitem = True
                 elif item.sublevel == 1:
-                    value = 1 if is_following_a_0_item else None
-                    is_following_a_0_item = False
-                    item_set.append(ListItem(Paragraph(item.text,
-                                                       self._style.normal),
-                                             bulletType='A',
-                                             value=value))
+                    value = 1 if is_following_a_topitem else None
+                    is_following_a_topitem = False
+
+                    self._doc.add_subitem(item, value)
 
         except StopIteration:
-            self._append_item_set(item_set, ordinal)
+            self._doc.build_last_ins_item(ordinal)
 
-            doc = SimpleDocTemplate(self.file_name)
+            self._doc.build()
 
-            doc.build(self._listFlowable)
-
-    def _get_item_set(self, item):
-        if item.image != Path("."):
-            image = get_std_aspect_image(item.image, width=80)
-            question = [Paragraph(item.text,
-                                  self._spaceAfter25_style['Normal']),
-                        image]
-        else:
-            question = [Paragraph(item.text,
-                                  self._spaceAfter25_style['Normal'])]
-        item_set = [ListFlowable(question,
-                                 leftIndent=0,
-                                 bulletType='bullet',
-                                 start='')]
-        return item_set
-
-    def _append_item_set(self, item_set, ordinal):
-        question_set = ListFlowable(item_set,
-                                    bulletType='1',
-                                    start=ordinal)
-        self._listFlowable.extend([question_set,
-                                   self._question_set_separator])

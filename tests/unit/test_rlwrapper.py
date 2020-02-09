@@ -1,6 +1,7 @@
-from reportlab.lib.styles import ParagraphStyle
-from rlwrapper import Style, get_std_aspect_image
 from pathlib import Path
+import pytest
+from reportlab.lib.styles import ParagraphStyle
+from rlwrapper import Style, get_std_aspect_image, PDFDoc
 
 RESOURCES = Path("tests/unit/resources")
 
@@ -33,3 +34,18 @@ def test_std_aspect_image():
 
     assert "Image" in image.identity()
     assert file_name in image.identity()
+
+
+def test_std_aspect_image_fail():
+    file_name = "not_exist.png"
+    path = RESOURCES / file_name
+    with pytest.raises(OSError):
+        get_std_aspect_image(str(path))
+
+
+def test_pdf_separator():
+    doc = PDFDoc("FILE")
+
+    assert "ListFlowable" in doc.separator.identity()
+
+
