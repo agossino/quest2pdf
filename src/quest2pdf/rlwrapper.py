@@ -1,5 +1,6 @@
 from pathlib import Path
 import logging
+from typing import List
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Image, Paragraph, ListFlowable, ListItem
 from reportlab.lib.units import mm

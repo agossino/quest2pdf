@@ -1,5 +1,6 @@
 from pathlib import Path
 import pytest
+from collections import namedtuple
 from reportlab.lib.styles import ParagraphStyle
 from rlwrapper import Style, get_std_aspect_image, PDFDoc
 
@@ -47,5 +48,25 @@ def test_pdf_separator():
     doc = PDFDoc("FILE")
 
     assert "ListFlowable" in doc.separator.identity()
+
+
+def test_pdfdoc(tmp_path):
+    image = str(RESOURCES / "test.png")
+    Item = namedtuple("Item", ["text", "image"])
+    data = iter((Item("first", image),
+                 Item("second", Path(".")),
+                 Item("third", image),
+                 Item("forth", Path("."))))
+    file = tmp_path / "temp.pdf"
+    doc = PDFDoc(str(file))
+    doc.add_item(next(data))
+    doc.build_last_ins_item(1)
+    doc.add_item(next(data))
+    doc.add_sub_item(next(data), 1)
+    doc.add_sub_item(next(data), None)
+    doc.build_last_ins_item(2)
+    doc.build()
+
+    assert file.exists()
 
 
