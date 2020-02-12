@@ -46,7 +46,9 @@ class PDFDoc:
         self._file_name: str = output_file
         self._doc: List[ListFlowable, ...] = []
         self._last_ins_item = []
-        self._text_separator = """<unichar name="Horizontal ellipsis"/>"""
+        self._start: int = 1
+        self._space_after_item: int = 25
+        self._text_separator: str = """<unichar name="Horizontal ellipsis"/>"""
 
     @property
     def separator(self):
@@ -56,22 +58,25 @@ class PDFDoc:
                             bulletType="bullet",
                             start="")
 
-    def build_last_ins_item(self, ordinal):
+    def build_last_ins_item(self):
         question_set = ListFlowable(self._last_ins_item,
                                     bulletType='1',
-                                    start=ordinal)
-
+                                    start=self._start)
+        self._start += 1
         self._doc.extend([question_set, self.separator])
 
     def add_item(self, item):
+        if len(self._last_ins_item) != 0:
+            self.build_last_ins_item()
         self._last_ins_item = [self._build_item(item)]
 
-    def add_sub_item(self, item, value):
+    def add_sub_item(self, item):
         item_list = self._build_item(item)
+        value = 1 if len(self._last_ins_item) == 1 else None
         self._last_ins_item.append(ListItem(item_list, bulletType='A', value=value))
 
     def _build_item(self, item):
-        style = Style(spaceAfter=25)
+        style = Style(spaceAfter=self._space_after_item)
         if item.image != Path("."):
             image = get_std_aspect_image(item.image, width=80)
             question = [Paragraph(item.text + NON_BREAK_SP, style.normal),
@@ -83,5 +88,7 @@ class PDFDoc:
                             bulletType='bullet', start='')
 
     def build(self):
+        if len(self._last_ins_item) != 0:
+            self.build_last_ins_item()
         doc = SimpleDocTemplate(self._file_name)
         doc.build(self._doc)

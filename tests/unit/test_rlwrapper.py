@@ -3,6 +3,7 @@ import pytest
 from collections import namedtuple
 from reportlab.lib.styles import ParagraphStyle
 from rlwrapper import Style, get_std_aspect_image, PDFDoc
+from reportlab.platypus import ListFlowable, ListItem
 
 RESOURCES = Path("tests/unit/resources")
 
@@ -60,12 +61,30 @@ def test_pdfdoc(tmp_path):
     file = tmp_path / "temp.pdf"
     doc = PDFDoc(str(file))
     doc.add_item(next(data))
-    doc.build_last_ins_item(1)
+    assert doc._start == 1
+    assert isinstance(doc._last_ins_item[-1], ListFlowable)
+    assert len(doc._last_ins_item) == 1
+    assert doc._doc == []
     doc.add_item(next(data))
-    doc.add_sub_item(next(data), 1)
-    doc.add_sub_item(next(data), None)
-    doc.build_last_ins_item(2)
+    assert doc._start == 2
+    assert isinstance(doc._last_ins_item[-1], ListFlowable)
+    assert len(doc._last_ins_item) == 1
+    assert isinstance(doc._doc[-1], ListFlowable)
+    assert len(doc._doc) == 2
+    doc.add_sub_item(next(data))
+    assert doc._start == 2
+    assert isinstance(doc._last_ins_item[-1], ListItem)
+    assert len(doc._last_ins_item) == 2
+    assert isinstance(doc._doc[-1], ListFlowable)
+    assert len(doc._doc) == 2
+    doc.add_sub_item(next(data))
+    assert doc._start == 2
+    assert isinstance(doc._last_ins_item[-1], ListItem)
+    assert len(doc._last_ins_item) == 3
+    assert isinstance(doc._doc[-1], ListFlowable)
+    assert len(doc._doc) == 2
     doc.build()
+    assert doc._start == 3
 
     assert file.exists()
 
