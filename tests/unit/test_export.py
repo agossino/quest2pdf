@@ -1,43 +1,60 @@
+import pytest
 from export import ItemLevel, Item, SerializeExam
 
 
-class Sub:
+class Ans:
     def __init__(self, *values):
         self.text, self.image = values
 
 
-class Top:
+class Quest:
     def __init__(self, *values):
-        text, image, *self.answers = values
-        self.questions
+        self.text, self.image, *self.answers = values
 
 
-def test_serialize():
-    exam = (Top("text 1", "image 1",
-                Sub("a text 1", "a image 1"),
-                Sub("a text 2", "a image 2")),
-            Top ("text 2", "image 2",
-                 Sub("a text 3", "a image 3")))
+class Ex:
+    def __init__(self, *values):
+        self.questions = values
 
+
+def test_serialize0():
+    exam = Ex()
+    expected = SerializeExam(exam).serialize()
+
+    with pytest.raises(StopIteration):
+        next(expected)
+
+
+def test_serialize1():
+    exam = Ex(Quest("1", "2", Ans("3", "4"), Ans("5", "6")),
+              Quest("7", "8"),
+              Quest("9", "10", Ans("11", "12")))
     expected = SerializeExam(exam).serialize()
 
     item = next(expected)
     assert item.item_level == ItemLevel.top
-    assert item.text == exam[0].text
-    assert item.image == exam[0].image
+    assert item.text == exam.questions[0].text
+    assert item.image == exam.questions[0].image
     item = next(expected)
     assert item.item_level == ItemLevel.sub
-    assert item.text == exam[0].answers[0].text
-    assert item.image == exam[0].answers[0].image
+    assert item.text == exam.questions[0].answers[0].text
+    assert item.image == exam.questions[0].answers[0].image
     item = next(expected)
     assert item.item_level == ItemLevel.sub
-    assert item.text == exam[0].answers[1].text
-    assert item.image == exam[0].answers[1].image
+    assert item.text == exam.questions[0].answers[1].text
+    assert item.image == exam.questions[0].answers[1].image
     item = next(expected)
     assert item.item_level == ItemLevel.top
-    assert item.text == exam[1].text
-    assert item.image == exam[1].image
+    assert item.text == exam.questions[1].text
+    assert item.image == exam.questions[1].image
+    item = next(expected)
+    assert item.item_level == ItemLevel.top
+    assert item.text == exam.questions[2].text
+    assert item.image == exam.questions[2].image
     item = next(expected)
     assert item.item_level == ItemLevel.sub
-    assert item.text == exam[1].answers[0].text
-    assert item.image == exam[1].answers[0].image
+    assert item.text == exam.questions[2].answers[0].text
+    assert item.image == exam.questions[2].answers[0].image
+
+    with pytest.raises(StopIteration):
+        next(expected)

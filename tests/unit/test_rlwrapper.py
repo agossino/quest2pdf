@@ -52,6 +52,14 @@ def test_pdf_separator():
 
 
 def test_pdfdoc(tmp_path):
+    file = tmp_path / "temp.pdf"
+    doc = PDFDoc(str(file))
+    doc.build()
+
+    assert file.exists()
+
+
+def test_pdfdoc1(tmp_path):
     image = str(RESOURCES / "test.png")
     Item = namedtuple("Item", ["text", "image"])
     data = iter((Item("first", image),

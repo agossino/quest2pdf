@@ -4,6 +4,18 @@ from rlwrapper import PDFDoc
 
 
 class ItemLevel(Enum):
+    """top level text
+       top level image
+           sub level text
+           sub level image
+
+           sub level test
+
+        top level image
+            sub level text
+
+            sub level image
+    """
     top = 0
     sub = 1
 
@@ -12,6 +24,9 @@ Item = namedtuple("Item", ["item_level", "text", "image"])
 
 
 class SerializeExam:
+    """Serialize questions, made of text and image, and
+    answers, made of text and image.
+    """
     def __init__(self, exam):
         self._exam = exam
 

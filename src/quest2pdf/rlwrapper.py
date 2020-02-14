@@ -22,7 +22,7 @@ class Style:
         return self._style_sheet["Normal"]
 
     @property
-    def title(self):
+    def title(self) -> ParagraphStyle:
         return self._style_sheet["Title"]
 
 
