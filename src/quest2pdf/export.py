@@ -1,6 +1,6 @@
 from enum import Enum
 from collections import namedtuple
-from rlwrapper import PDFDoc
+import rlwrapper
 
 
 class ItemLevel(Enum):
@@ -16,6 +16,7 @@ class ItemLevel(Enum):
 
             sub level image
     """
+
     top = 0
     sub = 1
 
@@ -27,6 +28,7 @@ class SerializeExam:
     """Serialize questions, made of text and image, and
     answers, made of text and image.
     """
+
     def __init__(self, exam):
         self._exam = exam
 
@@ -43,7 +45,7 @@ class RLInterface:
         """
         self.file_name = output_file
         self.input = input_generator
-        self._doc = PDFDoc(output_file)
+        self._doc = rlwrapper.PDFDoc(output_file)
 
     def build(self) -> None:
         try:
@@ -52,10 +54,11 @@ class RLInterface:
             self._doc.add_item(item)
             while True:
                 item = next(self.input)
-                if item.sublevel == 0:
+                if item.item_level == ItemLevel.top:
                     self._doc.add_item(item)
-                elif item.sublevel == 1:
+                elif item.item_level == ItemLevel.sub:
                     self._doc.add_sub_item(item)
+                else:
+                    raise ValueError
         except StopIteration:
             self._doc.build()
-

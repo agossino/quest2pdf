@@ -1,4 +1,5 @@
 from pathlib import Path
+import logging
 import pytest
 from collections import namedtuple
 from reportlab.lib.styles import ParagraphStyle
@@ -38,11 +39,12 @@ def test_std_aspect_image():
     assert file_name in image.identity()
 
 
-def test_std_aspect_image_fail():
+def test_std_aspect_image_fail(caplog):
     file_name = "not_exist.png"
     path = RESOURCES / file_name
     with pytest.raises(OSError):
         get_std_aspect_image(str(path))
+    assert caplog.record_tuples[0][1] == logging.CRITICAL
 
 
 def test_pdf_separator():

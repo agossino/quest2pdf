@@ -2,7 +2,13 @@ from pathlib import Path
 import logging
 from typing import List
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Image, Paragraph, ListFlowable, ListItem
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Image,
+    Paragraph,
+    ListFlowable,
+    ListItem,
+)
 from reportlab.lib.units import mm
 from reportlab.lib import utils
 
@@ -32,7 +38,7 @@ def get_std_aspect_image(file_name: str, width: int = 50 * mm) -> Image:
     try:
         image_reader = utils.ImageReader(file_name)
     except OSError:
-        logging.critical('OS Error reading %s', file_name)
+        logging.critical("OS Error reading %s", file_name)
         raise
 
     orig_width, orig_height = image_reader.getSize()
@@ -53,15 +59,16 @@ class PDFDoc:
     @property
     def separator(self):
         style = Style()
-        return ListFlowable([Paragraph(self._text_separator,
-                                       style.title)],
-                            bulletType="bullet",
-                            start="")
+        return ListFlowable(
+            [Paragraph(self._text_separator, style.title)],
+            bulletType="bullet",
+            start="",
+        )
 
     def build_last_ins_item(self):
-        question_set = ListFlowable(self._last_ins_item,
-                                    bulletType='1',
-                                    start=self._start)
+        question_set = ListFlowable(
+            self._last_ins_item, bulletType="1", start=self._start
+        )
         self._start += 1
         self._doc.extend([question_set, self.separator])
 
@@ -73,19 +80,16 @@ class PDFDoc:
     def add_sub_item(self, item):
         item_list = self._build_item(item)
         value = 1 if len(self._last_ins_item) == 1 else None
-        self._last_ins_item.append(ListItem(item_list, bulletType='A', value=value))
+        self._last_ins_item.append(ListItem(item_list, bulletType="A", value=value))
 
     def _build_item(self, item):
         style = Style(spaceAfter=self._space_after_item)
         if item.image != Path("."):
             image = get_std_aspect_image(item.image, width=80)
-            question = [Paragraph(item.text + NON_BREAK_SP, style.normal),
-                        image]
+            question = [Paragraph(item.text + NON_BREAK_SP, style.normal), image]
         else:
-            question = [Paragraph(item.text,
-                                  style.normal)]
-        return ListFlowable(question, leftIndent=0,
-                            bulletType='bullet', start='')
+            question = [Paragraph(item.text, style.normal)]
+        return ListFlowable(question, leftIndent=0, bulletType="bullet", start="")
 
     def build(self):
         if len(self._last_ins_item) != 0:
