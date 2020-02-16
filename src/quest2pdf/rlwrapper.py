@@ -8,6 +8,7 @@ from reportlab.platypus import (
     Paragraph,
     ListFlowable,
     ListItem,
+    Spacer
 )
 from reportlab.lib.units import mm
 from reportlab.lib import utils
@@ -32,11 +33,11 @@ class Style:
         return self._style_sheet["Title"]
 
 
-def get_std_aspect_image(file_name: str, width: int = 50 * mm) -> Image:
+def get_std_aspect_image(file_name: Path, width: int = 50 * mm) -> Image:
     """Return Image with original aspect and given width.
     """
     try:
-        image_reader = utils.ImageReader(file_name)
+        image_reader = utils.ImageReader(str(file_name))
     except OSError:
         logging.critical("OS Error reading %s", file_name)
         raise
@@ -48,12 +49,13 @@ def get_std_aspect_image(file_name: str, width: int = 50 * mm) -> Image:
 
 
 class PDFDoc:
-    def __init__(self, output_file: str):
-        self._file_name: str = output_file
+    def __init__(self, output_file: Path):
+        self._file_name: str = str(output_file)
         self._doc: List[ListFlowable, ...] = []
         self._last_ins_item = []
         self._start: int = 1
-        self._space_after_item: int = 25
+        self._space_text_image: int = 10
+        self._space_after_item = 20
         self._text_separator: str = """<unichar name="Horizontal ellipsis"/>"""
 
     @property
@@ -83,7 +85,8 @@ class PDFDoc:
         self._last_ins_item.append(ListItem(item_list, bulletType="A", value=value))
 
     def _build_item(self, item):
-        style = Style(spaceAfter=self._space_after_item)
+        style = Style(spaceAfter=self._space_text_image)
+        space = Spacer(1, self._space_after_item)
         if item.image != Path("."):
             image = get_std_aspect_image(item.image, width=80)
             question = [Paragraph(item.text + NON_BREAK_SP, style.normal), image]

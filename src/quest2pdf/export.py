@@ -1,6 +1,9 @@
 from enum import Enum
 from collections import namedtuple
+from pathlib import Path
+from typing import Iterator, Generator
 import rlwrapper
+import exam
 
 
 class ItemLevel(Enum):
@@ -11,10 +14,10 @@ class ItemLevel(Enum):
 
            sub level test
 
-        top level image
-            sub level text
+       top level image
+           sub level text
 
-            sub level image
+           sub level image
     """
 
     top = 0
@@ -29,10 +32,10 @@ class SerializeExam:
     answers, made of text and image.
     """
 
-    def __init__(self, exam):
-        self._exam = exam
+    def __init__(self, exam_alike: exam.Exam):
+        self._exam: exam.Exam = exam_alike
 
-    def serialize(self):
+    def serialize(self) -> Generator[Item, None, None]:
         for question in self._exam.questions:
             yield Item(ItemLevel.top, question.text, question.image)
             for answer in question.answers:
@@ -40,7 +43,7 @@ class SerializeExam:
 
 
 class RLInterface:
-    def __init__(self, input_generator, output_file: str):
+    def __init__(self, input_generator: Iterator[Item], output_file: Path):
         """This class print a two nesting level series of items in pdf.
         """
         self.file_name = output_file

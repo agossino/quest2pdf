@@ -40,22 +40,22 @@ def test_std_aspect_image():
 
 
 def test_std_aspect_image_fail(caplog):
-    file_name = "not_exist.png"
+    file_name = Path("not_exist.png")
     path = RESOURCES / file_name
     with pytest.raises(OSError):
-        get_std_aspect_image(str(path))
+        get_std_aspect_image(path)
     assert caplog.record_tuples[0][1] == logging.CRITICAL
 
 
 def test_pdf_separator():
-    doc = PDFDoc("FILE")
+    doc = PDFDoc(Path("file"))
 
     assert "ListFlowable" in doc.separator.identity()
 
 
 def test_pdfdoc(tmp_path):
     file = tmp_path / "temp.pdf"
-    doc = PDFDoc(str(file))
+    doc = PDFDoc(file)
     doc.build()
 
     assert file.exists()
