@@ -10,6 +10,8 @@ from reportlab.platypus import (
     ListItem,
     Spacer
 )
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import  A4
 from reportlab.lib.units import mm
 from reportlab.lib import utils
 
@@ -57,6 +59,12 @@ class PDFDoc:
         self._space_text_image: int = 10
         self._space_after_item = 20
         self._text_separator: str = """<unichar name="Horizontal ellipsis"/>"""
+        self._1st_page_header_text = "header text"
+        self._later_pages_header_text = "header text"
+        self._footer_text = "footer text"
+        self._author = "Giancarlo"
+        self._title = "esame"
+        self._subject = "Corso"
 
     @property
     def separator(self):
@@ -89,13 +97,86 @@ class PDFDoc:
         space = Spacer(1, self._space_after_item)
         if item.image != Path("."):
             image = get_std_aspect_image(item.image, width=80)
-            question = [Paragraph(item.text + NON_BREAK_SP, style.normal), image]
+            question = [Paragraph(item.text + NON_BREAK_SP, style.normal),
+                        image,
+                        space]
         else:
-            question = [Paragraph(item.text, style.normal)]
+            question = [Paragraph(item.text, style.normal), space]
         return ListFlowable(question, leftIndent=0, bulletType="bullet", start="")
 
     def build(self):
         if len(self._last_ins_item) != 0:
             self.build_last_ins_item()
-        doc = SimpleDocTemplate(self._file_name)
-        doc.build(self._doc)
+
+        doc = SimpleDocTemplate(self._file_name, pagesize=A4, allowSplitting=1,
+                                author=self._author, title=self._title, subject=self._subject)
+
+        doc.build(self._doc, onFirstPage=self._first_page_head,
+                  onLaterPages=self._later_page_head,
+                  canvasmaker=NumberedCanvas)
+
+    def _first_page_head(self, actual_canvas, doc):
+        # Save the state of our canvas so we can draw on it
+        actual_canvas.saveState()
+        style = Style()
+
+        # Header
+        header = Paragraph(self._1st_page_header_text, style.normal)
+        width, height = header.wrap(doc.width, doc.topMargin)
+        header.drawOn(actual_canvas, doc.leftMargin,
+                      doc.height + doc.bottomMargin + doc.topMargin / 2 - height)
+
+        # Footer
+        footer = Paragraph(self._footer_text, style.normal)
+        width, height = footer.wrap(doc.width, doc.bottomMargin)
+        footer.drawOn(actual_canvas, doc.leftMargin, height)
+
+        # Release the canvas
+        actual_canvas.restoreState()
+
+    def _later_page_head(self, actual_canvas, doc):
+        # Save the state of our canvas so we can draw on it
+        actual_canvas.saveState()
+        style = Style
+
+        # Header
+        header = Paragraph(self._later_pages_header_text, style.normal)
+        width, height = header.wrap(doc.width, doc.topMargin)
+        header.drawOn(actual_canvas, doc.leftMargin,
+                      doc.height + doc.bottomMargin + doc.topMargin / 2 - height)
+
+        # Footer
+        footer = Paragraph(self._footer_text, style.normal)
+        width, height = footer.wrap(doc.width, doc.bottomMargin)
+        footer.drawOn(actual_canvas, doc.leftMargin, height)
+
+        # Release the canvas
+        actual_canvas.restoreState()
+
+
+class NumberedCanvas(canvas.Canvas):
+    """add page info to each page (page x of y)"""
+    def __init__(self, *args, **kwargs):
+        canvas.Canvas.__init__(self, *args, **kwargs)
+        self._saved_page_states = []
+        self._text = "Pag. %d di %d"
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_page_number(num_pages)
+            canvas.Canvas.showPage(self)
+        canvas.Canvas.save(self)
+
+    def draw_page_number(self, page_count):
+        w, h = A4
+        self.setFont("Helvetica", 9)
+        self.drawCentredString(w/2, 20*mm,
+            self._text % (self._pageNumber, page_count))
+
+
