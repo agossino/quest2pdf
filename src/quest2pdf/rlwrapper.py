@@ -177,6 +177,6 @@ class NumberedCanvas(canvas.Canvas):
         w, h = A4
         self.setFont("Helvetica", 9)
         self.drawCentredString(w/2, 20*mm,
-            self._text % (self._pageNumber, page_count))
+                               self._text % (self._pageNumber, page_count))
 
 
