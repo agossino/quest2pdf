@@ -1,9 +1,16 @@
 import parameter
 
 def test_parser():
-    parser = parameter.param_parser()
+    parsed = parameter.param_parser([])
     expected = {"input": "domande.csv",
                 "number": 1,
-                "exam": "Esame"}
+                "exam": "Esame",
+                "correction": "Correttore",
+                "conffile": "conf.ini",
+                "conflogfile": "loggingConf.json",
+                "page_heading": False,
+                "encoding": "utf-8",
+                "delimiter": ",",
+                "shuffle": False}
 
-    assert parser == expected
+    assert parsed == expected

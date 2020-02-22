@@ -5,6 +5,7 @@ import logging
 import logging.config
 import json
 import pathlib
+from typing import Dict, Any
 from _version import __version__
 
 logName = "quest2pdf." + __name__
@@ -31,25 +32,30 @@ def param_parser(args=None):
 
     start_logger(cli_args["conflogfile"])
 
-    defautl_values = get_default(parser)
+    default_values = get_default(parser)
 
     # defaults values are compared in order to know if
     # arguments are set in cli
-    cli_chosen = {}
+    cli_chosen: Dict[str: Any] = {}
     for key, value in cli_args.items():
         if value != parser.get_default(key):
             cli_chosen[key] = value
 
-    # configuration file is added: from cli, if set, or the default one
+    # configuration file comes from cli, if set, or the default one
     config_file = cli_chosen.get("conffile", cli_args["conffile"])
 
     # values coming from config file are updated with the chosen ones
-    result = defautl_values
+    result = default_values
+    print(result)
     result.update(conf_file_parser(config_file))
+    print(result)
     result.update({"conffile": config_file})
+    print(result)
     result.update(cli_chosen)
+    print(result)
 
     result["delimiter"] = delimiters_translator.get(result["delimiter"], default_delimiter)
+    print(result)
 
     return result
 
@@ -185,9 +191,9 @@ def try_log_conf_file(filePath):
         return False
 
 
-def get_default(parser):
-    result = {}
-    args = vars(parser.parse_args())
+def get_default(parser: argparse.ArgumentParser) -> Dict[str, Any]:
+    result: Dict[str: Any] = {}
+    args: Dict[str: Any] = vars(parser.parse_args())
     for key, value in args.items():
         result[key] = parser.get_default(key)
     return result
