@@ -30,7 +30,7 @@ def param_parser(args=None):
     parser = cli_parser()
     cli_args = vars(parser.parse_args(args))
 
-    start_logger(cli_args["conflogfile"])
+    start_logger(cli_args["log_configuration_file"])
 
     default_values = get_default(parser)
 
@@ -42,26 +42,22 @@ def param_parser(args=None):
             cli_chosen[key] = value
 
     # configuration file comes from cli, if set, or the default one
-    config_file = cli_chosen.get("conffile", cli_args["conffile"])
+    config_file = cli_chosen.get("app_configuration_file", cli_args["app_configuration_file"])
 
     # values coming from config file are updated with the chosen ones
     result = default_values
-    print(result)
     result.update(conf_file_parser(config_file))
-    print(result)
-    result.update({"conffile": config_file})
-    print(result)
+    result.update({"app_configuration_file": config_file})
     result.update(cli_chosen)
-    print(result)
 
     result["delimiter"] = delimiters_translator.get(result["delimiter"], default_delimiter)
-    print(result)
 
     return result
 
 
 def cli_parser():
-    description = "genera PDF da un file di prova d'esame in formato testo: domande a risposta multipla, vero o falso o aperte."
+    description = ("Provide a PDF file from a text file: "
+                   + "this represents an exam, made of question with multiple answers.")
     parser = argparse.ArgumentParser(
         description=description, formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -69,53 +65,53 @@ def cli_parser():
         "input",
         type=str,
         nargs="?",
-        help="nome del file di input di domande e risposte in formato testo.",
-        default="domande.csv",
+        help="input text file with questions and answers.",
+        default="questions.csv",
     )
     parser.add_argument(
         "-n",
         "--number",
         type=int,
         nargs="?",
-        help="numero dei file di output da generare",
+        help="number of output files.",
         default=1,
     )
     parser.add_argument(
         "-e",
         "--exam",
-        help="prefisso per il file di esame; a questo verranno accodati data e orario fino a ms.",
+        help="file name prefix; date and time till ms, is appended.",
         type=str,
-        default="Esame",
+        default="Exam",
     )
     parser.add_argument(
         "-c",
         "--correction",
-        help="prefisso per il file correttore; a questo verranno accodati data e orario fino a ms.",
+        help="correction file prefix; date and time till ms, is appended.",
         type=str,
-        default="Correttore",
+        default="Correction",
     )
     parser.add_argument(
         "-f",
-        "--conffile",
-        help="file di configurazione dell'applicazione.",
+        "--app_configuration_file",
+        help="application configuration file.",
         default="conf.ini",
     )
     parser.add_argument(
         "-l",
-        "--conflogfile",
-        help="file di configurazione del file di registro.",
+        "--log_configuration_file",
+        help="log configuration file.",
         default="loggingConf.json",
     )
     parser.add_argument(
         "-s",
         "--shuffle",
-        help="se fornito mischia l'ordine delle domande.",
+        help="if set, question sequence will be shuffled.",
         action="store_true",
     )
     parser.add_argument(
         "-p",
         "--page_heading",
-        help="testo di intestazione che compare all'inizio di ogni pagina (se il nome è omesso appare il nome del file di esame).",
+        help="page heading; if not set, file name is provided.",
         nargs="?",
         const=True,
         default=False,
@@ -123,7 +119,7 @@ def cli_parser():
     parser.add_argument(
         "-E",
         "--encoding",
-        help="codifica per i caratteri del file di testo.",
+        help="character encoding.",
         default="utf-8",
     )
     parser.add_argument(
@@ -139,13 +135,13 @@ def cli_parser():
             "colon",
             "tab",
         ],
-        help="carattere utilizzato per separare i campi del file di testo, ad es. comma, colon, tab ecc.",
+        help="delimiter for comma separated value input file.",
         default="comma",
     )
     parser.add_argument(
         "-v",
         "--version",
-        help="mostra la corrente versione.",
+        help="show current version.",
         action="version",
         version="%(prog)s {version}".format(version=__version__),
     )
@@ -162,15 +158,15 @@ def start_logger(fileName):
             return
 
     logger.warning(
-        "file di configurazione del log non trovato: viene usata configurazione predefinita"
+        "configuration file not found: default configuration will be used."
     )
     return
 
 
 def try_log_conf_file(filePath):
-    """It tryes to open a log configuration file.
+    """It tries to open a log configuration file.
     filePath: filePath
-    return: boolean (True is successed, False otherwise)
+    return: boolean (True is succeed, False otherwise)
     """
     output = {}
     config = configparser.ConfigParser()
@@ -186,7 +182,7 @@ def try_log_conf_file(filePath):
             logger.info(filePath + " trovato")
             return True
     except FileNotFoundError as e:
-        msg = filePath + " non trovato"
+        msg = filePath + " not found"
         logger.info(msg + str(e))
         return False
 
@@ -212,7 +208,7 @@ def conf_file_parser(file_name):
         if output is not None:
             return output
 
-    msg = "file di configurazione non trovato in . " + str(scriptPath) + str(homePath)
+    msg = "configuration file not found in . " + str(scriptPath) + str(homePath)
     logger.critical(msg)
     raise FileNotFoundError(msg)
 
@@ -225,11 +221,11 @@ def try_conf_file(filePath):
     try:
         with open(filePath, "r") as f:
             config.read_file(f)
-            logger.info(filePath + " trovato")
+            logger.info(filePath + " found")
             for key, value in config["Default"].items():
                 output[key] = value
     except FileNotFoundError as e:
-        msg = filePath + " non trovato"
+        msg = filePath + " not found"
         logger.info(msg + str(e))
         return None
 

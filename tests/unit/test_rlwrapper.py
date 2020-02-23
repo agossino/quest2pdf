@@ -69,7 +69,7 @@ def test_pdfdoc1(tmp_path):
                  Item("third", image),
                  Item("forth", Path("."))))
     file = tmp_path / "temp.pdf"
-    doc = PDFDoc(str(file))
+    doc = PDFDoc(file)
     doc.add_item(next(data))
     assert doc._start == 1
     assert isinstance(doc._last_ins_item[-1], ListFlowable)
@@ -99,3 +99,40 @@ def test_pdfdoc1(tmp_path):
     assert file.exists()
 
 
+def test_pdfdoc2(tmp_path):
+    multi = 1000
+    image = str(RESOURCES / "test.png")
+    Item = namedtuple("Item", ["text", "image"])
+    data = iter((Item("first " * multi, image),
+                 Item("second " * multi, Path(".")),
+                 Item("third" * multi, image),
+                 Item("forth " * multi, Path("."))))
+    file = tmp_path / "temp.pdf"
+    doc = PDFDoc(file)
+    doc.add_item(next(data))
+    assert doc._start == 1
+    assert isinstance(doc._last_ins_item[-1], ListFlowable)
+    assert len(doc._last_ins_item) == 1
+    assert doc._doc == []
+    doc.add_item(next(data))
+    assert doc._start == 2
+    assert isinstance(doc._last_ins_item[-1], ListFlowable)
+    assert len(doc._last_ins_item) == 1
+    assert isinstance(doc._doc[-1], ListFlowable)
+    assert len(doc._doc) == 2
+    doc.add_sub_item(next(data))
+    assert doc._start == 2
+    assert isinstance(doc._last_ins_item[-1], ListItem)
+    assert len(doc._last_ins_item) == 2
+    assert isinstance(doc._doc[-1], ListFlowable)
+    assert len(doc._doc) == 2
+    doc.add_sub_item(next(data))
+    assert doc._start == 2
+    assert isinstance(doc._last_ins_item[-1], ListItem)
+    assert len(doc._last_ins_item) == 3
+    assert isinstance(doc._doc[-1], ListFlowable)
+    assert len(doc._doc) == 2
+    doc.build()
+    assert doc._start == 3
+
+    assert file.exists()

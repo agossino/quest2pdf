@@ -137,7 +137,7 @@ class PDFDoc:
     def _later_page_head(self, actual_canvas, doc):
         # Save the state of our canvas so we can draw on it
         actual_canvas.saveState()
-        style = Style
+        style = Style()
 
         # Header
         header = Paragraph(self._later_pages_header_text, style.normal)
