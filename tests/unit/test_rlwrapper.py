@@ -33,7 +33,7 @@ def test_style_kwargs():
 def test_std_aspect_image():
     file_name = "test.png"
     path = RESOURCES / file_name
-    image = get_std_aspect_image(str(path))
+    image = get_std_aspect_image(path)
 
     assert "Image" in image.identity()
     assert file_name in image.identity()
