@@ -1,3 +1,8 @@
+def save_app_configuration(file_path):
+    text = "[Default]\n"
+    file_path.write_text(text)
+
+
 def save_log_configuration(file_path):
     text = """{
     "disable_existing_loggers": false,

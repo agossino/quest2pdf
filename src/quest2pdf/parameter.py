@@ -46,7 +46,8 @@ def param_parser(args: List[str] = None) -> Dict[str, Any]:
 
     # cli chosen values override configuration file values
     result = default_values
-    result.update(conf_file_parser(config_file))
+    app_configuration_param = conf_file_parser(pathlib.Path(config_file))
+    result.update(app_configuration_param)
     result.update({"app_configuration_file": config_file})
     result.update(cli_chosen)
 
@@ -155,7 +156,7 @@ def start_logger(file_name: pathlib.Path) -> None:
         if result is True:
             return
 
-    logger.warning("configuration file not found: default configuration will be used.")
+    logger.warning("logging configuration file not found: default configuration will be used.")
 
 
 def try_log_conf_file(file_path: pathlib.Path) -> bool:
@@ -170,12 +171,11 @@ def try_log_conf_file(file_path: pathlib.Path) -> bool:
             logger_conf = json.load(f)
             logging.config.dictConfig(logger_conf)
             logger = logging.getLogger(__name__)
-            logger.debug("logger started from " + str(pathlib.Path.cwd()))
-            logger.info(str(file_path) + " found")
+            logger.debug("logger started from %s", str(pathlib.Path.cwd()))
+            logger.info("%s found", str(file_path))
             return True
     except FileNotFoundError as e:
-        msg = str(file_path) + " not found"
-        logger.info(msg + str(e))
+        logger.info("%s not found", str(file_path))
         return False
 
 
@@ -187,38 +187,38 @@ def get_default(parser: argparse.ArgumentParser) -> Dict[str, Any]:
     return result
 
 
-def conf_file_parser(file_name):
-    scriptPath = pathlib.Path(__file__).resolve().parent
-    homePath = pathlib.Path.home()
+def conf_file_parser(file_name: pathlib.Path):
+    script_path = pathlib.Path(__file__).resolve().parent
+    home_path = pathlib.Path.home()
+    name = file_name.name
 
     for file in (
         file_name,
-        scriptPath.joinpath(file_name),
-        homePath.joinpath(file_name),
+        script_path.joinpath(name),
+        home_path.joinpath(name),
     ):
         output = try_conf_file(file)
         if output is not None:
             return output
 
-    msg = "configuration file not found in . " + str(scriptPath) + str(homePath)
-    logger.critical(msg)
-    raise FileNotFoundError(msg)
+    logger.critical("app configuration file not found in %s and %s",
+                    str(script_path),
+                    str(home_path))
+    raise FileNotFoundError
 
 
-def try_conf_file(filePath):
+def try_conf_file(file_path):
     output = {}
     config = configparser.ConfigParser()
-    filePath = str(filePath)
 
     try:
-        with open(filePath, "r") as f:
+        with file_path.open() as f:
             config.read_file(f)
-            logger.info(filePath + " found")
+            logger.info("%s found", file_path)
             for key, value in config["Default"].items():
                 output[key] = value
     except FileNotFoundError as e:
-        msg = filePath + " not found"
-        logger.info(msg + str(e))
+        logger.info("%s not found: %s", file_path, str(e))
         return None
 
     return output
