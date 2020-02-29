@@ -5,14 +5,14 @@ import logging
 import logging.config
 import json
 import pathlib
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from _version import __version__
 
 logName = "quest2pdf." + __name__
 logger = logging.getLogger(logName)
 
 
-def param_parser(args: List[str] = None) -> Dict[str, Any]:
+def param_parser(args: Optional[List[str]] = None) -> Dict[str, Any]:
     """Arguments from command line have precedence over the ones
     coming from configuration file.
     """
@@ -58,7 +58,7 @@ def param_parser(args: List[str] = None) -> Dict[str, Any]:
     return result
 
 
-def cli_parser():
+def cli_parser() -> argparse.ArgumentParser:
     description = (
         "Provide a PDF file from a text file: "
         + "this represents an exam, made of question with multiple answers."
@@ -144,7 +144,7 @@ def cli_parser():
 
 
 def start_logger(file_name: pathlib.Path) -> None:
-    script_path: pathlib.Path = pathlib.Path(__file__).resolve().parent
+    script_path: pathlib.Path = pathlib.Path(__file__).parent
     home_path: pathlib.Path = pathlib.Path.home()
 
     for file in (
@@ -156,7 +156,9 @@ def start_logger(file_name: pathlib.Path) -> None:
         if result is True:
             return
 
-    logger.warning("logging configuration file not found: default configuration will be used.")
+    logger.warning(
+        "logging configuration file not found: default configuration will be used."
+    )
 
 
 def try_log_conf_file(file_path: pathlib.Path) -> bool:
@@ -187,33 +189,34 @@ def get_default(parser: argparse.ArgumentParser) -> Dict[str, Any]:
     return result
 
 
-def conf_file_parser(file_name: pathlib.Path):
-    script_path = pathlib.Path(__file__).resolve().parent
+def conf_file_parser(file_name: pathlib.Path) -> Dict[str, Any]:
+    script_path = pathlib.Path(__file__).parent
     home_path = pathlib.Path.home()
-    name = file_name.name
 
     for file in (
         file_name,
-        script_path.joinpath(name),
-        home_path.joinpath(name),
+        script_path.joinpath(file_name),
+        home_path.joinpath(file_name),
     ):
         output = try_conf_file(file)
         if output is not None:
             return output
 
-    logger.critical("app configuration file not found in %s and %s",
-                    str(script_path),
-                    str(home_path))
+    logger.critical(
+        "app configuration file not found in %s and %s",
+        str(script_path),
+        str(home_path),
+    )
     raise FileNotFoundError
 
 
-def try_conf_file(file_path):
-    output = {}
+def try_conf_file(file_path: pathlib.Path) -> Optional[Dict[str, Any]]:
+    output: Dict[str, Any] = {}
     config = configparser.ConfigParser()
 
     try:
-        with file_path.open() as f:
-            config.read_file(f)
+        with file_path.open() as fh:
+            config.read_file(fh)
             logger.info("%s found", file_path)
             for key, value in config["Default"].items():
                 output[key] = value
