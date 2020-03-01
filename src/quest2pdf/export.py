@@ -43,7 +43,7 @@ class SerializeExam:
 
 
 class RLInterface:
-    def __init__(self, input_generator: Iterator[Item], output_file: Path):
+    def __init__(self, input_generator: Iterator[Item], output_file: Path, **kwargs):
         """This class print a two nesting level series of items in pdf.
         """
         self.file_name = output_file

@@ -11,6 +11,7 @@ from itertools import chain
 LOG_NAME = 'quest2pdf.' + __name__
 LOGGER = logging.getLogger(LOG_NAME)
 
+
 class CSVReader:
     """Convert from a Comma Separated Value file to different
     formats.
@@ -47,6 +48,7 @@ class CSVReader:
         except FileNotFoundError:
             LOGGER.critical("File di imput %s non trovato.", self.file_name)
             raise
+
 
 if __name__ == "__main__":
     import sys

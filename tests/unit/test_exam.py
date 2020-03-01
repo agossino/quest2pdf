@@ -139,8 +139,7 @@ def test_question_set_text2():
         ("correct_answer", None),
         ("correct_index", None),
         ("correct_letter", None),
-        ("attr_load_sequence", ("text", "subject", "image", "level")),
-        ("type_caster_sequence", (str, str, Path, int))
+        ("attr_load_sequence", ("text", "subject", "image", "level"))
     ],
 )
 def test_question_get(attribute, expected):

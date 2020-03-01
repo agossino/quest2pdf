@@ -17,6 +17,7 @@ def exception_printer(exeption_instance: Exception) -> str:
     except IndexError:
         return str(exeption_instance)
 
+
 def add_path_to_image(ref_path: str, dicts: List[Dict[str, str]]) -> None:
     """Add the reference path to the image file name in item "image"
     """
@@ -24,4 +25,10 @@ def add_path_to_image(ref_path: str, dicts: List[Dict[str, str]]) -> None:
         if row['image']:
             row["image"] = str(Path(ref_path) / row["image"])
 
+
+def safe_int(text: str) -> int:
+    try:
+        return int(text)
+    except ValueError:
+        return 0
 

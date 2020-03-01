@@ -22,6 +22,7 @@ from typing import (
 
 import logging
 from random import shuffle
+from utility import safe_int
 
 CasterType = Callable[[Any], Any]
 LOGNAME = "quest2pdf." + __name__
@@ -123,7 +124,7 @@ class Question:
             "image",
             "level",
         )
-        self._type_caster_sequence: Tuple[CasterType, ...] = (str, str, Path, int)
+        self._type_caster_sequence: Tuple[CasterType, ...] = (str, str, Path, safe_int)
 
     @property
     def text(self) -> str:

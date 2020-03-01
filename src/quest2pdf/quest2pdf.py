@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 import logging
 import parameter
-from filereader import CSVReader
 from tkinter import Menu, Label, YES, BOTH
 import _thread, queue
 from pathlib import Path
 from typing import Mapping, Dict, Any
+from filereader import CSVReader
 from guimixin import MainWindow
-from exam import ExamDoc
+from exam import Exam
+from export import SerializeExam, RLInterface
 import utility
 from _version import __version__
 
@@ -16,10 +17,11 @@ from _version import __version__
 LOGNAME = 'quest2pdf'
 LOGGER = logging.getLogger(LOGNAME)
 
+
 def main():
     """Reads parameter and start loop.
     """
-    param: Dict[str, str] = parameter.param_parser()
+    param: Dict[str, Any] = parameter.param_parser()
     LOGGER.debug(str(param))
 
     c = contentmix(param)
@@ -84,22 +86,28 @@ class contentmix(MainWindow):
                                   list_of_records)
 
         try:
-            exam = ExamDoc(list_of_records,
-                           nDoc=self.parameters['number'],
-                           exam_filename=self.parameters['exam'],
-                           correction_filename=self.parameters['correction'],
-                           destination=output_folder,
-                           to_shuffle=self.parameters['shuffle'],
-                           heading=self.parameters['page_heading']
-                           )
-            outcome = exam.close()
+            exam = Exam()
+            exam.attribute_selector = ("question", "subject", "image", "void",
+                                       "A", "void", "B", "void",
+                                       "C", "void", "D", "void")
+            exam.load(list_of_records)
+            serial_exam = SerializeExam(exam)
+            to_pdf_interface = RLInterface(serial_exam.serialize(),
+                                           Path("exam.pdf"),
+                                           nDoc=self.parameters['number'],
+                                           exam_filename=self.parameters['exam'],
+                                           correction_filename=self.parameters['correction'],
+                                           destination=output_folder,
+                                           to_shuffle=self.parameters['shuffle'],
+                                           heading=self.parameters['page_heading']
+                                           )
+            to_pdf_interface.build()
         except Exception as err:
             LOGGER.critical("CSVReader failed: %s %s",
                             err.__class__, err)
             self.errorbox(utility.exception_printer(err))
             raise
-        if outcome:
-            self.infobox("Avviso", "Conversione effettuata")
+        self.infobox("Avviso", "Conversione effettuata")
 
         self.data_queue.put("end")
 
@@ -123,7 +131,5 @@ class contentmix(MainWindow):
             raise
 
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
