@@ -35,11 +35,15 @@ class SerializeExam:
     def __init__(self, exam_alike: exam.Exam):
         self._exam: exam.Exam = exam_alike
 
-    def serialize(self) -> Generator[Item, None, None]:
+    def assignment(self) -> Generator[Item, None, None]:
         for question in self._exam.questions:
             yield Item(ItemLevel.top, question.text, question.image)
             for answer in question.answers:
                 yield Item(ItemLevel.sub, answer.text, answer.image)
+
+    def correction(self) -> Generator[Item, None, None]:
+        for counter, question in enumerate(self._exam.questions):
+            yield Item(ItemLevel.top, f"{counter}: {question.correct_letter}")
 
 
 class RLInterface:

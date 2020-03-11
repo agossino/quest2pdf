@@ -28,6 +28,7 @@ CasterType = Callable[[Any], Any]
 LOGNAME = "quest2pdf." + __name__
 LOGGER = logging.getLogger(LOGNAME)
 LETTER_A = "A"
+SPACE = " "
 
 
 class Answer:
@@ -125,6 +126,7 @@ class Question:
             "level",
         )
         self._type_caster_sequence: Tuple[CasterType, ...] = (str, str, Path, safe_int)
+        self._marker = "*"
 
     @property
     def text(self) -> str:
@@ -330,7 +332,8 @@ class Question:
             value: Any = getattr(self, attribute)
             output.append(f"{label}: {value}\n")
         for ordinal, answer in enumerate(self.answers):
-            output.append(f"{chr(ord(LETTER_A) + ordinal)} - ")
+            correct_marker =  self._marker if ordinal == self.correct_index else SPACE
+            output.append(f"{chr(ord(LETTER_A) + ordinal)}{correct_marker} - ")
             output.append(answer.__str__())
         return "".join(output)
 

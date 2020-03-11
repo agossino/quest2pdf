@@ -1,61 +1,74 @@
 import pytest
+import pathlib
 from export import ItemLevel, SerializeExam, Item, RLInterface
-import rlwrapper
+import exam
 
 
-class Ans:
-    def __init__(self, *values):
-        self.text, self.image = values
-
-
-class Quest:
-    def __init__(self, *values):
-        self.text, self.image, *self.answers = values
-
-
-class Ex:
-    def __init__(self, *values):
-        self.questions = values
+@pytest.fixture
+def dummy_exam():
+    q1 = exam.Question()
+    q1.text = "question 1"
+    q1.subject = "subject 1"
+    q1.image = pathlib.Path("home/img1.png")
+    a1 = exam.Answer()
+    a1.text = "answer 1"
+    a1.image = pathlib.Path("home/img2.png")
+    a2 = exam.Answer()
+    a2.text = "answer 2"
+    a2.image = pathlib.Path("home/img3.png")
+    q1.answers = (a1, a2)
+    q2 = exam.Question()
+    q2.text = "question 2"
+    q2.subject = "subject 3"
+    q2.image = pathlib.Path("home/img4.png")
+    q3 = exam.Question()
+    q3.text = "question 3"
+    q3.subject = "subject 3"
+    q3.image = pathlib.Path("home/img5.png")
+    a1 = exam.Answer()
+    a1.text = "answer 3"
+    a1.image = pathlib.Path("home/img6.png")
+    q3.add_answer(a1)
+    dummy_ex = exam.Exam(q1, q2, q3)
+    return dummy_ex
 
 
 def test_serialize0():
-    exam = Ex()
-    expected = SerializeExam(exam).serialize()
+    my_exam = exam.Exam()
+    expected = SerializeExam(my_exam).assignment()
 
     with pytest.raises(StopIteration):
         next(expected)
 
 
-def test_serialize1():
-    exam = Ex(Quest("1", "2", Ans("3", "4"), Ans("5", "6")),
-              Quest("7", "8"),
-              Quest("9", "10", Ans("11", "12")))
-    expected = SerializeExam(exam).serialize()
+def test_serialize1(dummy_exam):
+    my_exam = dummy_exam
+    expected = SerializeExam(my_exam).assignment()
 
     item = next(expected)
     assert item.item_level == ItemLevel.top
-    assert item.text == exam.questions[0].text
-    assert item.image == exam.questions[0].image
+    assert item.text == my_exam.questions[0].text
+    assert item.image == my_exam.questions[0].image
     item = next(expected)
     assert item.item_level == ItemLevel.sub
-    assert item.text == exam.questions[0].answers[0].text
-    assert item.image == exam.questions[0].answers[0].image
+    assert item.text == my_exam.questions[0].answers[0].text
+    assert item.image == my_exam.questions[0].answers[0].image
     item = next(expected)
     assert item.item_level == ItemLevel.sub
-    assert item.text == exam.questions[0].answers[1].text
-    assert item.image == exam.questions[0].answers[1].image
+    assert item.text == my_exam.questions[0].answers[1].text
+    assert item.image == my_exam.questions[0].answers[1].image
     item = next(expected)
     assert item.item_level == ItemLevel.top
-    assert item.text == exam.questions[1].text
-    assert item.image == exam.questions[1].image
+    assert item.text == my_exam.questions[1].text
+    assert item.image == my_exam.questions[1].image
     item = next(expected)
     assert item.item_level == ItemLevel.top
-    assert item.text == exam.questions[2].text
-    assert item.image == exam.questions[2].image
+    assert item.text == my_exam.questions[2].text
+    assert item.image == my_exam.questions[2].image
     item = next(expected)
     assert item.item_level == ItemLevel.sub
-    assert item.text == exam.questions[2].answers[0].text
-    assert item.image == exam.questions[2].answers[0].image
+    assert item.text == my_exam.questions[2].answers[0].text
+    assert item.image == my_exam.questions[2].answers[0].image
 
     with pytest.raises(StopIteration):
         next(expected)
@@ -83,6 +96,7 @@ class MonkeyPDFDoc:
     def clear():
         MonkeyPDFDoc.output = {"init": [],
                                "item": []}
+
 
 def test_rlinterface1(monkeypatch):
     MonkeyPDFDoc.clear()
