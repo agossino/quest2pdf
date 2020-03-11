@@ -360,6 +360,39 @@ def test_question_set_correct(attribute_set, expected,
     assert getattr(q, attribute2_get) == expected2
 
 
+def test_question_attr_load_sequence():
+    """Test attr_load_sequence
+    è usato da load_sequentially e print, deve essere testato anche da answer
+    """
+    """test_question_load3():
+    load question and only answer text;
+        answer image checked for default value.
+        """
+    quest = exam.Question()
+    sequence = ("Text", "Subject", "dir/ec/tor/y", 1, "Answer")
+    iterator = iter(sequence)
+    quest.load_sequentially(iterator)
+
+    assert quest.text == sequence[0]
+    assert quest.subject == sequence[1]
+    assert quest.image == Path(sequence[2])
+    assert quest.level == sequence[3]
+    assert quest.answers[0].text == sequence[4]
+    assert quest.answers[0].image == Path(".")
+    with pytest.raises(IndexError):
+        assert quest.answers[1].text == ""
+    with pytest.raises(IndexError):
+        assert quest.answers[1].image == Path(".")
+    pass
+
+
+def test_question_type_caster_sequence():
+    """test type_caster_sequence
+    è usato da load_sequentially, deve essere testato anche da answer
+    """
+    pass
+
+
 def test_question_shuffle1():
     """Test shuffle with no question added
     """

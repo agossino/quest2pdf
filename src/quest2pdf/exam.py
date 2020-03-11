@@ -16,8 +16,7 @@ from typing import (
     Iterable,
     Any,
     Callable,
-    Mapping,
-    Union,
+    Mapping
 )
 
 import logging
