@@ -42,8 +42,8 @@ class SerializeExam:
                 yield Item(ItemLevel.sub, answer.text, answer.image)
 
     def correction(self) -> Generator[Item, None, None]:
-        for counter, question in enumerate(self._exam.questions):
-            yield Item(ItemLevel.top, f"{counter}: {question.correct_letter}")
+        for counter, question in enumerate(self._exam.questions, start = 1):
+            yield Item(ItemLevel.top, f"{counter}: {question.correct_letter}", question.image)
 
 
 class RLInterface:

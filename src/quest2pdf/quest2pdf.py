@@ -92,7 +92,7 @@ class contentmix(MainWindow):
                                        "C", "void", "D", "void")
             exam.load(list_of_records)
             serial_exam = SerializeExam(exam)
-            to_pdf_interface = RLInterface(serial_exam.serialize(),
+            to_pdf_interface = RLInterface(serial_exam.assignment(),
                                            Path("exam.pdf"),
                                            nDoc=self.parameters['number'],
                                            exam_filename=self.parameters['exam'],
