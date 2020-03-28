@@ -24,11 +24,11 @@ def main():
     param: Dict[str, Any] = parameter.param_parser()
     LOGGER.debug(str(param))
 
-    c = contentmix(param)
+    c = ContentMix(param)
     c.mainloop()
 
 
-class contentmix(MainWindow):
+class ContentMix(MainWindow):
     def __init__(self, app_parameters: Mapping[str, str]):
         """Get application parameters and show the main window.
         """
@@ -36,10 +36,10 @@ class contentmix(MainWindow):
         MainWindow.__init__(self, Path(__file__).stem)
         self.data_queue = queue.Queue()
         self.geometry("500x500")
-        wellcome = "Da tabella a PDF: genera un file di domande "
-        wellcome += "a scelta multipla in formato PDF, a partire "
-        wellcome += "da un file in formato Comma Separated Value."
-        Label(self, text=wellcome, wraplength=500).pack(expand=YES, fill=BOTH)
+        welcome = "Da tabella a PDF: genera un file di domande "
+        welcome += "a scelta multipla in formato PDF, a partire "
+        welcome += "da un file in formato Comma Separated Value."
+        Label(self, text=welcome, wraplength=500).pack(expand=YES, fill=BOTH)
 
         menu = Menu(self)
         self.config(menu=menu)
@@ -93,11 +93,11 @@ class contentmix(MainWindow):
             exam.load(list_of_records)
             serial_exam = SerializeExam(exam)
             to_pdf_interface = RLInterface(serial_exam.assignment(),
-                                           Path("exam.pdf"),
+                                           Path(self.parameters["exam"]),
                                            nDoc=self.parameters['number'],
                                            exam_filename=self.parameters['exam'],
                                            correction_filename=self.parameters['correction'],
-                                           destination=output_folder,
+                                           destination=Path(output_folder),
                                            to_shuffle=self.parameters['shuffle'],
                                            heading=self.parameters['page_heading']
                                            )

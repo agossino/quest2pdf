@@ -81,7 +81,7 @@ def cli_parser() -> argparse.ArgumentParser:
         "--exam",
         help="file name prefix; date and time till ms, is appended.",
         type=str,
-        default="Exam",
+        default="Exam.pdf",
     )
     parser.add_argument(
         "-c",
@@ -202,12 +202,13 @@ def conf_file_parser(file_name: pathlib.Path) -> Dict[str, Any]:
         if output is not None:
             return output
 
-    logger.critical(
-        "app configuration file not found in %s and %s",
+    logger.warning(
+        "app configuration file not found in %s and %s: : default configuration will be used.",
         str(script_path),
         str(home_path),
     )
-    raise FileNotFoundError
+    return dict()
+    # raise FileNotFoundError
 
 
 def try_conf_file(file_path: pathlib.Path) -> Optional[Dict[str, Any]]:

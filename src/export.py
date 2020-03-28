@@ -50,17 +50,17 @@ class RLInterface:
     def __init__(self, input_generator: Iterator[Item], output_file: Path, **kwargs):
         """This class print a two nesting level series of items in pdf.
         """
-        self.file_name = output_file
-        self.input = input_generator
-        self._doc = rlwrapper.PDFDoc(output_file)
+        file_name = kwargs.get("destination", Path(".")) / output_file
+        self._input = input_generator
+        self._doc = rlwrapper.PDFDoc(file_name)
 
     def build(self) -> None:
         try:
-            item = next(self.input)
+            item = next(self._input)
             assert item.item_level == ItemLevel.top
             self._doc.add_item(item)
             while True:
-                item = next(self.input)
+                item = next(self._input)
                 if item.item_level == ItemLevel.top:
                     self._doc.add_item(item)
                 elif item.item_level == ItemLevel.sub:

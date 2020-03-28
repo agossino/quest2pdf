@@ -1,6 +1,5 @@
 import logging
 import pathlib
-from collections import namedtuple
 import pytest
 import parameter
 from unit_helper import (save_app_configuration,
@@ -8,16 +7,15 @@ from unit_helper import (save_app_configuration,
                          save_log_configuration)
 
 
-def test_default0(caplog, monkeypatch):
+def test_default0(caplog):
     """test no arguments on command line
     amd no logging configuration and
     no app configuration file found
     """
-    with pytest.raises(FileNotFoundError):
-        parameter.param_parser([])
+    parameter.param_parser([])
 
     assert caplog.record_tuples[3][1] == logging.WARNING
-    assert caplog.record_tuples[7][1] == logging.CRITICAL
+    assert caplog.record_tuples[7][1] == logging.WARNING
 
 
 def test_default1(tmp_path, caplog, monkeypatch):
@@ -27,7 +25,7 @@ def test_default1(tmp_path, caplog, monkeypatch):
     """
     expected = {"input": "questions.csv",
                 "number": 1,
-                "exam": "Exam",
+                "exam": "Exam.pdf",
                 "correction": "Correction",
                 "app_configuration_file": "conf.ini",
                 "log_configuration_file": "loggingConf.json",
@@ -54,7 +52,7 @@ def test_default2(tmp_path, caplog, monkeypatch):
     """
     expected = {"input": "questions.csv",
                 "number": 1,
-                "exam": "Exam",
+                "exam": "Exam.pdf",
                 "correction": "Correction",
                 "app_configuration_file": "conf.ini",
                 "log_configuration_file": "loggingConf.json",
@@ -82,7 +80,7 @@ def test_default3(tmp_path, caplog, monkeypatch):
     """
     expected = {"input": "questions.csv",
                 "number": 1,
-                "exam": "Exam",
+                "exam": "Exam.pdf",
                 "correction": "Correction",
                 "app_configuration_file": "conf.ini",
                 "log_configuration_file": "loggingConf.json",
@@ -108,15 +106,14 @@ def test_default4(tmp_path, caplog, monkeypatch):
     """
     app_configuration_file = str(pathlib.Path.home() / "conf.ini")
 
-    with pytest.raises(FileNotFoundError):
-        parameter.param_parser(["--app_configuration_file",
-                                app_configuration_file])
+    parameter.param_parser(["--app_configuration_file",
+                            app_configuration_file])
 
     assert caplog.record_tuples[3][1] == logging.WARNING
     assert app_configuration_file in caplog.record_tuples[4][2]
     assert app_configuration_file in caplog.record_tuples[5][2]
     assert app_configuration_file in caplog.record_tuples[6][2]
-    assert caplog.record_tuples[7][1] == logging.CRITICAL
+    assert caplog.record_tuples[7][1] == logging.WARNING
 
 
 def test_default5(tmp_path, monkeypatch):
@@ -125,7 +122,7 @@ def test_default5(tmp_path, monkeypatch):
     """
     expected = {"input": "questions.csv",
                 "number": 1,
-                "exam": "Exam",
+                "exam": "Exam.pdf",
                 "correction": "Correction",
                 "app_configuration_file": "conf.ini",
                 "log_configuration_file": "loggingConf.json",
@@ -154,7 +151,7 @@ def test_default6(tmp_path, monkeypatch):
     """
     expected = {"input": "questions.csv",
                 "number": 1,
-                "exam": "Exam",
+                "exam": "Exam.pdf",
                 "correction": "Correction",
                 "app_configuration_file": "conf.ini",
                 "log_configuration_file": "loggingConf.json",
@@ -187,7 +184,7 @@ def test_default7(tmp_path, monkeypatch):
     """
     expected = {"input": "questions.csv",
                 "number": 1,
-                "exam": "Exam",
+                "exam": "Exam.pdf",
                 "correction": "Correction",
                 "app_configuration_file": "conf.ini",
                 "log_configuration_file": "loggingConf.json",
