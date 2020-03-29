@@ -81,7 +81,7 @@ def cli_parser() -> argparse.ArgumentParser:
         "--exam",
         help="file name prefix; date and time till ms, is appended.",
         type=str,
-        default="Exam.pdf",
+        default="Exam",
     )
     parser.add_argument(
         "-c",
@@ -106,7 +106,7 @@ def cli_parser() -> argparse.ArgumentParser:
         "-s",
         "--shuffle",
         help="if set, question sequence will be shuffled.",
-        action="store_true",
+        action="store_false",
     )
     parser.add_argument(
         "-p",

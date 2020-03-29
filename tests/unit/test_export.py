@@ -89,23 +89,29 @@ def test_correction1(dummy_exam):
 
     item = next(expected)
     assert item.item_level == ItemLevel.top
-    assert item.text == f"1: {my_exam.questions[0].correct_letter}"
-    assert item.image == my_exam.questions[0].image
+    assert item.text == f"correction"
+    assert item.image == pathlib.Path(".")
     item = next(expected)
-    assert item.item_level == ItemLevel.top
-    assert item.text == f"2: {my_exam.questions[1].correct_letter}"
-    assert item.image == my_exam.questions[1].image
+    assert item.item_level == ItemLevel.sub
+    assert item.text == f"{my_exam.questions[0].correct_letter}"
+    assert item.image == pathlib.Path(".")
     item = next(expected)
-    assert item.item_level == ItemLevel.top
-    assert item.text == f"3: {my_exam.questions[2].correct_letter}"
-    assert item.image == my_exam.questions[2].image
+    assert item.item_level == ItemLevel.sub
+    assert item.text == f"{my_exam.questions[1].correct_letter}"
+    assert item.image == pathlib.Path(".")
+    item = next(expected)
+    assert item.item_level == ItemLevel.sub
+    assert item.text == f"{my_exam.questions[2].correct_letter}"
+    assert item.image == pathlib.Path(".")
+
+    with pytest.raises(StopIteration):
+        next(expected)
 
 
 class MonkeyPDFDoc:
-    output = {"init": [],
-              "item": []}
+    output = {"init": [], "item": []}
 
-    def __init__(self, output_file):
+    def __init__(self, output_file, **kwargs):
         MonkeyPDFDoc.output["init"].append(output_file)
 
     @staticmethod
@@ -121,8 +127,7 @@ class MonkeyPDFDoc:
 
     @staticmethod
     def clear():
-        MonkeyPDFDoc.output = {"init": [],
-                               "item": []}
+        MonkeyPDFDoc.output = {"init": [], "item": []}
 
 
 def test_rlinterface1(monkeypatch):
@@ -133,8 +138,7 @@ def test_rlinterface1(monkeypatch):
     interface = RLInterface(input_iter, file_name)
     interface.build()
 
-    assert MonkeyPDFDoc.output == {"init": [file_name],
-                                   "item": []}
+    assert MonkeyPDFDoc.output == {"init": [file_name], "item": []}
 
 
 def test_rlinterface2(monkeypatch):
@@ -155,44 +159,66 @@ def test_rlinterface3(monkeypatch):
     interface = RLInterface(input_iter, file_name)
     interface.build()
 
-    assert MonkeyPDFDoc.output == {"init": [file_name],
-                                   "item": [Item(ItemLevel.top, "text", "image")]}
+    assert MonkeyPDFDoc.output == {
+        "init": [file_name],
+        "item": [Item(ItemLevel.top, "text", "image")],
+    }
 
 
 def test_rlinterface4(monkeypatch):
     MonkeyPDFDoc.clear()
     monkeypatch.setattr("rlwrapper.PDFDoc", MonkeyPDFDoc)
-    input_iter = iter((Item(ItemLevel.top, "text 1", "image 1"),
-                       Item(ItemLevel.top, "text 2", "image 2")))
+    input_iter = iter(
+        (
+            Item(ItemLevel.top, "text 1", "image 1"),
+            Item(ItemLevel.top, "text 2", "image 2"),
+        )
+    )
     file_name = pathlib.Path("file")
     interface = RLInterface(input_iter, file_name)
     interface.build()
 
-    assert MonkeyPDFDoc.output == {"init": [file_name],
-                                   "item": [Item(ItemLevel.top, "text 1", "image 1"),
-                                            Item(ItemLevel.top, "text 2", "image 2")]}
+    assert MonkeyPDFDoc.output == {
+        "init": [file_name],
+        "item": [
+            Item(ItemLevel.top, "text 1", "image 1"),
+            Item(ItemLevel.top, "text 2", "image 2"),
+        ],
+    }
 
 
 def test_rlinterface5(monkeypatch):
     MonkeyPDFDoc.clear()
     monkeypatch.setattr("rlwrapper.PDFDoc", MonkeyPDFDoc)
-    input_iter = iter((Item(ItemLevel.top, "text 1", "image 1"),
-                       Item(ItemLevel.sub, "text 2", "image 2")))
+    input_iter = iter(
+        (
+            Item(ItemLevel.top, "text 1", "image 1"),
+            Item(ItemLevel.sub, "text 2", "image 2"),
+        )
+    )
     file_name = pathlib.Path("file")
     interface = RLInterface(input_iter, file_name)
     interface.build()
 
-    assert MonkeyPDFDoc.output == {"init": [file_name],
-                                   "item": [Item(ItemLevel.top, "text 1", "image 1"),
-                                            Item(ItemLevel.sub, "text 2", "image 2")]}
+    assert MonkeyPDFDoc.output == {
+        "init": [file_name],
+        "item": [
+            Item(ItemLevel.top, "text 1", "image 1"),
+            Item(ItemLevel.sub, "text 2", "image 2"),
+        ],
+    }
 
 
 def test_rlinterface6(monkeypatch):
     MonkeyPDFDoc.clear()
     monkeypatch.setattr("rlwrapper.PDFDoc", MonkeyPDFDoc)
-    input_iter = iter((Item(ItemLevel.top, "text 1", "image 1"),
-                       Item(ItemLevel.top, "text 2", "image 2"),
-                       Item(3, "text 3", "image 3")))
+    input_iter = iter(
+        (
+            Item(ItemLevel.top, "text 1", "image 1"),
+            Item(ItemLevel.top, "text 2", "image 2"),
+            Item(3, "text 3", "image 3"),
+        )
+    )
     file_name = pathlib.Path("file")
     interface = RLInterface(input_iter, file_name)
     with pytest.raises(ValueError):
@@ -202,17 +228,24 @@ def test_rlinterface6(monkeypatch):
 def test_rlinterface7(monkeypatch):
     MonkeyPDFDoc.clear()
     monkeypatch.setattr("rlwrapper.PDFDoc", MonkeyPDFDoc)
-    input_iter = iter((Item(ItemLevel.top, "text 1", "image 1"),
-                       Item(ItemLevel.top, "text 2", "image 2"),
-                       Item(ItemLevel.sub, "text 3", "image 3"),
-                       Item(ItemLevel.sub, "text 4", "image 4")))
+    input_iter = iter(
+        (
+            Item(ItemLevel.top, "text 1", "image 1"),
+            Item(ItemLevel.top, "text 2", "image 2"),
+            Item(ItemLevel.sub, "text 3", "image 3"),
+            Item(ItemLevel.sub, "text 4", "image 4"),
+        )
+    )
     file_name = pathlib.Path("file")
     interface = RLInterface(input_iter, file_name)
     interface.build()
 
-    assert MonkeyPDFDoc.output == {"init": [file_name],
-                                   "item": [Item(ItemLevel.top, "text 1", "image 1"),
-                                            Item(ItemLevel.top, "text 2", "image 2"),
-                                            Item(ItemLevel.sub, "text 3", "image 3"),
-                                            Item(ItemLevel.sub, "text 4", "image 4")
-                                            ]}
+    assert MonkeyPDFDoc.output == {
+        "init": [file_name],
+        "item": [
+            Item(ItemLevel.top, "text 1", "image 1"),
+            Item(ItemLevel.top, "text 2", "image 2"),
+            Item(ItemLevel.sub, "text 3", "image 3"),
+            Item(ItemLevel.sub, "text 4", "image 4"),
+        ],
+    }

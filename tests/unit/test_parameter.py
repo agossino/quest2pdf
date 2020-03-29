@@ -2,9 +2,11 @@ import logging
 import pathlib
 import pytest
 import parameter
-from unit_helper import (save_app_configuration,
-                         save_app_configuration_set,
-                         save_log_configuration)
+from unit_helper import (
+    save_app_configuration,
+    save_app_configuration_set,
+    save_log_configuration,
+)
 
 
 def test_default0(caplog):
@@ -23,16 +25,18 @@ def test_default1(tmp_path, caplog, monkeypatch):
     amd no logging configuration file found;
     app configuration file in current dir
     """
-    expected = {"input": "questions.csv",
-                "number": 1,
-                "exam": "Exam.pdf",
-                "correction": "Correction",
-                "app_configuration_file": "conf.ini",
-                "log_configuration_file": "loggingConf.json",
-                "page_heading": False,
-                "encoding": "utf-8",
-                "delimiter": ",",
-                "shuffle": False}
+    expected = {
+        "input": "questions.csv",
+        "number": 1,
+        "exam": "Exam",
+        "correction": "Correction",
+        "app_configuration_file": "conf.ini",
+        "log_configuration_file": "loggingConf.json",
+        "page_heading": False,
+        "encoding": "utf-8",
+        "delimiter": ",",
+        "shuffle": True,
+    }
 
     monkeypatch.chdir(tmp_path)
 
@@ -50,16 +54,18 @@ def test_default2(tmp_path, caplog, monkeypatch):
     no logging configuration file found,
     app configuration file in script dir
     """
-    expected = {"input": "questions.csv",
-                "number": 1,
-                "exam": "Exam.pdf",
-                "correction": "Correction",
-                "app_configuration_file": "conf.ini",
-                "log_configuration_file": "loggingConf.json",
-                "page_heading": False,
-                "encoding": "utf-8",
-                "delimiter": ",",
-                "shuffle": False}
+    expected = {
+        "input": "questions.csv",
+        "number": 1,
+        "exam": "Exam",
+        "correction": "Correction",
+        "app_configuration_file": "conf.ini",
+        "log_configuration_file": "loggingConf.json",
+        "page_heading": False,
+        "encoding": "utf-8",
+        "delimiter": ",",
+        "shuffle": True,
+    }
 
     mock_path = tmp_path
     monkeypatch.setattr(pathlib.Path, "parent", mock_path)
@@ -78,16 +84,18 @@ def test_default3(tmp_path, caplog, monkeypatch):
     no logging configuration file found,
     app configuration file in home dir
     """
-    expected = {"input": "questions.csv",
-                "number": 1,
-                "exam": "Exam.pdf",
-                "correction": "Correction",
-                "app_configuration_file": "conf.ini",
-                "log_configuration_file": "loggingConf.json",
-                "page_heading": False,
-                "encoding": "utf-8",
-                "delimiter": ",",
-                "shuffle": False}
+    expected = {
+        "input": "questions.csv",
+        "number": 1,
+        "exam": "Exam",
+        "correction": "Correction",
+        "app_configuration_file": "conf.ini",
+        "log_configuration_file": "loggingConf.json",
+        "page_heading": False,
+        "encoding": "utf-8",
+        "delimiter": ",",
+        "shuffle": True,
+    }
 
     monkeypatch.setenv("HOME", str(tmp_path))
 
@@ -106,8 +114,7 @@ def test_default4(tmp_path, caplog, monkeypatch):
     """
     app_configuration_file = str(pathlib.Path.home() / "conf.ini")
 
-    parameter.param_parser(["--app_configuration_file",
-                            app_configuration_file])
+    parameter.param_parser(["--app_configuration_file", app_configuration_file])
 
     assert caplog.record_tuples[3][1] == logging.WARNING
     assert app_configuration_file in caplog.record_tuples[4][2]
@@ -120,16 +127,18 @@ def test_default5(tmp_path, monkeypatch):
     """test no arguments on command line,
     log and app configuration file in current dir
     """
-    expected = {"input": "questions.csv",
-                "number": 1,
-                "exam": "Exam.pdf",
-                "correction": "Correction",
-                "app_configuration_file": "conf.ini",
-                "log_configuration_file": "loggingConf.json",
-                "page_heading": False,
-                "encoding": "utf-8",
-                "delimiter": ",",
-                "shuffle": False}
+    expected = {
+        "input": "questions.csv",
+        "number": 1,
+        "exam": "Exam",
+        "correction": "Correction",
+        "app_configuration_file": "conf.ini",
+        "log_configuration_file": "loggingConf.json",
+        "page_heading": False,
+        "encoding": "utf-8",
+        "delimiter": ",",
+        "shuffle": True,
+    }
 
     log_file = tmp_path / "application.log"
     monkeypatch.chdir(tmp_path)
@@ -149,16 +158,18 @@ def test_default6(tmp_path, monkeypatch):
     """test no arguments on command line,
     log and app configuration file in script dir
     """
-    expected = {"input": "questions.csv",
-                "number": 1,
-                "exam": "Exam.pdf",
-                "correction": "Correction",
-                "app_configuration_file": "conf.ini",
-                "log_configuration_file": "loggingConf.json",
-                "page_heading": False,
-                "encoding": "utf-8",
-                "delimiter": ",",
-                "shuffle": False}
+    expected = {
+        "input": "questions.csv",
+        "number": 1,
+        "exam": "Exam",
+        "correction": "Correction",
+        "app_configuration_file": "conf.ini",
+        "log_configuration_file": "loggingConf.json",
+        "page_heading": False,
+        "encoding": "utf-8",
+        "delimiter": ",",
+        "shuffle": True,
+    }
 
     script_dir = tmp_path / "script_dir"
     script_dir.mkdir()
@@ -182,16 +193,18 @@ def test_default7(tmp_path, monkeypatch):
     """test no arguments on command line,
     log and app configuration file in home dir
     """
-    expected = {"input": "questions.csv",
-                "number": 1,
-                "exam": "Exam.pdf",
-                "correction": "Correction",
-                "app_configuration_file": "conf.ini",
-                "log_configuration_file": "loggingConf.json",
-                "page_heading": False,
-                "encoding": "utf-8",
-                "delimiter": ",",
-                "shuffle": False}
+    expected = {
+        "input": "questions.csv",
+        "number": 1,
+        "exam": "Exam",
+        "correction": "Correction",
+        "app_configuration_file": "conf.ini",
+        "log_configuration_file": "loggingConf.json",
+        "page_heading": False,
+        "encoding": "utf-8",
+        "delimiter": ",",
+        "shuffle": True,
+    }
 
     home_dir = tmp_path / "home_dir"
     home_dir.mkdir()
@@ -214,16 +227,18 @@ def test_cli_set1(tmp_path, monkeypatch):
     """test arguments: cli has precedence on config file (number),
     config file has precedence on default (exam)
     """
-    expected = {"input": "my_questions.csv",
-                "number": 2,
-                "exam": "my exam",
-                "correction": "Correction",
-                "app_configuration_file": "conf.ini",
-                "log_configuration_file": "loggingConf.json",
-                "page_heading": False,
-                "encoding": "utf-8",
-                "delimiter": ",",
-                "shuffle": False}
+    expected = {
+        "input": "my_questions.csv",
+        "number": 2,
+        "exam": "my exam",
+        "correction": "Correction",
+        "app_configuration_file": "conf.ini",
+        "log_configuration_file": "loggingConf.json",
+        "page_heading": False,
+        "encoding": "utf-8",
+        "delimiter": ",",
+        "shuffle": True,
+    }
 
     input_arg = expected["input"]
     monkeypatch.chdir(tmp_path)
@@ -231,8 +246,6 @@ def test_cli_set1(tmp_path, monkeypatch):
     save_app_configuration_set(tmp_path / app_configuration_file)
     log_configuration_file = expected["log_configuration_file"]
     save_log_configuration(tmp_path / log_configuration_file)
-    parsed = parameter.param_parser([input_arg,
-                                     "--number",
-                                     "2"])
+    parsed = parameter.param_parser([input_arg, "--number", "2"])
 
     assert parsed == expected

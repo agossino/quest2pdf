@@ -3,6 +3,7 @@ import pytest
 from pathlib import Path
 from _collections import OrderedDict
 import random
+import logging
 
 
 def test_answer_text1():
@@ -23,7 +24,7 @@ def test_answer_get():
     text = "my answer"
     a = exam.Answer(text)
     expected_image = Path(".")
-    expected_attr_load_sequence = ('text', 'image')
+    expected_attr_load_sequence = ("text", "image")
     expected_type_caster_sequence = (str, Path)
 
     assert a.image == expected_image
@@ -139,7 +140,7 @@ def test_question_set_text2():
         ("correct_answer", None),
         ("correct_index", None),
         ("correct_letter", None),
-        ("attr_load_sequence", ("text", "subject", "image", "level"))
+        ("attr_load_sequence", ("text", "subject", "image", "level")),
     ],
 )
 def test_question_get(attribute, expected):
@@ -336,12 +337,12 @@ A4 = exam.Answer("That's her.")
     [
         ("correct_answer", A2, "correct_index", 1, "correct_letter", "B"),
         ("correct_index", 0, "correct_answer", A1, "correct_letter", "A"),
-        ("correct_letter", "C", "correct_index", 2, "correct_answer", A3)
+        ("correct_letter", "C", "correct_index", 2, "correct_answer", A3),
     ],
 )
-def test_question_set_correct(attribute_set, expected,
-                              attribute1_get, expected1,
-                              attribute2_get, expected2):
+def test_question_set_correct(
+    attribute_set, expected, attribute1_get, expected1, attribute2_get, expected2
+):
     """Test set correct answer by answer, index and letter
     """
     q = exam.Question("Who are you?")
@@ -438,16 +439,12 @@ def test_question_shuffle3():
     assert q.answers == (a4, a1, a3, a2)
     assert q.correct_answer == a2
     assert q.correct_index == 3
-    assert  q.correct_letter == "D"
+    assert q.correct_letter == "D"
 
 
 @pytest.mark.parametrize(
     "iterator, q_text, q_subject",
-    [(iter(("q1", "s1")),
-      "q1", "s1"),
-     (iter(("", "s1")),
-      "", "s1")
-     ],
+    [(iter(("q1", "s1")), "q1", "s1"), (iter(("", "s1")), "", "s1")],
 )
 def test_question_load1(iterator, q_text, q_subject):
     """load question text and subject; check for default image,  level
@@ -468,13 +465,34 @@ def test_question_load1(iterator, q_text, q_subject):
 
 @pytest.mark.parametrize(
     "iterator, q_text, q_subject, q_image, q_level, a1_text, a1_image, a2_text, a2_image",
-    [(iter(("d1", "s1", "i1", 1, "a11", "ai11", "a12", "ai12")),
-      "d1", "s1", Path("i1"), 1, "a11", Path("ai11"), "a12", Path("ai12")),
-     (iter(("", "s1", "", 2, "a11", "ai11", "", "ai12")),
-      "", "s1", Path("."), 2, "a11", Path("ai11"), "", Path("ai12"))
-     ],)
-def test_question_load2(iterator, q_text, q_subject, q_image, q_level,
-                        a1_text, a1_image, a2_text, a2_image):
+    [
+        (
+            iter(("d1", "s1", "i1", 1, "a11", "ai11", "a12", "ai12")),
+            "d1",
+            "s1",
+            Path("i1"),
+            1,
+            "a11",
+            Path("ai11"),
+            "a12",
+            Path("ai12"),
+        ),
+        (
+            iter(("", "s1", "", 2, "a11", "ai11", "", "ai12")),
+            "",
+            "s1",
+            Path("."),
+            2,
+            "a11",
+            Path("ai11"),
+            "",
+            Path("ai12"),
+        ),
+    ],
+)
+def test_question_load2(
+    iterator, q_text, q_subject, q_image, q_level, a1_text, a1_image, a2_text, a2_image
+):
     """load question and two answers.
     """
     quest = exam.Question()
@@ -524,8 +542,7 @@ def test_question_print():
     quest_image = "dir/ec/tor/y"
     quest_level = 1
     answer_text = "Answer"
-    iterator = iter((quest_text, quest_subject, quest_image, quest_level,
-                     answer_text))
+    iterator = iter((quest_text, quest_subject, quest_image, quest_level, answer_text))
     quest.load_sequentially(iterator)
 
     assert f"text: {quest.text}" in quest.__str__()
@@ -538,10 +555,12 @@ def test_question_print():
 
 @pytest.fixture
 def set_questions():
-    return (exam.Question(),
-            exam.Question("Who?"),
-            exam.Question("What?"),
-            exam.Question("When?"))
+    return (
+        exam.Question(),
+        exam.Question("Who?"),
+        exam.Question("What?"),
+        exam.Question("When?"),
+    )
 
 
 def test_exam():
@@ -556,12 +575,10 @@ def test_exam_init(set_questions):
     """test Exam with one and two arguments
     """
     ex1 = exam.Exam(set_questions[1])
-    ex2 = exam.Exam(set_questions[1],
-                    set_questions[2])
+    ex2 = exam.Exam(set_questions[1], set_questions[2])
 
     assert ex1.questions == (set_questions[1],)
-    assert ex2.questions == (set_questions[1],
-                             set_questions[2])
+    assert ex2.questions == (set_questions[1], set_questions[2])
 
 
 def test_exam_questions_getter():
@@ -597,9 +614,7 @@ def test_exam_attribute_selector2():
     """
     ex = exam.Exam()
     expected = ("hello", "2", "times")
-    ex.attribute_selector = (expected[0],
-                             int(expected[1]),
-                             expected[2])
+    ex.attribute_selector = (expected[0], int(expected[1]), expected[2])
 
     assert ex.attribute_selector == expected
 
@@ -629,8 +644,7 @@ def test_exam_add_question3(set_questions):
     ex.add_question(set_questions[2])
     ex.add_question(set_questions[3])
 
-    assert ex.questions == (set_questions[2],
-                            set_questions[3])
+    assert ex.questions == (set_questions[2], set_questions[3])
 
 
 def test_exam_load1():
@@ -642,16 +656,75 @@ def test_exam_load1():
     assert ex.questions == tuple()
 
 
-@pytest.mark.parametrize(("iterator, text0, subject0, image0, level0, a00_text, a00_image, a01_text, a01_image, "
-                          + "text1, subject1, image1, level1, a10_text, a10_image, a11_text, a11_image"),
-                         [((OrderedDict([('field A', 'ab'), ('field B', 'ac'), ('field C', 'ad'), ('field D', '1'),
-                                        ('field E', 'ae'), ('field F', 'af'), ('field G', 'ag')]),
-                            OrderedDict([('field A', 'ba'), ('field B', 'bc'), ('field C', 'bd'), ('field D', '2'),
-                                        ('field E', 'be'), ('field F', 'bf'), ('field G', 'bg')])),
-                           "ab", "ac", Path("ad"), 1, "ae", Path("af"), "ag", Path("."),
-                           "ba", "bc", Path("bd"), 2, "be", Path("bf",), "bg", Path("."))])
-def test_exam_load2(iterator, text0, subject0, image0, level0, a00_text, a00_image, a01_text, a01_image,
-                    text1, subject1, image1, level1, a10_text, a10_image, a11_text, a11_image):
+@pytest.mark.parametrize(
+    (
+        "iterator, text0, subject0, image0, level0, a00_text, a00_image, a01_text, a01_image, "
+        + "text1, subject1, image1, level1, a10_text, a10_image, a11_text, a11_image"
+    ),
+    [
+        (
+            (
+                OrderedDict(
+                    [
+                        ("field A", "ab"),
+                        ("field B", "ac"),
+                        ("field C", "ad"),
+                        ("field D", "1"),
+                        ("field E", "ae"),
+                        ("field F", "af"),
+                        ("field G", "ag"),
+                    ]
+                ),
+                OrderedDict(
+                    [
+                        ("field A", "ba"),
+                        ("field B", "bc"),
+                        ("field C", "bd"),
+                        ("field D", "2"),
+                        ("field E", "be"),
+                        ("field F", "bf"),
+                        ("field G", "bg"),
+                    ]
+                ),
+            ),
+            "ab",
+            "ac",
+            Path("ad"),
+            1,
+            "ae",
+            Path("af"),
+            "ag",
+            Path("."),
+            "ba",
+            "bc",
+            Path("bd"),
+            2,
+            "be",
+            Path("bf"),
+            "bg",
+            Path("."),
+        )
+    ],
+)
+def test_exam_load2(
+    iterator,
+    text0,
+    subject0,
+    image0,
+    level0,
+    a00_text,
+    a00_image,
+    a01_text,
+    a01_image,
+    text1,
+    subject1,
+    image1,
+    level1,
+    a10_text,
+    a10_image,
+    a11_text,
+    a11_image,
+):
     """test without setting _attribute_selector
     2 rows -> 2 questions with 2 answers each but second answer image is not provided
     """
@@ -690,8 +763,7 @@ def test_exam_load3():
     and missing row
     """
     ex = exam.Exam()
-    reader = (OrderedDict([]),
-              OrderedDict([("A", "What?"), ("B", "topic")]))
+    reader = (OrderedDict([]), OrderedDict([("A", "What?"), ("B", "topic")]))
     ex.load(reader)
 
     print(ex)
@@ -700,26 +772,67 @@ def test_exam_load3():
     assert ex.questions[0].subject == "topic"
 
 
-@pytest.mark.parametrize(("iterator, text, subject, image, level, "
-                          + "a0_text, a0_image, a1_text, a1_image, a2_text, a2_image"),
-                         [((OrderedDict([('field A', 'A1'), ('field B', 'A2'), ('field C', 'T'),
-                                         ('field D', 'A3'), ('field E', 'A4'), ('field F', 'S'),
-                                         ('field G', 2), ('void', '')]),),
-                           "T", "S", Path("."), 2, "A1", Path("."), "A2", Path("."), "A3", Path("."))])
-def test_exam_load4(iterator, text, subject, image, level,
-                    a0_text, a0_image, a1_text, a1_image, a2_text, a2_image):
+@pytest.mark.parametrize(
+    (
+        "iterator, text, subject, image, level, "
+        + "a0_text, a0_image, a1_text, a1_image, a2_text, a2_image"
+    ),
+    [
+        (
+            (
+                OrderedDict(
+                    [
+                        ("field A", "A1"),
+                        ("field B", "A2"),
+                        ("field C", "T"),
+                        ("field D", "A3"),
+                        ("field E", "A4"),
+                        ("field F", "S"),
+                        ("field G", 2),
+                        ("void", ""),
+                    ]
+                ),
+            ),
+            "T",
+            "S",
+            Path("."),
+            2,
+            "A1",
+            Path("."),
+            "A2",
+            Path("."),
+            "A3",
+            Path("."),
+        )
+    ],
+)
+def test_exam_load4(
+    iterator,
+    text,
+    subject,
+    image,
+    level,
+    a0_text,
+    a0_image,
+    a1_text,
+    a1_image,
+    a2_text,
+    a2_image,
+):
     """test setting _attribute_selector
     """
     ex = exam.Exam()
-    ex.attribute_selector = ("field C",
-                             "field F",
-                             "void",
-                             "field G",
-                             "field A",
-                             "void",
-                             "field B",
-                             "void",
-                             "field D")
+    ex.attribute_selector = (
+        "field C",
+        "field F",
+        "void",
+        "field G",
+        "field A",
+        "void",
+        "field B",
+        "void",
+        "field D",
+    )
     ex.load(iterator)
 
     assert ex.questions[0].text == text
@@ -740,19 +853,91 @@ def test_exam_load4(iterator, text, subject, image, level,
         assert ex.questions[1].answers[2].image == Path(".")
 
 
-@pytest.mark.parametrize("iterator, text, q_image, level, a_image",
-                         [((OrderedDict([('field A', 'A1'), ('field B', 'A2'), ('field C', 'T'),
-                                         ('field D', 'A3'), ('field E', 'A4'), ('field F', 'S'),
-                                         ('field G', 2), ('void', '')]),),
-                           f"text: A1", f"image: .", f"level: 2", f"image: S")])
+@pytest.mark.parametrize(
+    "iterator, correct_letters",
+    [
+        (
+            (
+                OrderedDict(
+                    [
+                        ("question", " Q1"),
+                        ("A", "A1"),
+                        ("B", "B1"),
+                        ("C", "C1"),
+                        ("D", "D1"),
+                        ("E", "E1"),
+                        ("void", ""),
+                    ]
+                ),
+                OrderedDict(
+                    [
+                        ("question", "Q2"),
+                        ("A", "A2"),
+                        ("B", "B2"),
+                        ("C", "C2"),
+                        ("D", "D2"),
+                        ("E", "E2"),
+                        ("void", ""),
+                    ]
+                ),
+            ),
+            tuple(("D", "C")),
+        )
+    ],
+)
+def test_shuffle(iterator, correct_letters):
+    ex = exam.Exam()
+    ex.attribute_selector = (
+        "question",
+        "void",
+        "void",
+        "void",
+        "A",
+        "void",
+        "B",
+        "void",
+        "C",
+        "void",
+        "D",
+        "void",
+        "E",
+    )
+    ex.load(iterator)
+    ex.shuffle()
+    logging.warning("exam: %s", ex)
+
+    for question, letter in zip(ex.questions, correct_letters):
+        assert question.correct_letter == letter
+
+
+@pytest.mark.parametrize(
+    "iterator, text, q_image, level, a_image",
+    [
+        (
+            (
+                OrderedDict(
+                    [
+                        ("field A", "A1"),
+                        ("field B", "A2"),
+                        ("field C", "T"),
+                        ("field D", "A3"),
+                        ("field E", "A4"),
+                        ("field F", "S"),
+                        ("field G", 2),
+                        ("void", ""),
+                    ]
+                ),
+            ),
+            f"text: A1",
+            f"image: .",
+            f"level: 2",
+            f"image: S",
+        )
+    ],
+)
 def test_exam_print(iterator, text, q_image, level, a_image):
     ex = exam.Exam()
-    ex.attribute_selector = ("field A",
-                             "void",
-                             "void",
-                             "field G",
-                             "void",
-                             "field F")
+    ex.attribute_selector = ("field A", "void", "void", "field G", "void", "field F")
     ex.load(iterator)
 
     assert text in ex.__str__()

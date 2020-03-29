@@ -1,8 +1,8 @@
 from setuptools import find_packages, setup
-from src.quest2pdf import _version
+from src import _version
 
 with open("README.md", "r") as longdesc:
-   long_description = longdesc.read()
+    long_description = longdesc.read()
 
 setup(
    name="quest2pdf",

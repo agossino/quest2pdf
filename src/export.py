@@ -42,17 +42,25 @@ class SerializeExam:
                 yield Item(ItemLevel.sub, answer.text, answer.image)
 
     def correction(self) -> Generator[Item, None, None]:
-        for counter, question in enumerate(self._exam.questions, 1):
-            yield Item(ItemLevel.top, f"{counter}: {question.correct_letter}", question.image)
+        if self._exam.questions != ():
+            yield Item(ItemLevel.top, f"correction", Path("."))
+        for question in self._exam.questions:
+            yield Item(ItemLevel.sub, f"{question.correct_letter}", Path("."))
 
 
 class RLInterface:
     def __init__(self, input_generator: Iterator[Item], output_file: Path, **kwargs):
         """This class print a two nesting level series of items in pdf.
         """
-        file_name = kwargs.get("destination", Path(".")) / output_file
+        file_name: Path = kwargs.get("destination", Path(".")) / output_file
         self._input = input_generator
-        self._doc = rlwrapper.PDFDoc(file_name)
+        sub_item_bullet_type: str = kwargs.get("sub_item_bullet_type", "A")
+        top_item_bullet_type: str = kwargs.get("top_item_bullet_type", "1")
+        self._doc = rlwrapper.PDFDoc(
+            file_name,
+            top_item_bullet_type=top_item_bullet_type,
+            sub_item_bullet_type=sub_item_bullet_type,
+        )
 
     def build(self) -> None:
         try:

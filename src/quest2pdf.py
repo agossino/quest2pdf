@@ -5,7 +5,7 @@ import parameter
 from tkinter import Menu, Label, YES, BOTH
 import _thread, queue
 from pathlib import Path
-from typing import Mapping, Dict, Any
+from typing import Mapping, Dict, Any, List
 from filereader import CSVReader
 from guimixin import MainWindow
 from exam import Exam
@@ -14,7 +14,7 @@ import utility
 from _version import __version__
 
 
-LOGNAME = 'quest2pdf'
+LOGNAME = "quest2pdf"
 LOGGER = logging.getLogger(LOGNAME)
 
 
@@ -65,57 +65,88 @@ class ContentMix(MainWindow):
             self.errorbox("Indicare sorgente e destinazione")
 
     def to_pdf(self, input_file, output_folder):
-        try:
-            file_content = CSVReader(input_file,
-                                     self.parameters['encoding'],
-                                     self.parameters['delimiter'])
+        rows = self._get_rows(input_file)
 
-            list_of_records = file_content.to_dictlist()
-        except Exception as err:
-            LOGGER.critical("CSVReader failed: %s %s",
-                            err.__class__, err)
-            self.errorbox(utility.exception_printer(err))
-            raise
-
-        if not list_of_records:
+        if not rows:
             LOGGER.warning("Empty rows.")
             self.errorbox("dati non validi")
             return
 
-        utility.add_path_to_image(Path(input_file).parent,
-                                  list_of_records)
-
         try:
             exam = Exam()
-            exam.attribute_selector = ("question", "subject", "image", "void",
-                                       "A", "void", "B", "void",
-                                       "C", "void", "D", "void")
-            exam.load(list_of_records)
+            exam.attribute_selector = (
+                "question",
+                "subject",
+                "image",
+                "void",
+                "A",
+                "void",
+                "B",
+                "void",
+                "C",
+                "void",
+                "D",
+                "void",
+            )
+            exam.load(rows)
             serial_exam = SerializeExam(exam)
-            to_pdf_interface = RLInterface(serial_exam.assignment(),
-                                           Path(self.parameters["exam"]),
-                                           nDoc=self.parameters['number'],
-                                           exam_filename=self.parameters['exam'],
-                                           correction_filename=self.parameters['correction'],
-                                           destination=Path(output_folder),
-                                           to_shuffle=self.parameters['shuffle'],
-                                           heading=self.parameters['page_heading']
-                                           )
-            to_pdf_interface.build()
+            for number in range(self.parameters["number"]):
+                if self.parameters["shuffle"]:
+                    exam.shuffle()
+                output_file_name_exam = Path(f"{self.parameters['exam']}_{number}.pdf")
+                to_pdf_interface = RLInterface(
+                    serial_exam.assignment(),
+                    output_file_name_exam,
+                    destination=output_folder,
+                    heading=self.parameters["page_heading"],
+                )
+                to_pdf_interface.build()
+                output_file_name_correction = Path(
+                    f"{self.parameters['correction']}_{number}.pdf"
+                )
+                to_pdf_interface = RLInterface(
+                    serial_exam.correction(),
+                    output_file_name_correction,
+                    destination=output_folder,
+                    top_item_bullet_type="A",
+                    sub_item_bullet_type="1",
+                )
+                to_pdf_interface.build()
         except Exception as err:
-            LOGGER.critical("CSVReader failed: %s %s",
-                            err.__class__, err)
+            LOGGER.critical("CSVReader failed: %s %s", err.__class__, err)
             self.errorbox(utility.exception_printer(err))
             raise
         self.infobox("Avviso", "Conversione effettuata")
 
         self.data_queue.put("end")
 
+    def _get_rows(self, input_file: Path) -> List[Dict[str, str]]:
+        try:
+            file_content = CSVReader(
+                str(input_file),
+                self.parameters["encoding"],
+                self.parameters["delimiter"],
+            )
+
+            rows = file_content.to_dictlist()
+        except Exception as err:
+            LOGGER.critical("CSVReader failed: %s %s", err.__class__, err)
+            self.errorbox(utility.exception_printer(err))
+            raise
+
+        utility.add_path_to_image(Path(input_file).parent, rows)
+
+        return rows
+
     def show_version(self) -> None:
         """Show application version
         """
-        self.infobox("Versione", "{app_name}: {version}".format(app_name=Path(__file__).stem,
-                                                                version=__version__))
+        self.infobox(
+            "Versione",
+            "{app_name}: {version}".format(
+                app_name=Path(__file__).stem, version=__version__
+            ),
+        )
 
     def show_handbook(self) -> None:
         """Show handbook/how-to (long text).
@@ -125,8 +156,7 @@ class ContentMix(MainWindow):
         try:
             self.handbook(str(script_path.joinpath(help_file_name)))
         except Exception as err:
-            LOGGER.critical("Handbook opening failed: %s %s",
-                            err.__class__, err)
+            LOGGER.critical("Handbook opening failed: %s %s", err.__class__, err)
             self.errorbox(utility.exception_printer(err))
             raise
 

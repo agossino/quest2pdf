@@ -8,16 +8,7 @@
 # based on number of alternative answers provided
 
 from pathlib import Path
-from typing import (
-    Tuple,
-    List,
-    Optional,
-    Iterator,
-    Iterable,
-    Any,
-    Callable,
-    Mapping
-)
+from typing import Tuple, List, Optional, Iterator, Iterable, Any, Callable, Mapping
 
 import logging
 from random import shuffle
@@ -331,7 +322,7 @@ class Question:
             value: Any = getattr(self, attribute)
             output.append(f"{label}: {value}\n")
         for ordinal, answer in enumerate(self.answers):
-            correct_marker =  self._marker if ordinal == self.correct_index else SPACE
+            correct_marker = self._marker if ordinal == self.correct_index else SPACE
             output.append(f"{chr(ord(LETTER_A) + ordinal)}{correct_marker} - ")
             output.append(answer.__str__())
         return "".join(output)
@@ -388,8 +379,12 @@ class Exam:
                 iterator = iter(data)
                 quest.load_sequentially(iterator)
 
+    def shuffle(self):
+        for question in self._questions:
+            question.shuffle()
+
     def __str__(self) -> str:
         output: List[str] = []
-        for q in self._questions:
-            output.append(q.__str__())
+        for question in self._questions:
+            output.append(question.__str__())
         return "".join(output)
