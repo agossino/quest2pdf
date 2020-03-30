@@ -271,7 +271,9 @@ class Question:
             self._correct_letter = chr(ord(LETTER_A) + pointer)
 
     def load_sequentially(self, iterator: Iterator[Any]) -> None:
-        """Load all the attribute sequentially from iterator. Returns when
+        """Load all the attribute sequentially from iterator, according to
+        attr_load_sequence and type_caster_sequence. Empty answers are skipped.
+        Empty means without text and image. Returns when
         iterator is exhausted and StopIteration is caught.
         """
         attribute_iterator: Iterator[str] = iter(self.attr_load_sequence)
@@ -294,8 +296,8 @@ class Question:
 
     def _load_answers(self, iterator: Iterator[Any]) -> None:
         """Load answers. An answer is filled even if there are not enough elements
-        in the iterator. Returns when iterator is exhausted
-        and StopIteration is caught.
+        in the iterator. Empty answers are not loaded.
+        Returns when iterator is exhausted and StopIteration is caught.
         """
         iterator_top_items: List[str] = []
         try:
@@ -304,7 +306,8 @@ class Question:
                 iterator_top_items.append(next(iterator))
                 iterator_top_items.append(next(iterator))
                 answer.load_sequentially(iter(iterator_top_items))
-                self.add_answer(answer)
+                if answer.text != "" or answer.image != Path("."):
+                    self.add_answer(answer)
                 iterator_top_items = []
         except StopIteration:
             if len(iterator_top_items) != 0:
@@ -312,7 +315,8 @@ class Question:
                     answer.load_sequentially(iter(iterator_top_items))
                 except StopIteration:
                     pass
-                self.add_answer(answer)
+                if answer.text != "" or answer.image != Path("."):
+                    self.add_answer(answer)
             raise
 
     def __str__(self) -> str:

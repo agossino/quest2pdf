@@ -533,6 +533,29 @@ def test_question_load3():
         assert quest.answers[1].image == Path(".")
 
 
+def test_question_load4():
+    """load question and only some empty answers;
+    check empty answers are not loaded.
+    """
+    quest = exam.Question()
+    sequence = ("Text", "Subject", "dir/ec/tor/y", 1, "", "","Answer", "", "", "", "", "image.png")
+    iterator = iter(sequence)
+    quest.load_sequentially(iterator)
+
+    assert quest.text == sequence[0]
+    assert quest.subject == sequence[1]
+    assert quest.image == Path(sequence[2])
+    assert quest.level == sequence[3]
+    assert quest.answers[0].text == sequence[6]
+    assert quest.answers[0].image == Path(".")
+    assert quest.answers[1].text == sequence[10]
+    assert quest.answers[1].image == Path(sequence[11])
+    with pytest.raises(IndexError):
+        assert quest.answers[2].text == ""
+    with pytest.raises(IndexError):
+        assert quest.answers[2].image == Path(".")
+
+
 def test_question_print():
     """test __str__ method
     """
