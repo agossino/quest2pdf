@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import logging
+import parameter
+from tkinter import Menu, Label, YES, BOTH
+import _thread, queue
+from pathlib import Path
+from typing import Mapping, Dict, Any, List
+from filereader import CSVReader
+from guimixin import MainWindow
+from exam import Exam
+from export import SerializeExam, RLInterface
+import utility
+from _version import __version__
+
+
+LOGNAME = "quest2pdf"
+LOGGER = logging.getLogger(LOGNAME)
+
+
+def main():
+    """Reads parameter and start loop.
+    """
+    param: Dict[str, Any] = parameter.param_parser()
+    LOGGER.debug(str(param))
+
+    c = ContentMix(param)
+    c.mainloop()
+
+
+class ContentMix(MainWindow):
+    def __init__(self, app_parameters: Mapping[str, str]):
+        """Get application parameters and show the main window.
+        """
+        self.parameters = app_parameters
+        MainWindow.__init__(self, Path(__file__).stem)
+        self.data_queue = queue.Queue()
+        self.geometry("500x500")
+        welcome = "Da tabella a PDF: genera un file di domande "
+        welcome += "a scelta multipla in formato PDF, a partire "
+        welcome += "da un file in formato Comma Separated Value."
+        Label(self, text=welcome, wraplength=500).pack(expand=YES, fill=BOTH)
+
+        menu = Menu(self)
+        self.config(menu=menu)
+        file = Menu(menu)
+
+        file.add_command(label="Converti", command=self.read_input_file)
+        file.add_command(label="Configura", command=self.notdone)
+        file.add_command(label="Termina", command=self.quit)
+        menu.add_cascade(label="File", menu=file)
+
+        info = Menu(menu)
+        info.add_command(label="Guida", command=self.show_handbook)
+        info.add_command(label="Versione", command=self.show_version)
+        menu.add_cascade(label="Info", menu=info)
+
+    def read_input_file(self):
+        while True:
+            input_file, output_folder = self.enter_openfile()
+            if input_file and output_folder:
+                _thread.start_new_thread(self.to_pdf, (input_file, output_folder))
+                break
+            # TODO in case of abort, exit from this dialog
+            self.errorbox("Indicare sorgente e destinazione")
+
+    def to_pdf(self, input_file, output_folder):
+        rows = self._get_rows(input_file)
+
+        if not rows:
+            LOGGER.warning("Empty rows.")
+            self.errorbox("dati non validi")
+            return
+
+        try:
+            exam = Exam()
+            exam.attribute_selector = (
+                "question",
+                "subject",
+                "image",
+                "void",
+                "A",
+                "void",
+                "B",
+                "void",
+                "C",
+                "void",
+                "D",
+                "void",
+            )
+            exam.load(rows)
+            serial_exam = SerializeExam(exam)
+            for number in range(self.parameters["number"]):
+                if self.parameters["shuffle"]:
+                    exam.shuffle()
+                output_file_name_exam = Path(f"{self.parameters['exam']}_{number}.pdf")
+                to_pdf_interface = RLInterface(
+                    serial_exam.assignment(),
+                    output_file_name_exam,
+                    destination=output_folder,
+                    heading=self.parameters["page_heading"],
+                )
+                to_pdf_interface.build()
+                output_file_name_correction = Path(
+                    f"{self.parameters['correction']}_{number}.pdf"
+                )
+                to_pdf_interface = RLInterface(
+                    serial_exam.correction(),
+                    output_file_name_correction,
+                    destination=output_folder,
+                    top_item_bullet_type="A",
+                    sub_item_bullet_type="1",
+                )
+                to_pdf_interface.build()
+        except Exception as err:
+            LOGGER.critical("CSVReader failed: %s %s", err.__class__, err)
+            self.errorbox(utility.exception_printer(err))
+            raise
+        self.infobox("Avviso", "Conversione effettuata")
+
+        self.data_queue.put("end")
+
+    def _get_rows(self, input_file: Path) -> List[Dict[str, str]]:
+        try:
+            file_content = CSVReader(
+                str(input_file),
+                self.parameters["encoding"],
+                self.parameters["delimiter"],
+            )
+
+            rows = file_content.to_dictlist()
+        except Exception as err:
+            LOGGER.critical("CSVReader failed: %s %s", err.__class__, err)
+            self.errorbox(utility.exception_printer(err))
+            raise
+
+        utility.add_path_to_image(Path(input_file).parent, rows)
+
+        return rows
+
+    def show_version(self) -> None:
+        """Show application version
+        """
+        self.infobox(
+            "Versione",
+            "{app_name}: {version}".format(
+                app_name=Path(__file__).stem, version=__version__
+            ),
+        )
+
+    def show_handbook(self) -> None:
+        """Show handbook/how-to (long text).
+        """
+        help_file_name: str = "help.txt"
+        script_path: Path = Path(__file__).resolve().parent
+        try:
+            self.handbook(str(script_path.joinpath(help_file_name)))
+        except Exception as err:
+            LOGGER.critical("Handbook opening failed: %s %s", err.__class__, err)
+            self.errorbox(utility.exception_printer(err))
+            raise
+
+
+if __name__ == "__main__":
+    main()

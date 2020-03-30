@@ -11,11 +11,10 @@ def exception_printer(exeption_instance: Exception) -> str:
     pattern: str = "\W+"
     exc_list: List[str] = re.split(pattern, str(exeption_instance.__class__))
     try:
-        return (exc_list[2]
-                + ": "
-                + str(exeption_instance))
+        return exc_list[2] + ": " + str(exeption_instance)
     except IndexError:
         return str(exeption_instance)
+
 
 def add_path_to_image(ref_path: str, dicts: List[Dict[str, str]]) -> None:
     """Add the reference path to the image file name in item "image"
@@ -27,3 +26,8 @@ def add_path_to_image(ref_path: str, dicts: List[Dict[str, str]]) -> None:
             pass
 
 
+def safe_int(text: str) -> int:
+    try:
+        return int(text)
+    except ValueError:
+        return 0
