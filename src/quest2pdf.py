@@ -6,11 +6,10 @@ from tkinter import Menu, Label, YES, BOTH
 import _thread, queue
 from pathlib import Path
 from typing import Mapping, Dict, Any, List
-from filereader import CSVReader
+from utility import CSVReader, exception_printer
 from guimixin import MainWindow
 from exam import Exam
 from export import SerializeExam, RLInterface
-import utility
 from _version import __version__
 
 
@@ -89,6 +88,7 @@ class ContentMix(MainWindow):
                 "void",
             )
             exam.load(rows)
+            exam.add_path_parent(input_file)
             serial_exam = SerializeExam(exam)
             for number in range(self.parameters["number"]):
                 if self.parameters["shuffle"]:
@@ -114,7 +114,7 @@ class ContentMix(MainWindow):
                 to_pdf_interface.build()
         except Exception as err:
             LOGGER.critical("CSVReader failed: %s %s", err.__class__, err)
-            self.errorbox(utility.exception_printer(err))
+            self.errorbox(exception_printer(err))
             raise
         self.infobox("Avviso", "Conversione effettuata")
 
@@ -131,10 +131,8 @@ class ContentMix(MainWindow):
             rows = file_content.to_dictlist()
         except Exception as err:
             LOGGER.critical("CSVReader failed: %s %s", err.__class__, err)
-            self.errorbox(utility.exception_printer(err))
+            self.errorbox(exception_printer(err))
             raise
-
-        utility.add_path_to_image(Path(input_file).parent, rows)
 
         return rows
 
@@ -157,7 +155,7 @@ class ContentMix(MainWindow):
             self.handbook(str(script_path.joinpath(help_file_name)))
         except Exception as err:
             LOGGER.critical("Handbook opening failed: %s %s", err.__class__, err)
-            self.errorbox(utility.exception_printer(err))
+            self.errorbox(exception_printer(err))
             raise
 
 

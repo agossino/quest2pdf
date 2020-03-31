@@ -9,7 +9,6 @@
 
 from pathlib import Path
 from typing import Tuple, List, Optional, Iterator, Iterable, Any, Callable, Mapping
-
 import logging
 from random import shuffle
 from utility import safe_int
@@ -103,7 +102,7 @@ class Question:
     def __init__(self, text: str = ""):
         self.text: str = text
         self.subject: str = ""
-        self.image: Path = Path(".")
+        self.image: Path = Path()
         self.level: int = 0
         self._answers: List[Answer] = []
         self._correct_answer: Optional[Answer] = None  # setter bypassed
@@ -244,6 +243,17 @@ class Question:
         self._correct_index = pointer
         self._correct_letter = chr(ord(LETTER_A) + pointer)
 
+    def add_parent_path(self, file_path: Path) -> None:
+        self.image = (
+            file_path.parent / self.image if self.image != Path() else self.image
+        )
+        for answer in self.answers:
+            answer.image = (
+                file_path.parent / answer.image
+                if answer.image != Path()
+                else answer.image
+            )
+
     @property
     def attr_load_sequence(self) -> Tuple[str, ...]:
         return self._attr_load_sequence
@@ -306,7 +316,7 @@ class Question:
                 iterator_top_items.append(next(iterator))
                 iterator_top_items.append(next(iterator))
                 answer.load_sequentially(iter(iterator_top_items))
-                if answer.text != "" or answer.image != Path("."):
+                if answer.text != "" or answer.image != Path():
                     self.add_answer(answer)
                 iterator_top_items = []
         except StopIteration:
@@ -315,7 +325,7 @@ class Question:
                     answer.load_sequentially(iter(iterator_top_items))
                 except StopIteration:
                     pass
-                if answer.text != "" or answer.image != Path("."):
+                if answer.text != "" or answer.image != Path():
                     self.add_answer(answer)
             raise
 
@@ -370,6 +380,10 @@ class Exam:
             self._questions.append(question)
         else:
             raise TypeError(f"{question} is not a Question")
+
+    def add_path_parent(self, file_path: Path):
+        for question in self._questions:
+            question.add_parent_path(file_path)
 
     def load(self, iterable: Iterable[Mapping[str, Any]]) -> None:
         for row in iterable:

@@ -3,7 +3,6 @@ import pytest
 from pathlib import Path
 from _collections import OrderedDict
 import random
-import logging
 
 
 def test_answer_text1():
@@ -361,6 +360,39 @@ def test_question_set_correct(
     assert getattr(q, attribute2_get) == expected2
 
 
+def test_add_path_parent0():
+    path = Path("home/my_home/file.txt")
+    image_path = Path("image1.png")
+    quest = exam.Question("question text")
+    quest.image = Path()
+    answer_1 = exam.Answer("answer 1 text")
+    answer_1.image = image_path
+    answer_2 = exam.Answer("answer 2 text")
+    quest.answers = (answer_1, answer_2)
+    quest.add_parent_path(path)
+
+    assert quest.image == Path()
+    assert quest.answers[0].image == path.parent / image_path
+    assert quest.answers[1].image == Path()
+
+
+def test_add_path_parent1():
+    path = Path("home/my_home/file.txt")
+    image_path = Path("image1.png")
+    quest = exam.Question("question text")
+    quest.image = image_path
+    answer_1 = exam.Answer("answer 1 text")
+    answer_1.image = Path()
+    answer_2 = exam.Answer("answer 2 text")
+    answer_2.image = image_path
+    quest.answers = (answer_1, answer_2)
+    quest.add_parent_path(path)
+
+    assert quest.image == path.parent / image_path
+    assert quest.answers[0].image == Path()
+    assert quest.answers[1].image == path.parent / image_path
+
+
 def test_question_attr_load_sequence():
     """Test attr_load_sequence
     è usato da load_sequentially e print, deve essere testato anche da answer
@@ -683,6 +715,24 @@ def test_exam_add_question3(set_questions):
     assert ex.questions == (set_questions[2], set_questions[3])
 
 
+def test_exam_add_path_parent(set_questions):
+    image = Path("images/image.png")
+    path = Path("/project/A/")
+    ex = exam.Exam()
+    set_questions[0].image = Path()
+    ans = exam.Answer("Answer")
+    ans.image = image
+    set_questions[0].add_answer(ans)
+    ex.add_question(set_questions[0])
+    set_questions[1].image = image
+    ex.add_question(set_questions[1])
+    ex.add_path_parent(path)
+
+    assert ex.questions[0].image == Path()
+    assert ex.questions[0].answers[0].image == path.parent / image
+    assert ex.questions[1].image == path.parent / image
+
+
 def test_exam_load1():
     """test empty iterable
     """
@@ -940,7 +990,6 @@ def test_shuffle(iterator, correct_letters):
     )
     ex.load(iterator)
     ex.shuffle()
-    logging.warning("exam: %s", ex)
 
     for question, letter in zip(ex.questions, correct_letters):
         assert question.correct_letter == letter
