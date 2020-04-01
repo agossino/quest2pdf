@@ -13,10 +13,33 @@ def test_answer_text1():
 
 
 def test_answer_text2():
-    text = "Roma"
+    text = "text"
     a = exam.Answer(text)
 
     assert a.text == text
+
+
+def test_answer_text3():
+    image = Path()
+
+    with pytest.raises(TypeError):
+        exam.Answer(image)
+
+
+def test_answer_image0():
+    text = "text"
+    image = Path("my_pic.jpg")
+    a = exam.Answer(text, image)
+
+    assert a.text == text
+    assert a.image == image
+
+
+def test_answer_image1():
+    text = "text"
+
+    with pytest.raises(TypeError):
+        exam.Answer(text, text)
 
 
 def test_answer_get():
@@ -36,7 +59,7 @@ def test_answer_get():
     [
         pytest.param("text", 0.1, marks=pytest.mark.xfail),
         ("image", Path(r"\home")),
-        pytest.param("image", r"\home", marks=pytest.mark.xfail),
+        pytest.param("image", "\image.png", marks=pytest.mark.xfail),
     ],
 )
 def test_answer_set(attribute, expected):
@@ -115,18 +138,23 @@ def test_answer_print():
     assert f"image: {image}" in a.__str__()
 
 
-def test_question_get_text1():
+def test_question_init0():
     q = exam.Question()
     expected = ""
 
     assert q.text == expected
 
 
-def test_question_set_text2():
-    text = "How old are you?"
-    q = exam.Question(text)
+@pytest.mark.parametrize(
+    "text, subject, image, level", [("text", "subject", Path(), 0)]
+)
+def test_question_init2(text, subject, image, level):
+    q = exam.Question(text, subject=subject, image=image, level=level)
 
     assert q.text == text
+    assert q.subject == subject
+    assert q.image == image
+    assert q.level == level
 
 
 @pytest.mark.parametrize(
@@ -363,10 +391,8 @@ def test_question_set_correct(
 def test_add_path_parent0():
     path = Path("home/my_home/file.txt")
     image_path = Path("image1.png")
-    quest = exam.Question("question text")
-    quest.image = Path()
-    answer_1 = exam.Answer("answer 1 text")
-    answer_1.image = image_path
+    quest = exam.Question("question text", image=Path())
+    answer_1 = exam.Answer("answer 1 text", image_path)
     answer_2 = exam.Answer("answer 2 text")
     quest.answers = (answer_1, answer_2)
     quest.add_parent_path(path)
@@ -379,51 +405,15 @@ def test_add_path_parent0():
 def test_add_path_parent1():
     path = Path("home/my_home/file.txt")
     image_path = Path("image1.png")
-    quest = exam.Question("question text")
-    quest.image = image_path
-    answer_1 = exam.Answer("answer 1 text")
-    answer_1.image = Path()
-    answer_2 = exam.Answer("answer 2 text")
-    answer_2.image = image_path
+    quest = exam.Question("question text", image=image_path)
+    answer_1 = exam.Answer("answer 1 text", Path())
+    answer_2 = exam.Answer("answer 2 text", image=image_path)
     quest.answers = (answer_1, answer_2)
     quest.add_parent_path(path)
 
     assert quest.image == path.parent / image_path
     assert quest.answers[0].image == Path()
     assert quest.answers[1].image == path.parent / image_path
-
-
-def test_question_attr_load_sequence():
-    """Test attr_load_sequence
-    è usato da load_sequentially e print, deve essere testato anche da answer
-    """
-    """test_question_load3():
-    load question and only answer text;
-        answer image checked for default value.
-        """
-    quest = exam.Question()
-    sequence = ("Text", "Subject", "dir/ec/tor/y", 1, "Answer")
-    iterator = iter(sequence)
-    quest.load_sequentially(iterator)
-
-    assert quest.text == sequence[0]
-    assert quest.subject == sequence[1]
-    assert quest.image == Path(sequence[2])
-    assert quest.level == sequence[3]
-    assert quest.answers[0].text == sequence[4]
-    assert quest.answers[0].image == Path(".")
-    with pytest.raises(IndexError):
-        assert quest.answers[1].text == ""
-    with pytest.raises(IndexError):
-        assert quest.answers[1].image == Path(".")
-    pass
-
-
-def test_question_type_caster_sequence():
-    """test type_caster_sequence
-    è usato da load_sequentially, deve essere testato anche da answer
-    """
-    pass
 
 
 def test_question_shuffle1():
@@ -472,6 +462,26 @@ def test_question_shuffle3():
     assert q.correct_answer == a2
     assert q.correct_index == 3
     assert q.correct_letter == "D"
+
+
+def test_question_load_sequentially():
+    """Test load_sequentially,, attr_load_sequence and type_caster_sequence
+    """
+    quest = exam.Question()
+    sequence = ("Text", "Subject", "dir/ec/tor/y", "1", "Answer")
+    iterator = iter(sequence)
+    quest.load_sequentially(iterator)
+
+    assert quest.text == sequence[0]
+    assert quest.subject == sequence[1]
+    assert quest.image == Path(sequence[2])
+    assert quest.level == int(sequence[3])
+    assert quest.answers[0].text == sequence[4]
+    assert quest.answers[0].image == Path(".")
+    with pytest.raises(IndexError):
+        assert quest.answers[1].text == ""
+    with pytest.raises(IndexError):
+        assert quest.answers[1].image == Path(".")
 
 
 @pytest.mark.parametrize(
@@ -720,8 +730,7 @@ def test_exam_add_path_parent(set_questions):
     path = Path("/project/A/")
     ex = exam.Exam()
     set_questions[0].image = Path()
-    ans = exam.Answer("Answer")
-    ans.image = image
+    ans = exam.Answer("Answer", image)
     set_questions[0].add_answer(ans)
     ex.add_question(set_questions[0])
     set_questions[1].image = image

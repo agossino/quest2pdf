@@ -24,9 +24,9 @@ class Answer:
     """An answer with optional image.
     """
 
-    def __init__(self, text: str = ""):
+    def __init__(self, text: str = "", image=Path()):
         self.text: str = text
-        self.image: Path = Path(".")
+        self.image: Path = image
         self._attr_load_sequence: Tuple[str, ...] = ("text", "image")
         self._type_caster_sequence: Tuple[CasterType, ...] = (str, Path)
 
@@ -99,11 +99,13 @@ class Question:
     the level of difficulty.
     """
 
-    def __init__(self, text: str = ""):
+    def __init__(
+        self, text: str = "", subject: str = "", image: Path = Path(), level: int = 0
+    ):
         self.text: str = text
-        self.subject: str = ""
-        self.image: Path = Path()
-        self.level: int = 0
+        self.subject: str = subject
+        self.image: Path = image
+        self.level: int = level
         self._answers: List[Answer] = []
         self._correct_answer: Optional[Answer] = None  # setter bypassed
         self._correct_index: Optional[int] = None  # setter bypassed
