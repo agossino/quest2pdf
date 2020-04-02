@@ -7,7 +7,7 @@ import _thread, queue
 from pathlib import Path
 from typing import Mapping, Dict, Any, List
 from utility import CSVReader, exception_printer
-from guimixin import MainWindow..
+from guimixin import MainWindow
 from exam import Exam
 from export import SerializeExam, RLInterface
 from _version import __version__
