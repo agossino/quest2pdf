@@ -76,25 +76,25 @@ def test_pdfdoc1(tmp_path):
     doc = PDFDoc(file)
     doc.add_item(next(data))
     assert doc._top_item_start == 1
-    assert isinstance(doc._last_ins_item[-1], ListFlowable)
-    assert len(doc._last_ins_item) == 1
+    assert isinstance(doc._in_progress_item[-1], ListFlowable)
+    assert len(doc._in_progress_item) == 1
     assert doc._doc == []
     doc.add_item(next(data))
     assert doc._top_item_start == 2
-    assert isinstance(doc._last_ins_item[-1], ListFlowable)
-    assert len(doc._last_ins_item) == 1
+    assert isinstance(doc._in_progress_item[-1], ListFlowable)
+    assert len(doc._in_progress_item) == 1
     assert isinstance(doc._doc[-1], ListFlowable)
     assert len(doc._doc) == 2
     doc.add_sub_item(next(data))
     assert doc._top_item_start == 2
-    assert isinstance(doc._last_ins_item[-1], ListItem)
-    assert len(doc._last_ins_item) == 2
+    assert isinstance(doc._in_progress_item[-1], ListItem)
+    assert len(doc._in_progress_item) == 2
     assert isinstance(doc._doc[-1], ListFlowable)
     assert len(doc._doc) == 2
     doc.add_sub_item(next(data))
     assert doc._top_item_start == 2
-    assert isinstance(doc._last_ins_item[-1], ListItem)
-    assert len(doc._last_ins_item) == 3
+    assert isinstance(doc._in_progress_item[-1], ListItem)
+    assert len(doc._in_progress_item) == 3
     assert isinstance(doc._doc[-1], ListFlowable)
     assert len(doc._doc) == 2
     doc.build()
@@ -119,25 +119,25 @@ def test_pdfdoc2(tmp_path):
     doc = PDFDoc(file)
     doc.add_item(next(data))
     assert doc._top_item_start == 1
-    assert isinstance(doc._last_ins_item[-1], ListFlowable)
-    assert len(doc._last_ins_item) == 1
+    assert isinstance(doc._in_progress_item[-1], ListFlowable)
+    assert len(doc._in_progress_item) == 1
     assert doc._doc == []
     doc.add_item(next(data))
     assert doc._top_item_start == 2
-    assert isinstance(doc._last_ins_item[-1], ListFlowable)
-    assert len(doc._last_ins_item) == 1
+    assert isinstance(doc._in_progress_item[-1], ListFlowable)
+    assert len(doc._in_progress_item) == 1
     assert isinstance(doc._doc[-1], ListFlowable)
     assert len(doc._doc) == 2
     doc.add_sub_item(next(data))
     assert doc._top_item_start == 2
-    assert isinstance(doc._last_ins_item[-1], ListItem)
-    assert len(doc._last_ins_item) == 2
+    assert isinstance(doc._in_progress_item[-1], ListItem)
+    assert len(doc._in_progress_item) == 2
     assert isinstance(doc._doc[-1], ListFlowable)
     assert len(doc._doc) == 2
     doc.add_sub_item(next(data))
     assert doc._top_item_start == 2
-    assert isinstance(doc._last_ins_item[-1], ListItem)
-    assert len(doc._last_ins_item) == 3
+    assert isinstance(doc._in_progress_item[-1], ListItem)
+    assert len(doc._in_progress_item) == 3
     assert isinstance(doc._doc[-1], ListFlowable)
     assert len(doc._doc) == 2
     doc.build()

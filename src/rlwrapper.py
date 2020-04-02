@@ -1,6 +1,6 @@
 from pathlib import Path
 import logging
-from typing import List
+from typing import List, Union
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -51,10 +51,11 @@ def get_std_aspect_image(file_name: Path, width: int = 50 * mm) -> Image:
 
 
 class PDFDoc:
+    """PDF Document builder. Mainly designed for ordered/unordered lists."""
     def __init__(self, output_file: Path, **kwargs):
         self._file_name: str = str(output_file)
         self._doc: List[ListFlowable, ...] = []
-        self._last_ins_item = []
+        self._in_progress_item: List[Union[ListFlowable, ListItem]] = []
         self._top_item_start: int = 1
         self._top_item_bullet_type: str = kwargs.get("top_item_bullet_type", "1")
         self._sub_item_bullet_type: str = kwargs.get("sub_item_bullet_type", "A")
@@ -70,6 +71,8 @@ class PDFDoc:
 
     @property
     def separator(self):
+        """question_set separator.
+        """
         style = Style()
         return ListFlowable(
             [Paragraph(self._text_separator, style.title)],
@@ -77,9 +80,11 @@ class PDFDoc:
             start="",
         )
 
-    def build_last_ins_item(self):
+    def _build_in_progress_item(self):
+        """Extend _doc with a list of two ListFlowable: an item container with
+        zero or more sub item container and a separator."""
         question_set = ListFlowable(
-            self._last_ins_item,
+            self._in_progress_item,
             bulletType=self._top_item_bullet_type,
             start=self._top_item_start,
         )
@@ -87,18 +92,24 @@ class PDFDoc:
         self._doc.extend([question_set, self.separator])
 
     def add_item(self, item):
-        if len(self._last_ins_item) != 0:
-            self.build_last_ins_item()
-        self._last_ins_item = [self._build_item(item)]
+        """First processes _in_progress_item if not empty,
+        then create a new _in_progress_item with a top item container."""
+        if len(self._in_progress_item) != 0:
+            self._build_in_progress_item()
+        self._in_progress_item = [self._build_item(item)]
 
     def add_sub_item(self, item):
+        """Add a sub item container to _in_progress_item.
+        """
         item_list = self._build_item(item)
-        value = 1 if len(self._last_ins_item) == 1 else None
-        self._last_ins_item.append(
+        value = 1 if len(self._in_progress_item) == 1 else None
+        self._in_progress_item.append(
             ListItem(item_list, bulletType=self._sub_item_bullet_type, value=value)
         )
 
-    def _build_item(self, item):
+    def _build_item(self, item) -> ListFlowable:
+        """Build an item container.
+        """
         style = Style(spaceAfter=self._space_text_image)
         space = Spacer(1, self._space_after_item)
         if item.image != Path("."):
@@ -109,8 +120,10 @@ class PDFDoc:
         return ListFlowable(question, leftIndent=0, bulletType="bullet", start="")
 
     def build(self):
-        if len(self._last_ins_item) != 0:
-            self.build_last_ins_item()
+        """Save _doc in a file.
+        """
+        if len(self._in_progress_item) != 0:
+            self._build_in_progress_item()
 
         doc = SimpleDocTemplate(
             self._file_name,
@@ -174,7 +187,7 @@ class PDFDoc:
 
 
 class NumberedCanvas(canvas.Canvas):
-    """add page info to each page (page x of y)"""
+    """Add page info to each page (page x of y)"""
 
     def __init__(self, *args, **kwargs):
         canvas.Canvas.__init__(self, *args, **kwargs)
