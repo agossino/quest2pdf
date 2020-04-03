@@ -230,11 +230,11 @@ class Question:
         self._correct_letter = chr(ord(LETTER_A) + value)
 
     @property
-    def correct_letter(self) -> Optional[str]:
+    def correct_value(self) -> Optional[str]:
         return self._correct_letter
 
-    @correct_letter.setter
-    def correct_letter(self, value: str) -> None:
+    @correct_value.setter
+    def correct_value(self, value: str) -> None:
         """Set the correct answer according to the given letter,
         where the first answer added is labeled A"""
         try:

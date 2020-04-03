@@ -166,7 +166,7 @@ def test_question_init2(text, subject, image, level):
         ("answers", tuple()),
         ("correct_answer", None),
         ("correct_index", None),
-        ("correct_letter", None),
+        ("correct_value", None),
         ("attr_load_sequence", ("text", "subject", "image", "level")),
     ],
 )
@@ -225,7 +225,7 @@ def test_question_answer_add2():
 
     assert q.answers == (a1, a2)
     assert q.correct_index == 0
-    assert q.correct_letter == "A"
+    assert q.correct_value == "A"
 
 
 def test_question_answer_add_wrong():
@@ -263,7 +263,7 @@ def test_question_answer_correct1():
 
     assert q.correct_answer == a
     assert q.correct_index == 0
-    assert q.correct_letter == "A"
+    assert q.correct_value == "A"
 
 
 def test_question_answer_correct2():
@@ -341,7 +341,7 @@ def test_question_correct_index_set_invalid():
         q.correct_index = 2
 
 
-def test_question_correct_letter_set_invalid():
+def test_question_correct_value_set_invalid():
     """Test set invalid correct answer letter
     """
     q = exam.Question("Who are you?")
@@ -350,7 +350,7 @@ def test_question_correct_letter_set_invalid():
     q.add_answer(a1)
     q.add_answer(a2)
     with pytest.raises(ValueError):
-        q.correct_letter = "Z"
+        q.correct_value = "Z"
 
 
 A1 = exam.Answer("That's me.")
@@ -362,9 +362,9 @@ A4 = exam.Answer("That's her.")
 @pytest.mark.parametrize(
     "attribute_set, expected, attribute1_get, expected1, attribute2_get, expected2",
     [
-        ("correct_answer", A2, "correct_index", 1, "correct_letter", "B"),
-        ("correct_index", 0, "correct_answer", A1, "correct_letter", "A"),
-        ("correct_letter", "C", "correct_index", 2, "correct_answer", A3),
+        ("correct_answer", A2, "correct_index", 1, "correct_value", "B"),
+        ("correct_index", 0, "correct_answer", A1, "correct_value", "A"),
+        ("correct_value", "C", "correct_index", 2, "correct_answer", A3),
     ],
 )
 def test_question_set_correct(
@@ -426,7 +426,7 @@ def test_question_shuffle1():
     assert q.answers == ()
     assert q.correct_answer is None
     assert q.correct_index is None
-    assert q.correct_letter is None
+    assert q.correct_value is None
 
 
 def test_question_shuffle2():
@@ -440,7 +440,7 @@ def test_question_shuffle2():
 
     assert q.correct_answer == a1
     assert q.correct_index == 0
-    assert q.correct_letter == "A"
+    assert q.correct_value == "A"
 
 
 def test_question_shuffle3():
@@ -461,7 +461,7 @@ def test_question_shuffle3():
     assert q.answers == (a4, a1, a3, a2)
     assert q.correct_answer == a2
     assert q.correct_index == 3
-    assert q.correct_letter == "D"
+    assert q.correct_value == "D"
 
 
 def test_question_load_sequentially():
@@ -949,7 +949,7 @@ def test_exam_load4(
 
 
 @pytest.mark.parametrize(
-    "iterator, correct_letters",
+    "iterator, correct_values",
     [
         (
             (
@@ -980,7 +980,7 @@ def test_exam_load4(
         )
     ],
 )
-def test_shuffle(iterator, correct_letters):
+def test_shuffle(iterator, correct_values):
     ex = exam.Exam()
     ex.attribute_selector = (
         "question",
@@ -1000,8 +1000,8 @@ def test_shuffle(iterator, correct_letters):
     ex.load(iterator)
     ex.shuffle()
 
-    for question, letter in zip(ex.questions, correct_letters):
-        assert question.correct_letter == letter
+    for question, value in zip(ex.questions, correct_values):
+        assert question.correct_value == value
 
 
 @pytest.mark.parametrize(
