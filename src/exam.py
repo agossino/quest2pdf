@@ -93,6 +93,24 @@ class Answer:
         return "".join(output)
 
 
+class TrueFalseAnswer(Answer):
+    def __init__(self, boolean: bool, image: Path = Path()):
+        self.boolean: bool = boolean
+        text = "True" if self.boolean else "False"
+        super().__init__(text, image)
+
+    @property
+    def boolean(self) -> bool:
+        return self._boolean
+
+    @boolean.setter
+    def boolean(self, boolean):
+        if isinstance(boolean, bool):
+            self._boolean = boolean
+        else:
+            raise TypeError(f"{boolean} is not a boolean")
+
+
 class Question:
     """Question is the question with the correct answer. Optionally it can
     have image, the subject (math, science ...), an integer representing
@@ -342,6 +360,20 @@ class Question:
             output.append(f"{chr(ord(LETTER_A) + ordinal)}{correct_marker} - ")
             output.append(answer.__str__())
         return "".join(output)
+
+
+class MultiChoiceQuest(Question):
+    """Multi choice question.
+    """
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
+class TrueFalseQuest(Question):
+    """Multi choice question.
+    """
+    def __init__(self, *args):
+        super().__init__(*args)
 
 
 class Exam:

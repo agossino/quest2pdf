@@ -138,6 +138,19 @@ def test_answer_print():
     assert f"image: {image}" in a.__str__()
 
 
+def test_truefalse_answer0():
+    with pytest.raises(TypeError):
+        exam.TrueFalseAnswer()
+
+
+def test_truefalse_answer1():
+    a = exam.TrueFalseAnswer(True)
+
+    assert a.boolean == True
+    assert a.text == "True"
+    assert a.image == Path(".")
+
+
 def test_question_init0():
     q = exam.Question()
     expected = ""
@@ -388,7 +401,7 @@ def test_question_set_correct(
     assert getattr(q, attribute2_get) == expected2
 
 
-def test_add_path_parent0():
+def test_question_add_path_parent0():
     path = Path("home/my_home/file.txt")
     image_path = Path("image1.png")
     quest = exam.Question("question text", image=Path())
@@ -402,7 +415,7 @@ def test_add_path_parent0():
     assert quest.answers[1].image == Path()
 
 
-def test_add_path_parent1():
+def test_question_add_path_parent1():
     path = Path("home/my_home/file.txt")
     image_path = Path("image1.png")
     quest = exam.Question("question text", image=image_path)
@@ -629,6 +642,12 @@ def test_question_print():
     assert f"level: {quest_level}" in quest.__str__()
     assert f"text: {answer_text}" in quest.__str__()
     assert f"image: ." in quest.__str__()
+
+
+def test_multichoice():
+    quest = exam.MultiChoiceQuest("Who?", "Philosophy", Path("image.png"), 3)
+
+    assert quest.text == "Who?"
 
 
 @pytest.fixture
