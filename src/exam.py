@@ -24,38 +24,10 @@ class Answer:
     """An answer with optional image.
     """
 
-    def __init__(self, text: str = "", image=Path()):
-        self.text: str = text
-        self.image: Path = image
-        self._attr_load_sequence: Tuple[str, ...] = ("text", "image")
-        self._type_caster_sequence: Tuple[CasterType, ...] = (str, Path)
+    def __init__(self):
+        self._attr_load_sequence: Tuple[str] = tuple()
+        self._type_caster_sequence: Tuple[CasterType, ...] = tuple()
 
-    @property
-    def text(self) -> str:
-        return self._text
-
-    @text.setter
-    def text(self, text: str) -> None:
-        """Text is the answer.
-        """
-        if isinstance(text, str):
-            self._text = text
-        else:
-            raise TypeError(f"{text} is not a string")
-
-    @property
-    def image(self) -> Path:
-        """Image associated with the answer: it can help or
-        can be the answer.
-        """
-        return self._image
-
-    @image.setter
-    def image(self, file_path: Path) -> None:
-        if isinstance(file_path, Path):
-            self._image = file_path
-        else:
-            raise TypeError(f"{file_path} is not a Path")
 
     @property
     def attr_load_sequence(self) -> Tuple[str, ...]:
@@ -93,11 +65,50 @@ class Answer:
         return "".join(output)
 
 
+class MultiChoiceAnswer(Answer):
+    def __init__(self, text: str = "", image: Path = Path()):
+        self.text: str = text
+        self.image: Path = image
+        super().__init__()
+        self._attr_load_sequence: Tuple[str, ...] = ("text", "image")
+        self._type_caster_sequence: Tuple[CasterType, ...] = (str, Path)
+
+    @property
+    def text(self) -> str:
+        return self._text
+
+    @text.setter
+    def text(self, text: str) -> None:
+        """Text is the answer.
+        """
+        if isinstance(text, str):
+            self._text = text
+        else:
+            raise TypeError(f"{text} is not a string")
+
+    @property
+    def image(self) -> Path:
+        """Image associated with the answer: it can help or
+        can be the answer.
+        """
+        return self._image
+
+    @image.setter
+    def image(self, file_path: Path) -> None:
+        if isinstance(file_path, Path):
+            self._image = file_path
+        else:
+            raise TypeError(f"{file_path} is not a Path")
+
+
 class TrueFalseAnswer(Answer):
     def __init__(self, boolean: bool, image: Path = Path()):
         self.boolean: bool = boolean
-        text = "True" if self.boolean else "False"
-        super().__init__(text, image)
+        self.image: Path = image
+        self._text = "True" if self.boolean else "False"
+        super().__init__()
+        self._attr_load_sequence: Tuple[str, ...] = ("boolean", "image")
+        self._type_caster_sequence: Tuple[CasterType, ...] = (bool, Path)
 
     @property
     def boolean(self) -> bool:
@@ -107,8 +118,27 @@ class TrueFalseAnswer(Answer):
     def boolean(self, boolean):
         if isinstance(boolean, bool):
             self._boolean = boolean
+            self._text = "True" if self.boolean else "False"
         else:
             raise TypeError(f"{boolean} is not a boolean")
+
+    @property
+    def image(self) -> Path:
+        """Image associated with the answer: it can help or
+        can be the answer.
+        """
+        return self._image
+
+    @image.setter
+    def image(self, file_path: Path) -> None:
+        if isinstance(file_path, Path):
+            self._image = file_path
+        else:
+            raise TypeError(f"{file_path} is not a Path")
+
+    @property
+    def text(self):
+        return self._text
 
 
 class Question:
