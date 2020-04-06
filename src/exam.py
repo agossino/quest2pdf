@@ -157,7 +157,7 @@ class Question:
         self._answers: List[Answer] = []
         self._correct_answer: Optional[Answer] = None  # setter bypassed
         self._correct_index: Optional[int] = None  # setter bypassed
-        self._correct_letter: Optional[str] = None  # setter bypassed
+        # self._correct_letter: Optional[str] = None  # setter bypassed
         self._attr_load_sequence: Tuple[str, ...] = (
             "text",
             "subject",
@@ -235,14 +235,14 @@ class Question:
         list(map(self.add_answer, values))
 
     def add_answer(self, answer: Answer, is_correct: bool = False) -> None:
-        """Add an Answer. As side effect, correct answer is set.
+        """Add an Answer. Correct answer is set.
         The first answer is the correct one: successive answers
         are set accordingly to is_correct argument.
         """
         if isinstance(answer, Answer):
-            correct_answer = self._get_correct_answer(answer, is_correct)
             self._answers.append(answer)
-            self.correct_answer = correct_answer
+            if is_correct or self._correct_answer is None:
+                self.correct_answer = answer
         else:
             raise TypeError(f"{answer} is not an Answer")
 
@@ -260,7 +260,7 @@ class Question:
             raise ValueError(f"correct_answer argument has never been added")
         pointer = self._answers.index(self._correct_answer)
         self._correct_index = pointer
-        self._correct_letter = chr(ord(LETTER_A) + pointer)
+        # self._correct_letter = chr(ord(LETTER_A) + pointer)
 
     @property
     def correct_index(self) -> Optional[int]:
@@ -275,23 +275,23 @@ class Question:
         except IndexError as index_error:
             raise ValueError(f"no answer with index {value}") from index_error
         self._correct_index = value
-        self._correct_letter = chr(ord(LETTER_A) + value)
-
-    @property
-    def correct_value(self) -> Optional[str]:
-        return self._correct_letter
-
-    @correct_value.setter
-    def correct_value(self, value: str) -> None:
-        """Set the correct answer according to the given letter,
-        where the first answer added is labeled A"""
-        try:
-            pointer = ord(value) - ord(LETTER_A)
-            self._correct_answer = self._answers[pointer]
-        except IndexError as index_error:
-            raise ValueError(f"no answer with letter {value}") from index_error
-        self._correct_index = pointer
-        self._correct_letter = chr(ord(LETTER_A) + pointer)
+        # self._correct_letter = chr(ord(LETTER_A) + value)
+    #
+    # @property
+    # def correct_value(self) -> Optional[str]:
+    #     return self._correct_letter
+    #
+    # @correct_value.setter
+    # def correct_value(self, value: str) -> None:
+    #     """Set the correct answer according to the given letter,
+    #     where the first answer added is labeled A"""
+    #     try:
+    #         pointer = ord(value) - ord(LETTER_A)
+    #         self._correct_answer = self._answers[pointer]
+    #     except IndexError as index_error:
+    #         raise ValueError(f"no answer with letter {value}") from index_error
+    #     self._correct_index = pointer
+    #     self._correct_letter = chr(ord(LETTER_A) + pointer)
 
     def add_parent_path(self, file_path: Path) -> None:
         self.image = (
@@ -311,15 +311,6 @@ class Question:
     @property
     def type_caster_sequence(self) -> Tuple[CasterType, ...]:
         return self._type_caster_sequence
-
-    def _get_correct_answer(self, answer: Answer, is_correct: bool) -> Answer:
-        """Return the correct answer: if no other answers are already added
-        or the given is_correct is True, the given answer is returned,
-        otherwise the stored correct answer is returned."""
-        if self._correct_answer is None or is_correct:
-            return answer
-        else:
-            return self._correct_answer
 
     def shuffle(self) -> None:
         """Shuffle the answers.

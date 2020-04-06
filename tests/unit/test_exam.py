@@ -1,6 +1,7 @@
 import exam
 import pytest
 from pathlib import Path
+from utility import safe_int
 from _collections import OrderedDict
 import random
 
@@ -187,296 +188,290 @@ def test_truefalse_attribute():
     assert a.type_caster_sequence == expected_type_caster_sequence
 
 
-# def test_question_init0():
-#     q = exam.Question()
-#     expected = ""
-#
-#     assert q.text == expected
-#
-#
-# @pytest.mark.parametrize(
-#     "text, subject, image, level", [("text", "subject", Path(), 0)]
-# )
-# def test_question_init2(text, subject, image, level):
-#     q = exam.Question(text, subject=subject, image=image, level=level)
-#
-#     assert q.text == text
-#     assert q.subject == subject
-#     assert q.image == image
-#     assert q.level == level
-#
-#
-# @pytest.mark.parametrize(
-#     "attribute, expected",
-#     [
-#         ("image", Path(".")),
-#         ("subject", ""),
-#         ("level", 0),
-#         ("answers", tuple()),
-#         ("correct_answer", None),
-#         ("correct_index", None),
-#         ("correct_value", None),
-#         ("attr_load_sequence", ("text", "subject", "image", "level")),
-#     ],
-# )
-# def test_question_get(attribute, expected):
-#     """Test default attribute values
-#     """
-#     text = "What's your name?"
-#     q = exam.Question(text)
-#
-#     assert getattr(q, attribute) == expected
-#
-#
-# @pytest.mark.parametrize(
-#     "attribute, expected",
-#     [
-#         pytest.param("text", 0.1, marks=pytest.mark.xfail),
-#         ("image", Path(r"\home")),
-#         pytest.param("image", r"\home", marks=pytest.mark.xfail),
-#         ("subject", "Math"),
-#         pytest.param("subject", 1000, marks=pytest.mark.xfail),
-#         ("level", 1000),
-#         pytest.param("level", 1000.01, marks=pytest.mark.xfail),
-#     ],
-# )
-# def test_question_set(attribute, expected):
-#     """Test set right and wrong attribute
-#     """
-#     q = exam.Question()
-#     try:
-#         setattr(q, attribute, expected)
-#     except TypeError:
-#         assert False
-#
-#     assert getattr(q, attribute) == expected
-#
-#
-# def test_question_answer_add():
-#     """Test one answer addition
-#     """
-#     q = exam.Question("Who are you?")
-#     a = exam.Answer("That's me.")
-#     q.add_answer(a)
-#
-#     assert a in q.answers
-#
-#
-# def test_question_answer_add2():
-#     """Test two answers addition
-#     and correctness
-#     """
-#     q = exam.Question("Who are you?")
-#     a1 = exam.Answer("That's me.")
-#     a2 = exam.Answer("That's not me.")
-#     q.add_answer(a1)
-#     q.add_answer(a2)
-#
-#     assert q.answers == (a1, a2)
-#     assert q.correct_index == 0
-#     assert q.correct_value == "A"
-#
-#
-# def test_question_answer_add_wrong():
-#     """Test wrong answer addition
-#     """
-#     q = exam.Question("Who are you?")
-#     a = "That's me."
-#     with pytest.raises(TypeError):
-#         q.add_answer(a)
-#
-#
-# def test_question_answer_setter():
-#     """Test tuple addition and removal
-#     previous addition
-#     """
-#     q = exam.Question("Who are you?")
-#     a = exam.Answer("That's me.")
-#     q.add_answer(a)
-#     b = exam.Answer("I do not know.")
-#     c = exam.Answer("Somebody else.")
-#     q.answers = (b, c)
-#
-#     assert a not in q.answers
-#     assert b in q.answers
-#     assert c in q.answers
-#
-#
-# def test_question_answer_correct1():
-#     """Test correctness of the only
-#     answer added
-#     """
-#     q = exam.Question("Who are you?")
-#     a = exam.Answer("That's me.")
-#     q.add_answer(a)
-#
-#     assert q.correct_answer == a
-#     assert q.correct_index == 0
-#     assert q.correct_value == "A"
-#
-#
-# def test_question_answer_correct2():
-#     """Test correctness of the first
-#     answer added when two are added
-#     """
-#     q = exam.Question("Who are you?")
-#     a1 = exam.Answer("That's me.")
-#     a2 = exam.Answer("That's not me.")
-#     q.add_answer(a2)
-#     q.add_answer(a1)
-#
-#     assert q.correct_answer == a2
-#
-#
-# def test_question_answer_correct3():
-#     """Test correctness of the last
-#     answer added when is set to correct
-#     """
-#     q = exam.Question("Who are you?")
-#     a1 = exam.Answer("That's me.")
-#     a2 = exam.Answer("That's not me.")
-#     q.add_answer(a2)
-#     q.add_answer(a1, True)
-#
-#     assert q.correct_answer == a1
-#
-#
-# def test_question_answer_correct4():
-#     """Test ineffectiveness of correct setting
-#     for the first answer added
-#     """
-#     q = exam.Question("Who are you?")
-#     a1 = exam.Answer("That's me.")
-#     q.add_answer(a1, False)
-#
-#     assert q.correct_answer == a1
-#
-#
-# def test_question_correct_answer_set():
-#     """Test set correct answer
-#     """
-#     q = exam.Question("Who are you?")
-#     a1 = exam.Answer("That's me.")
-#     a2 = exam.Answer("That's not me.")
-#     q.add_answer(a1)
-#     q.add_answer(a2)
-#     q.correct_answer = a2
-#
-#     assert q.correct_answer == a2
-#
-#
-# def test_question_correct_answer_set_invalid():
-#     """Test set invalid correct answer
-#     """
-#     q = exam.Question("Who are you?")
-#     a1 = exam.Answer("That's me.")
-#     a2 = exam.Answer("That's not me.")
-#     a3 = "That is"
-#     q.add_answer(a1)
-#     q.add_answer(a2)
-#     with pytest.raises(ValueError):
-#         q.correct_answer = a3
-#
-#
-# def test_question_correct_index_set_invalid():
-#     """Test set invalid correct answer index
-#     """
-#     q = exam.Question("Who are you?")
-#     a1 = exam.Answer("That's me.")
-#     a2 = exam.Answer("That's not me.")
-#     q.add_answer(a1)
-#     q.add_answer(a2)
-#     with pytest.raises(ValueError):
-#         q.correct_index = 2
-#
-#
-# def test_question_correct_value_set_invalid():
-#     """Test set invalid correct answer letter
-#     """
-#     q = exam.Question("Who are you?")
-#     a1 = exam.Answer("That's me.")
-#     a2 = exam.Answer("That's not me.")
-#     q.add_answer(a1)
-#     q.add_answer(a2)
-#     with pytest.raises(ValueError):
-#         q.correct_value = "Z"
-#
-#
-# A1 = exam.Answer("That's me.")
-# A2 = exam.Answer("That's not me.")
-# A3 = exam.Answer("That's him")
-# A4 = exam.Answer("That's her.")
-#
-#
-# @pytest.mark.parametrize(
-#     "attribute_set, expected, attribute1_get, expected1, attribute2_get, expected2",
-#     [
-#         ("correct_answer", A2, "correct_index", 1, "correct_value", "B"),
-#         ("correct_index", 0, "correct_answer", A1, "correct_value", "A"),
-#         ("correct_value", "C", "correct_index", 2, "correct_answer", A3),
-#     ],
-# )
-# def test_question_set_correct(
-#     attribute_set, expected, attribute1_get, expected1, attribute2_get, expected2
-# ):
-#     """Test set correct answer by answer, index and letter
-#     """
-#     q = exam.Question("Who are you?")
-#     q.add_answer(A1)
-#     q.add_answer(A2)
-#     q.add_answer(A3)
-#     q.add_answer(A4)
-#
-#     try:
-#         setattr(q, attribute_set, expected)
-#     except TypeError:
-#         assert False
-#
-#     assert getattr(q, attribute_set) == expected
-#     assert getattr(q, attribute1_get) == expected1
-#     assert getattr(q, attribute2_get) == expected2
-#
-#
-# def test_question_add_path_parent0():
-#     path = Path("home/my_home/file.txt")
-#     image_path = Path("image1.png")
-#     quest = exam.Question("question text", image=Path())
-#     answer_1 = exam.Answer("answer 1 text", image_path)
-#     answer_2 = exam.Answer("answer 2 text")
-#     quest.answers = (answer_1, answer_2)
-#     quest.add_parent_path(path)
-#
-#     assert quest.image == Path()
-#     assert quest.answers[0].image == path.parent / image_path
-#     assert quest.answers[1].image == Path()
-#
-#
-# def test_question_add_path_parent1():
-#     path = Path("home/my_home/file.txt")
-#     image_path = Path("image1.png")
-#     quest = exam.Question("question text", image=image_path)
-#     answer_1 = exam.Answer("answer 1 text", Path())
-#     answer_2 = exam.Answer("answer 2 text", image=image_path)
-#     quest.answers = (answer_1, answer_2)
-#     quest.add_parent_path(path)
-#
-#     assert quest.image == path.parent / image_path
-#     assert quest.answers[0].image == Path()
-#     assert quest.answers[1].image == path.parent / image_path
-#
-#
-# def test_question_shuffle1():
-#     """Test shuffle with no question added
-#     """
-#     q = exam.Question("Who are you?")
-#     random.seed(1)
-#     q.shuffle()
-#
-#     assert q.answers == ()
-#     assert q.correct_answer is None
-#     assert q.correct_index is None
-#     assert q.correct_value is None
-#
+def test_question_init0():
+    """Test default arguments
+    """
+    q = exam.Question()
+    expected = ""
+
+    assert q.text == expected
+
+
+@pytest.mark.parametrize(
+    "text, subject, image, level", [("text", "subject", Path(), 0)]
+)
+def test_question_init2(text, subject, image, level):
+    """Test arguments assignments
+    """
+    q = exam.Question(text, subject=subject, image=image, level=level)
+
+    assert q.text == text
+    assert q.subject == subject
+    assert q.image == image
+    assert q.level == level
+
+
+@pytest.mark.parametrize(
+    "attribute, expected",
+    [
+        ("image", Path()),
+        ("subject", ""),
+        ("level", 0),
+        ("answers", tuple()),
+        ("correct_answer", None),
+        ("attr_load_sequence", ("text", "subject", "image", "level")),
+        ("_type_caster_sequence", (str, str, Path, safe_int))
+    ],
+)
+def test_question_get(attribute, expected):
+    """Test default attribute values
+    """
+    text = "What's your name?"
+    q = exam.Question(text)
+
+    assert getattr(q, attribute) == expected
+
+
+@pytest.mark.parametrize(
+    "attribute, expected",
+    [
+        pytest.param("text", 0.1, marks=pytest.mark.xfail),
+        ("image", Path(r"\home")),
+        pytest.param("image", r"\home", marks=pytest.mark.xfail),
+        ("subject", "Math"),
+        pytest.param("subject", 1000, marks=pytest.mark.xfail),
+        ("level", 1000),
+        pytest.param("level", 1000.01, marks=pytest.mark.xfail),
+    ],
+)
+def test_question_set(attribute, expected):
+    """Test set right and wrong attribute
+    """
+    q = exam.Question()
+    try:
+        setattr(q, attribute, expected)
+    except TypeError:
+        assert False
+
+    assert getattr(q, attribute) == expected
+
+
+def test_question_answer_add0():
+    """Test one answer addition
+    and correctness
+    """
+    q = exam.Question("Who are you?")
+    a = exam.Answer()
+    q.add_answer(a)
+
+    assert a in q.answers
+    assert q.correct_answer == a
+    assert q.correct_index == 0
+
+
+def test_question_answer_add1():
+    """Test two answers addition
+    and correctness
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer()
+    a2 = exam.Answer()
+    q.add_answer(a1)
+    q.add_answer(a2)
+
+    assert q.answers == (a1, a2)
+    assert q.correct_answer == a1
+    assert q.correct_index == 0
+
+
+def test_question_answer_add_wrong():
+    """Test wrong answer addition
+    """
+    q = exam.Question("Who are you?")
+    a = "That's me."
+    with pytest.raises(TypeError):
+        q.add_answer(a)
+
+
+def test_question_answer_setter0():
+    """Test tuple addition, overwriting
+    previous addition and
+    correctness
+    """
+    q = exam.Question("Who are you?")
+    a = exam.Answer()
+    q.add_answer(a)
+    b = exam.Answer()
+    c = exam.Answer()
+    q.answers = (b, c)
+
+    assert a not in q.answers
+    assert b in q.answers
+    assert c in q.answers
+    assert q.correct_answer == b
+    assert q.correct_index == 0
+
+
+def test_question_answer_setter1():
+    """Test wrong answer tuple addition
+    """
+    q = exam.Question("Who are you?")
+    a = exam.Answer()
+    b = "Not an Answer"
+
+    with pytest.raises(TypeError):
+         q.answers = (a, b)
+
+
+def test_question_answer_correct0():
+    """Test correctness of the last
+    answer added when is set to correct
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer()
+    a2 = exam.Answer()
+    q.add_answer(a2)
+    q.add_answer(a1, True)
+
+    assert q.correct_answer == a1
+    assert q.correct_index == 1
+
+
+def test_question_answer_correct1():
+    """Test ineffectiveness of correct setting
+    for the first answer added
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer()
+    q.add_answer(a1, False)
+
+    assert q.correct_answer == a1
+
+
+def test_question_correct_answer_set0():
+    """Test set correct answer
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer()
+    a2 = exam.Answer()
+    q.add_answer(a1)
+    q.add_answer(a2)
+    q.correct_answer = a2
+
+    assert q.correct_answer == a2
+    assert q.correct_index == 1
+
+
+def test_question_correct_answer_set1():
+    """Test set correct answer index
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer()
+    a2 = exam.Answer()
+    q.add_answer(a1)
+    q.add_answer(a2)
+    q.correct_index = 1
+
+    assert q.correct_answer == a2
+    assert q.correct_index == 1
+
+
+def test_question_correct_answer_set_invalid():
+    """Test set invalid correct answer
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer()
+    a2 = exam.Answer()
+    a3 = exam.Answer()
+    q.add_answer(a1)
+    q.add_answer(a2)
+    with pytest.raises(ValueError):
+        q.correct_answer = a3
+
+
+def test_question_correct_index_set_invalid():
+    """Test set invalid correct answer index
+    """
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer()
+    a2 = exam.Answer()
+    q.add_answer(a1)
+    q.add_answer(a2)
+    with pytest.raises(ValueError):
+        q.correct_index = 2
+
+
+A1 = exam.Answer()
+A2 = exam.Answer()
+A3 = exam.Answer()
+A4 = exam.Answer()
+
+
+@pytest.mark.parametrize(
+    "attribute_set, expected, attribute1_get, expected1",
+    [
+        ("correct_answer", A2, "correct_index", 1),
+        ("correct_index", 0, "correct_answer", A1),
+        ("correct_index", 2, "correct_answer", A3),
+    ],
+)
+def test_question_set_correct(
+    attribute_set, expected, attribute1_get, expected1
+):
+    """Test correct set by answer and index
+    """
+    q = exam.Question("Who are you?")
+    q.add_answer(A1)
+    q.add_answer(A2)
+    q.add_answer(A3)
+    q.add_answer(A4)
+
+    try:
+        setattr(q, attribute_set, expected)
+    except TypeError:
+        assert False
+
+    assert getattr(q, attribute_set) == expected
+    assert getattr(q, attribute1_get) == expected1
+
+
+def test_question_add_path_parent0():
+    """Test whether path is added to Answer.image
+    """
+    path = Path("home/my_home/file.txt")
+    quest = exam.Question("question text", image=Path())
+    image_path = Path("image1.png")
+    answer_1 = exam.Answer()
+    answer_1.image = image_path
+    answer_2 = exam.Answer()
+    answer_2.image = Path()
+    quest.answers = (answer_1, answer_2)
+    quest.add_parent_path(path)
+
+    assert quest.image == Path()
+    assert quest.answers[0].image == path.parent / image_path
+    assert quest.answers[1].image == Path()
+
+
+def test_question_add_path_parent1():
+    """Test whether path is added to Answer.image and
+    Question.image
+    """
+    path = Path("home/my_home/file.txt")
+    image_path = Path("image1.png")
+    quest = exam.Question("question text", image=image_path)
+    answer_1 = exam.Answer()
+    answer_1.image = Path()
+    answer_2 = exam.Answer()
+    answer_2.image = image_path
+    quest.answers = (answer_1, answer_2)
+    quest.add_parent_path(path)
+
+    assert quest.image == path.parent / image_path
+    assert quest.answers[0].image == Path()
+    assert quest.answers[1].image == path.parent / image_path
+
+
 #
 # def test_question_shuffle2():
 #     """Test shuffle with one question added
