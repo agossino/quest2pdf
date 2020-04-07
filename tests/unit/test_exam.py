@@ -65,18 +65,17 @@ def test_answer_load3():
 
 
 def test_answer_load4():
-    def test_answer_load3():
-        """test iterator with two item and one
-        attribute is expected;
-        test last item left in the iterator
-        """
-        a = exam.Answer()
-        a._attr_load_sequence = ("A",)
-        a._type_caster_sequence = (int,)
-        iterator = iter("a",)
+    """test iterator with two item and one
+    attribute is expected;
+    test last item left in the iterator
+    """
+    a = exam.Answer()
+    a._attr_load_sequence = ("A",)
+    a._type_caster_sequence = (int,)
+    iterator = iter("a",)
 
-        with pytest.raises(ValueError):
-            a.load_sequentially(iterator)
+    with pytest.raises(ValueError):
+        a.load_sequentially(iterator)
 
 
 def test_multichoiceanswer_init0():
@@ -508,26 +507,20 @@ def test_question_add_path_parent1():
 #     assert q.correct_value == "D"
 #
 #
-# def test_question_load_sequentially():
-#     """Test load_sequentially,, attr_load_sequence and type_caster_sequence
-#     """
-#     quest = exam.Question()
-#     sequence = ("Text", "Subject", "dir/ec/tor/y", "1", "Answer")
-#     iterator = iter(sequence)
-#     quest.load_sequentially(iterator)
-#
-#     assert quest.text == sequence[0]
-#     assert quest.subject == sequence[1]
-#     assert quest.image == Path(sequence[2])
-#     assert quest.level == int(sequence[3])
-#     assert quest.answers[0].text == sequence[4]
-#     assert quest.answers[0].image == Path(".")
-#     with pytest.raises(IndexError):
-#         assert quest.answers[1].text == ""
-#     with pytest.raises(IndexError):
-#         assert quest.answers[1].image == Path(".")
-#
-#
+def test_question_load_sequentially():
+    """Test load_sequentially,, attr_load_sequence and type_caster_sequence
+    """
+    quest = exam.Question()
+    sequence = ("Text", "Subject", "dir/ec/tor/y", "2", "a")
+    iterator = iter(sequence)
+    quest.load_sequentially(iterator)
+
+    assert quest.text == sequence[0]
+    assert quest.subject == sequence[1]
+    assert quest.image == Path(sequence[2])
+    assert quest.level == int(sequence[3])
+    assert next(iterator) == sequence[4]
+
 # @pytest.mark.parametrize(
 #     "iterator, q_text, q_subject",
 #     [(iter(("q1", "s1")), "q1", "s1"), (iter(("", "s1")), "", "s1")],

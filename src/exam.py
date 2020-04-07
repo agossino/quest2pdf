@@ -157,7 +157,6 @@ class Question:
         self._answers: List[Answer] = []
         self._correct_answer: Optional[Answer] = None  # setter bypassed
         self._correct_index: Optional[int] = None  # setter bypassed
-        # self._correct_letter: Optional[str] = None  # setter bypassed
         self._attr_load_sequence: Tuple[str, ...] = (
             "text",
             "subject",
@@ -276,22 +275,6 @@ class Question:
             raise ValueError(f"no answer with index {value}") from index_error
         self._correct_index = value
         # self._correct_letter = chr(ord(LETTER_A) + value)
-    #
-    # @property
-    # def correct_value(self) -> Optional[str]:
-    #     return self._correct_letter
-    #
-    # @correct_value.setter
-    # def correct_value(self, value: str) -> None:
-    #     """Set the correct answer according to the given letter,
-    #     where the first answer added is labeled A"""
-    #     try:
-    #         pointer = ord(value) - ord(LETTER_A)
-    #         self._correct_answer = self._answers[pointer]
-    #     except IndexError as index_error:
-    #         raise ValueError(f"no answer with letter {value}") from index_error
-    #     self._correct_index = pointer
-    #     self._correct_letter = chr(ord(LETTER_A) + pointer)
 
     def add_parent_path(self, file_path: Path) -> None:
         self.image = (
@@ -311,15 +294,6 @@ class Question:
     @property
     def type_caster_sequence(self) -> Tuple[CasterType, ...]:
         return self._type_caster_sequence
-
-    def shuffle(self) -> None:
-        """Shuffle the answers.
-        """
-        if self._correct_answer:
-            shuffle(self._answers)
-            pointer = self._answers.index(self._correct_answer)
-            self._correct_index = pointer
-            self._correct_letter = chr(ord(LETTER_A) + pointer)
 
     def load_sequentially(self, iterator: Iterator[Any]) -> None:
         """Load all the attribute sequentially from iterator, according to
@@ -357,7 +331,7 @@ class Question:
                 iterator_top_items.append(next(iterator))
                 iterator_top_items.append(next(iterator))
                 answer.load_sequentially(iter(iterator_top_items))
-                if answer.text != "" or answer.image != Path():
+                if self._is_any_attribute_not_empty(answer):
                     self.add_answer(answer)
                 iterator_top_items = []
         except StopIteration:
@@ -366,9 +340,13 @@ class Question:
                     answer.load_sequentially(iter(iterator_top_items))
                 except StopIteration:
                     pass
-                if answer.text != "" or answer.image != Path():
+                if self._is_any_attribute_not_empty(answer):
                     self.add_answer(answer)
             raise
+
+    @staticmethod
+    def _is_any_attribute_not_empty(answer: Answer):
+        return False
 
     def __str__(self) -> str:
         output: List[str] = [f"{self.__class__}\n"]
@@ -387,7 +365,33 @@ class MultiChoiceQuest(Question):
     """Multi choice question.
     """
     def __init__(self, *args):
+        self._correct_option: Optional[str] = None  # setter bypassed
         super().__init__(*args)
+
+    @property
+    def correct_option(self) -> Optional[str]:
+        return self._correct_option
+
+    @correct_option.setter
+    def correct_option(self, value: str) -> None:
+        """Set the correct answer according to the given letter,
+        where the first answer added is labeled A"""
+        try:
+            pointer = ord(value) - ord(LETTER_A)
+            self._correct_answer = self._answers[pointer]
+        except IndexError as index_error:
+            raise ValueError(f"no answer with letter {value}") from index_error
+        self._correct_index = pointer
+        self._correct_option = chr(ord(LETTER_A) + pointer)
+
+    def shuffle(self) -> None:
+        """Shuffle the answers.
+        """
+        if self._correct_answer:
+            shuffle(self._answers)
+            pointer = self._answers.index(self._correct_answer)
+            self._correct_index = pointer
+            self._correct_option = chr(ord(LETTER_A) + pointer)
 
 
 class TrueFalseQuest(Question):
