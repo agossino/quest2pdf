@@ -47,6 +47,7 @@ def param_parser(args: Optional[List[str]] = None) -> Dict[str, Any]:
     # cli chosen values override configuration file values
     result = default_values
     app_configuration_param = conf_file_parser(pathlib.Path(config_file))
+    convert_from_str_to_type(app_configuration_param)
     result.update(app_configuration_param)
     result.update({"app_configuration_file": config_file})
     result.update(cli_chosen)
@@ -79,7 +80,7 @@ def cli_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-e",
         "--exam",
-        help="file name prefix; date and time till ms, is appended.",
+        help="output file name prefix.",
         type=str,
         default="Exam",
     )
@@ -91,27 +92,37 @@ def cli_parser() -> argparse.ArgumentParser:
         default="Correction",
     )
     parser.add_argument(
-        "-f",
+        "-a",
         "--app_configuration_file",
         help="application configuration file.",
+        type=str,
         default="conf.ini",
     )
     parser.add_argument(
         "-l",
         "--log_configuration_file",
         help="log configuration file.",
+        type=str,
         default="loggingConf.json",
     )
     parser.add_argument(
         "-s",
-        "--shuffle",
-        help="if set, question sequence will be shuffled.",
+        "--not_shuffle",
+        help="if set, answers sequence, when applicable, will not be shuffled.",
         action="store_false",
     )
     parser.add_argument(
         "-p",
         "--page_heading",
-        help="page heading; if not set, file name is provided.",
+        help="page heading, blank if not set.",
+        nargs="?",
+        const=True,
+        default=False,
+    )
+    parser.add_argument(
+        "-f",
+        "--page_footer",
+        help="page footer, blank if not set.",
         nargs="?",
         const=True,
         default=False,
@@ -130,6 +141,7 @@ def cli_parser() -> argparse.ArgumentParser:
             "colon",
             "tab",
         ],
+        type=str,
         help="delimiter for comma separated value input file.",
         default="comma",
     )
@@ -226,3 +238,25 @@ def try_conf_file(file_path: pathlib.Path) -> Optional[Dict[str, Any]]:
         return None
 
     return output
+
+
+def convert_from_str_to_type(parameter: Dict[str, Any]) -> None:
+    key = "number"
+    try:
+        parameter[key]= int(parameter.get(key, 1))
+    except ValueError:
+        parameter[key] = 1
+
+    key = "not_shuffle"
+    parameter[key] = True if parameter.get(key, None) is None else False
+
+    for key in ("page_heading", "page_footer"):
+        value = parameter.get(key, None)
+        if value is None:
+            parameter[key] = False
+        elif value == "":
+            parameter[key] = True
+        else:
+            parameter[key] = value
+
+    return
