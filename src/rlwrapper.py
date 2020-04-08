@@ -62,9 +62,9 @@ class PDFDoc:
         self._space_text_image: int = 10
         self._space_after_item = 20
         self._text_separator: str = """<unichar name="Horizontal ellipsis"/>"""
-        self._1st_page_header_text = "header text"
-        self._later_pages_header_text = "header text"
-        self._footer_text = "footer text"
+        self._1st_page_header_text = kwargs.get("page_heading", "header text")
+        self._later_pages_header_text = kwargs.get("page_heading", " ")
+        self._footer_text = kwargs.get("page_footer", " ")
         self._author = "Giancarlo"
         self._title = "esame"
         self._subject = "Corso"

@@ -56,10 +56,14 @@ class RLInterface:
         self._input = input_generator
         sub_item_bullet_type: str = kwargs.get("sub_item_bullet_type", "A")
         top_item_bullet_type: str = kwargs.get("top_item_bullet_type", "1")
+        page_heading: str = kwargs.get("heading", "")
+        page_footer: str = kwargs.get("footer", "")
         self._doc = rlwrapper.PDFDoc(
             file_name,
             top_item_bullet_type=top_item_bullet_type,
             sub_item_bullet_type=sub_item_bullet_type,
+            page_heading=page_heading,
+            page_footer=page_footer
         )
 
     def build(self) -> None:

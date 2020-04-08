@@ -5,7 +5,8 @@ import parameter
 from tkinter import Menu, Label, YES, BOTH
 import _thread, queue
 from pathlib import Path
-from typing import Mapping, Dict, Any, List
+from datetime import datetime
+from typing import Mapping, Dict, Any, List, Union
 from utility import CSVReader, exception_printer
 from guimixin import MainWindow
 from exam import Exam
@@ -28,7 +29,7 @@ def main():
 
 
 class ContentMix(MainWindow):
-    def __init__(self, app_parameters: Mapping[str, str]):
+    def __init__(self, app_parameters: Mapping[str, Union[str, int, bool]]):
         """Get application parameters and show the main window.
         """
         self.parameters = app_parameters
@@ -63,8 +64,11 @@ class ContentMix(MainWindow):
             # TODO in case of abort, exit from this dialog
             self.errorbox("Indicare sorgente e destinazione")
 
-    def to_pdf(self, input_file, output_folder):
+    def to_pdf(self, input_file: Path, output_folder: Path):
         rows = self._get_rows(input_file)
+
+        if self.parameters["page_heading"] == True:
+            exam_heading = self._pa
 
         if not rows:
             LOGGER.warning("Empty rows.")
@@ -90,15 +94,29 @@ class ContentMix(MainWindow):
             exam.load(rows)
             exam.add_path_parent(input_file)
             serial_exam = SerializeExam(exam)
+            logging.warning("Parameter: %s", self.parameters)
             for number in range(self.parameters["number"]):
-                if self.parameters["shuffle"]:
+                if self.parameters["not_shuffle"] is False:
                     exam.shuffle()
                 output_file_name_exam = Path(f"{self.parameters['exam']}_{number}.pdf")
+                if isinstance(self.parameters["page_heading"], str):
+                    exam_heading = self.parameters["page_heading"]
+                elif self.parameters["page_heading"]:
+                    exam_heading = output_file_name_exam
+                else:
+                    exam_heading = ""
+                if isinstance(self.parameters["page_footer"], str):
+                    exam_footer = self.parameters["page_footer"]
+                elif self.parameters["page_footer"]:
+                    exam_footer = datetime.now().isoformat()
+                else:
+                    exam_footer = ""
                 to_pdf_interface = RLInterface(
                     serial_exam.assignment(),
                     output_file_name_exam,
                     destination=output_folder,
-                    heading=self.parameters["page_heading"],
+                    heading=exam_heading,
+                    footer=exam_footer,
                 )
                 to_pdf_interface.build()
                 output_file_name_correction = Path(
@@ -110,6 +128,7 @@ class ContentMix(MainWindow):
                     destination=output_folder,
                     top_item_bullet_type="A",
                     sub_item_bullet_type="1",
+                    heading=output_file_name_exam.name
                 )
                 to_pdf_interface.build()
         except Exception as err:
