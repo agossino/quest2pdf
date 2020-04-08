@@ -507,9 +507,15 @@ def test_question_add_path_parent1():
 #     assert q.correct_value == "D"
 #
 #
-def test_question_load_sequentially():
+def test_question_load_sequentially(monkeypatch):
     """Test load_sequentially,, attr_load_sequence and type_caster_sequence
     """
+    class MonkeyAnswer(exam.Answer):
+        def __init__(self):
+            self._attr_load_sequence = ("text", "image")
+            self._type_caster_sequence = (str, str)
+    monkeypatch.setattr(exam, "Answer", MonkeyAnswer)
+
     quest = exam.Question()
     sequence = ("Text", "Subject", "dir/ec/tor/y", "2", "a")
     iterator = iter(sequence)
