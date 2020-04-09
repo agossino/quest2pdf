@@ -324,29 +324,39 @@ class Question:
         in the iterator. Empty answers are not loaded.
         Returns when iterator is exhausted and StopIteration is caught.
         """
-        iterator_top_items: List[str] = []
-        try:
-            while True:
-                answer: Answer = Answer()
-                iterator_top_items.append(next(iterator))
-                iterator_top_items.append(next(iterator))
-                answer.load_sequentially(iter(iterator_top_items))
-                if self._is_any_attribute_not_empty(answer):
-                    self.add_answer(answer)
-                iterator_top_items = []
-        except StopIteration:
-            if len(iterator_top_items) != 0:
-                try:
-                    answer.load_sequentially(iter(iterator_top_items))
-                except StopIteration:
-                    pass
-                if self._is_any_attribute_not_empty(answer):
-                    self.add_answer(answer)
-            raise
+        wrote_attr = 1
 
-    @staticmethod
-    def _is_any_attribute_not_empty(answer: Answer):
-        return False
+        while wrote_attr:
+            answer: Answer = Answer()
+            wrote_attr = self._load_1_answer(answer, iterator)
+
+    def _load_1_answer(self, answer: Answer, iterator: Iterator[Any]) -> int:
+        iter_to_list = []
+        is_empty = True
+        attributes = 0
+        try:
+            for a in answer.attr_load_sequence:
+                logging.warning("attribute: %s", a)
+                iter_to_list.append(next(iterator))
+                attributes += 1
+                if iter_to_list[-1] != "":
+                    is_empty = False
+                logging.warning("iter_to_list: %s, %s", iter_to_list, is_empty)
+            if not is_empty:
+                answer.load_sequentially(iter(iter_to_list))
+                self.add_answer(answer)
+        except StopIteration:
+            logging.warning("stop iteration")
+            logging.warning("iter_to_list: %s, %s", iter_to_list, is_empty)
+            if len(iter_to_list) > 0 and not is_empty:
+                logging.warning("answer before loading %s", self.answers)
+                try:
+                    answer.load_sequentially(iter(iter_to_list))
+                except StopIteration:
+                    self.add_answer(answer)
+                    raise
+            raise
+        return attributes
 
     def __str__(self) -> str:
         output: List[str] = [f"{self.__class__}\n"]

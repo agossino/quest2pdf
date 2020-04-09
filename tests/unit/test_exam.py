@@ -5,6 +5,8 @@ from utility import safe_int
 from _collections import OrderedDict
 import random
 
+import logging
+
 
 def test_answer_load0():
     """test empty iterator without attribute:
@@ -48,7 +50,23 @@ def test_answer_load2():
 
 
 def test_answer_load3():
-    """test iterator with two item and one
+    """test iterator with one item and two
+    attribute is expected
+    """
+    a = exam.Answer()
+    a._attr_load_sequence = ("A", "B")
+    a._type_caster_sequence = (int, str)
+    test_tuple = ("2",)
+    iterator = iter(test_tuple)
+
+    with pytest.raises(StopIteration):
+        a.load_sequentially(iterator)
+
+    assert a.A == int(test_tuple[0])
+
+
+def test_answer_load4():
+    """test iterator with two items and one
     attribute is expected;
     test last item left in the iterator
     """
@@ -64,10 +82,8 @@ def test_answer_load3():
     assert next(iterator) == test_tuple[1]
 
 
-def test_answer_load4():
-    """test iterator with two item and one
-    attribute is expected;
-    test last item left in the iterator
+def test_answer_load5():
+    """test iterator with wrong type
     """
     a = exam.Answer()
     a._attr_load_sequence = ("A",)
@@ -144,6 +160,15 @@ def test_multichoiceanswer_set(attribute, expected):
 
     assert getattr(a, attribute) == expected
 
+
+def test_multichoiceanswer_load():
+    a = exam.MultiChoiceAnswer()
+    tupl = ("text",)
+
+    with pytest.raises(StopIteration):
+        a.load_sequentially(iter(tupl))
+    assert a.text == tupl[0]
+    assert a.image == Path()
 
 
 def test_multichoiceanswer_print():
@@ -507,53 +532,142 @@ def test_question_add_path_parent1():
 #     assert q.correct_value == "D"
 #
 #
-def test_question_load_sequentially(monkeypatch):
-    """Test load_sequentially,, attr_load_sequence and type_caster_sequence
+def test_question_load0():
+    """Empty iterator.
+    """
+    tupl = ()
+    quest = exam.Question()
+    quest.load_sequentially(iter(tupl))
+
+    assert quest.text == ""
+    assert quest.subject == ""
+    assert quest.image == Path()
+    assert quest.level == 0
+    assert quest.answers == ()
+
+
+def test_question_load1():
+    """load question text and subject; check for default image, level;
+    no answer.
+    """
+    tupl = ("t1", "s1")
+    quest = exam.Question()
+    quest.load_sequentially(iter(tupl))
+
+    assert quest.text == tupl[0]
+    assert quest.subject == tupl[1]
+    assert quest.image == Path()
+    assert quest.level == 0
+    assert quest.answers == ()
+
+
+def test_question_load2():
+    """load a complete question;
+    no answer.
+    """
+    tupl = ("t1", "s1", "p1", "1")
+    quest = exam.Question()
+    quest.load_sequentially(iter(tupl))
+
+    assert quest.text == tupl[0]
+    assert quest.subject == tupl[1]
+    assert quest.image == Path(tupl[2])
+    assert quest.level == int(tupl[3])
+    assert quest.answers == ()
+
+
+def test_question_load3():
+    """load a complete question; the last item is lost
+    because answer does not have any attribute
+    """
+    tupl = ("t1", "s1", "p1", "1", "a1")
+    quest = exam.Question()
+    quest.load_sequentially(iter(tupl))
+
+    assert quest.text == tupl[0]
+    assert quest.subject == tupl[1]
+    assert quest.image == Path(tupl[2])
+    assert quest.level == int(tupl[3])
+    assert quest.answers == ()
+
+
+def test_question_load4(monkeypatch):
+    """load a complete question and one more item
+    for partly fill an answer
     """
     class MonkeyAnswer(exam.Answer):
         def __init__(self):
+            super().__init__()
             self._attr_load_sequence = ("text", "image")
             self._type_caster_sequence = (str, str)
+
     monkeypatch.setattr(exam, "Answer", MonkeyAnswer)
 
+    tupl = ("t1", "s1", "p1", "1", "a1")
     quest = exam.Question()
-    sequence = ("Text", "Subject", "dir/ec/tor/y", "2", "a")
-    iterator = iter(sequence)
-    quest.load_sequentially(iterator)
+    quest.load_sequentially(iter(tupl))
 
-    assert quest.text == sequence[0]
-    assert quest.subject == sequence[1]
-    assert quest.image == Path(sequence[2])
-    assert quest.level == int(sequence[3])
-    assert next(iterator) == sequence[4]
+    assert quest.text == tupl[0]
+    assert quest.subject == tupl[1]
+    assert quest.image == Path(tupl[2])
+    assert quest.level == int(tupl[3])
+    assert quest.answers[0].text == tupl[4]
+
+
+def test_question_load5(monkeypatch):
+    """load a complete question and answer
+    """
+
+    class MonkeyAnswer(exam.Answer):
+        def __init__(self):
+            super().__init__()
+            self._attr_load_sequence = ("text",)
+            self._type_caster_sequence = (str,)
+
+    monkeypatch.setattr(exam, "Answer", MonkeyAnswer)
+
+    tupl = ("t1", "s1", "p1", "1", "a1")
+    quest = exam.Question()
+    quest.load_sequentially(iter(tupl))
+
+    assert quest.text == tupl[0]
+    assert quest.subject == tupl[1]
+    assert quest.image == Path(tupl[2])
+    assert quest.level == int(tupl[3])
+    assert quest.answers[0].text == tupl[4]
+
+
+def test_question_load6(monkeypatch):
+    """load a complete question and two answers
+    """
+
+    class MonkeyAnswer(exam.Answer):
+        def __init__(self):
+            super().__init__()
+            self._attr_load_sequence = ("text", "image")
+            self._type_caster_sequence = (str, str)
+
+    monkeypatch.setattr(exam, "Answer", MonkeyAnswer)
+
+    tupl = ("t1", "s1", "p1", "1", "a00", "a01", "a10")
+    quest = exam.Question()
+    quest.load_sequentially(iter(tupl))
+
+    assert quest.text == tupl[0]
+    assert quest.subject == tupl[1]
+    assert quest.image == Path(tupl[2])
+    assert quest.level == int(tupl[3])
+    assert quest.answers[0].text == tupl[4]
+    assert quest.answers[0].image == tupl[5]
+    assert quest.answers[1].text == tupl[6]
+
 
 # @pytest.mark.parametrize(
-#     "iterator, q_text, q_subject",
-#     [(iter(("q1", "s1")), "q1", "s1"), (iter(("", "s1")), "", "s1")],
-# )
-# def test_question_load1(iterator, q_text, q_subject):
-#     """load question text and subject; check for default image,  level
-#     and no answer.
-#     """
-#     quest = exam.Question()
-#     quest.load_sequentially(iterator)
-#
-#     assert quest.text == q_text
-#     assert quest.subject == q_subject
-#     assert quest.image == Path(".")
-#     assert quest.level == 0
-#     with pytest.raises(IndexError):
-#         assert quest.answers[0].text == ""
-#     with pytest.raises(IndexError):
-#         assert quest.answers[0].image == Path("")
-#
-#
-# @pytest.mark.parametrize(
-#     "iterator, q_text, q_subject, q_image, q_level, a1_text, a1_image, a2_text, a2_image",
+#     "tupl, q_text, q_subject, q_image, q_level, a1_text, a1_image, a2_text, a2_image",
 #     [
 #         (
-#             iter(("d1", "s1", "i1", 1, "a11", "ai11", "a12", "ai12")),
-#             "d1",
+#             ("t", "s", "i", 1, "a1", "ai1", "a", "ai2"),
+#             "t1",
 #             "s1",
 #             Path("i1"),
 #             1,
@@ -576,20 +690,19 @@ def test_question_load_sequentially(monkeypatch):
 #     ],
 # )
 # def test_question_load2(
-#     iterator, q_text, q_subject, q_image, q_level, a1_text, a1_image, a2_text, a2_image
+#     tupl, q_text, q_subject, q_image, q_level, a1_text, a1_image, a2_text, a2_image
 # ):
 #     """load question and two answers.
 #     """
 #     quest = exam.Question()
-#     quest.load_sequentially(iterator)
-#     print(quest.answers)
+#     quest.load_sequentially(iter(tupl))
 #
-#     assert quest.text == q_text
-#     assert quest.subject == q_subject
-#     assert quest.image == q_image
-#     assert quest.answers[0].text == a1_text
-#     assert quest.answers[0].image == a1_image
-#     assert quest.answers[1].text == a2_text
+#     assert quest.text == tupl[0]
+#     assert quest.subject == tupl[1]
+#     assert quest.image == tupl[2]
+#     assert quest.answers[0].text == tupl[3]
+#     assert quest.answers[0].image == tupl[4]
+#     assert quest.answers[1].text == tupl[5]
 #     assert quest.answers[1].image == a2_image
 #     with pytest.raises(IndexError):
 #         assert quest.answers[2].text == ""
