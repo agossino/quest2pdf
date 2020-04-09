@@ -67,9 +67,6 @@ class ContentMix(MainWindow):
     def to_pdf(self, input_file: Path, output_folder: Path):
         rows = self._get_rows(input_file)
 
-        if self.parameters["page_heading"] == True:
-            exam_heading = self._pa
-
         if not rows:
             LOGGER.warning("Empty rows.")
             self.errorbox("dati non validi")
