@@ -154,8 +154,9 @@ class Question:
         self.subject: str = subject
         self.image: Path = image
         self.level: int = level
-        self._answers: List[Answer] = []
-        self._correct_answer: Optional[Answer] = None  # setter bypassed
+        self._answer_type = Answer
+        self._answers: List[self._answer_type] = []
+        self._correct_answer: Optional[self._answer_type] = None  # setter bypassed
         self._correct_index: Optional[int] = None  # setter bypassed
         self._attr_load_sequence: Tuple[str, ...] = (
             "text",
@@ -233,24 +234,27 @@ class Question:
 
         list(map(self.add_answer, values))
 
-    def add_answer(self, answer: Answer, is_correct: bool = False) -> None:
+    def add_answer(self, answer, is_correct: bool = False) -> None:
         """Add an Answer. Correct answer is set.
         The first answer is the correct one: successive answers
         are set accordingly to is_correct argument.
         """
-        if isinstance(answer, Answer):
-            self._answers.append(answer)
-            if is_correct or self._correct_answer is None:
-                self.correct_answer = answer
-        else:
-            raise TypeError(f"{answer} is not an Answer")
+        # if isinstance(answer, self._answer_type):
+        #     self._answers.append(answer)
+        #     if is_correct or self._correct_answer is None:
+        #         self.correct_answer = answer
+        # else:
+        #     raise TypeError(f"{answer} is not an Answer")
+        self._answers.append(answer)
+        if is_correct or self._correct_answer is None:
+            self.correct_answer = answer
 
     @property
-    def correct_answer(self) -> Optional[Answer]:
+    def correct_answer(self):
         return self._correct_answer
 
     @correct_answer.setter
-    def correct_answer(self, value: Answer) -> None:
+    def correct_answer(self, value) -> None:
         """Set the given answer as the correct one.
         """
         if value in self._answers:
@@ -327,10 +331,11 @@ class Question:
         wrote_attr = 1
 
         while wrote_attr:
-            answer: Answer = Answer()
+            answer = self._answer_type()
+            logging.warning("answer %s", self._answer_type)
             wrote_attr = self._load_1_answer(answer, iterator)
 
-    def _load_1_answer(self, answer: Answer, iterator: Iterator[Any]) -> int:
+    def _load_1_answer(self, answer, iterator: Iterator[Any]) -> int:
         iter_to_list = []
         is_empty = True
         attributes = 0
@@ -374,9 +379,12 @@ class Question:
 class MultiChoiceQuest(Question):
     """Multi choice question.
     """
+
     def __init__(self, *args):
         self._correct_option: Optional[str] = None  # setter bypassed
         super().__init__(*args)
+        self._answer_type = MultiChoiceAnswer
+        self._answers: List[self._answer_type] = []
 
     @property
     def correct_option(self) -> Optional[str]:
@@ -416,7 +424,8 @@ class Exam:
     """
 
     def __init__(self, *args: Question):
-        self._questions: List[Question] = list()
+        self._questions = list()
+        self._question_type_key: str = "Question type"
         list(map(self.add_question, args))
         self._attribute_selector: Tuple[str, ...] = ()
 
@@ -445,25 +454,30 @@ class Exam:
     def add_question(self, question: Question) -> None:
         """Add one question to the sequence.
         """
-        if isinstance(question, Question):
-            self._questions.append(question)
-        else:
-            raise TypeError(f"{question} is not a Question")
+        # if isinstance(question, Question):
+        #     self._questions.append(question)
+        # else:
+        #     raise TypeError(f"{question} is not a Question")
+        self._questions.append(question)
 
     def add_path_parent(self, file_path: Path):
         for question in self._questions:
             question.add_parent_path(file_path)
 
     def load(self, iterable: Iterable[Mapping[str, Any]]) -> None:
+        questions_classes = {"MultiChoice": MultiChoiceQuest,
+                             "TrueFalse": TrueFalseQuest}
+        default_key = "MultiChoice"
         for row in iterable:
+            quest = questions_classes[row.get(self._question_type_key, default_key)]()
             if self._attribute_selector:
                 data = [row[key] for key in self._attribute_selector]
             else:
                 data = [row[key] for key in row]
             if data:
-                quest = Question()
                 self.add_question(quest)
                 iterator = iter(data)
+                logging.warning("quest: %s", quest)
                 quest.load_sequentially(iterator)
 
     def shuffle(self):

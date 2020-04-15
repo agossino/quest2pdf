@@ -148,7 +148,7 @@ def test_multichoiceanswer_attribute():
         ("test", "abc"),
         pytest.param("text", 0.1, marks=pytest.mark.xfail),
         ("image", Path(r"\home")),
-        pytest.param("image", "\image.png", marks=pytest.mark.xfail),
+        pytest.param("image", r"\image.png", marks=pytest.mark.xfail),
     ],
 )
 def test_multichoiceanswer_set(attribute, expected):
@@ -308,13 +308,13 @@ def test_question_answer_add1():
     assert q.correct_index == 0
 
 
-def test_question_answer_add_wrong():
-    """Test wrong answer addition
-    """
-    q = exam.Question("Who are you?")
-    a = "That's me."
-    with pytest.raises(TypeError):
-        q.add_answer(a)
+# def test_question_answer_add_wrong():
+#     """Test wrong answer addition
+#     """
+#     q = exam.Question("Who are you?")
+#     a = "That's me."
+#     with pytest.raises(TypeError):
+#         q.add_answer(a)
 
 
 def test_question_answer_setter0():
@@ -336,15 +336,15 @@ def test_question_answer_setter0():
     assert q.correct_index == 0
 
 
-def test_question_answer_setter1():
-    """Test wrong answer tuple addition
-    """
-    q = exam.Question("Who are you?")
-    a = exam.Answer()
-    b = "Not an Answer"
-
-    with pytest.raises(TypeError):
-         q.answers = (a, b)
+# def test_question_answer_setter1():
+#     """Test wrong answer tuple addition
+#     """
+#     q = exam.Question("Who are you?")
+#     a = exam.Answer()
+#     b = "Not an Answer"
+#
+#     with pytest.raises(TypeError):
+#          q.answers = (a, b)
 
 
 def test_question_answer_correct0():
@@ -496,42 +496,6 @@ def test_question_add_path_parent1():
     assert quest.answers[1].image == path.parent / image_path
 
 
-#
-# def test_question_shuffle2():
-#     """Test shuffle with one question added
-#     """
-#     q = exam.Question("Who are you?")
-#     a1 = exam.Answer("That's me.")
-#     q.add_answer(a1)
-#     random.seed(1)
-#     q.shuffle()
-#
-#     assert q.correct_answer == a1
-#     assert q.correct_index == 0
-#     assert q.correct_value == "A"
-#
-#
-# def test_question_shuffle3():
-#     """Test shuffle with more question added
-#     """
-#     q = exam.Question("Who are you?")
-#     a1 = exam.Answer("That's me.")
-#     a2 = exam.Answer("That's not me.")
-#     a3 = exam.Answer("That's him")
-#     a4 = exam.Answer("That's her.")
-#     q.add_answer(a1)
-#     q.add_answer(a2, True)
-#     q.add_answer(a3)
-#     q.add_answer(a4)
-#     random.seed(1)
-#     q.shuffle()
-#
-#     assert q.answers == (a4, a1, a3, a2)
-#     assert q.correct_answer == a2
-#     assert q.correct_index == 3
-#     assert q.correct_value == "D"
-#
-#
 def test_question_load0():
     """Empty iterator.
     """
@@ -601,10 +565,9 @@ def test_question_load4(monkeypatch):
             self._attr_load_sequence = ("text", "image")
             self._type_caster_sequence = (str, str)
 
-    monkeypatch.setattr(exam, "Answer", MonkeyAnswer)
-
     tupl = ("t1", "s1", "p1", "1", "a1")
     quest = exam.Question()
+    monkeypatch.setattr(quest, "_answer_type", MonkeyAnswer)
     quest.load_sequentially(iter(tupl))
 
     assert quest.text == tupl[0]
@@ -624,10 +587,9 @@ def test_question_load5(monkeypatch):
             self._attr_load_sequence = ("text",)
             self._type_caster_sequence = (str,)
 
-    monkeypatch.setattr(exam, "Answer", MonkeyAnswer)
-
     tupl = ("t1", "s1", "p1", "1", "a1")
     quest = exam.Question()
+    monkeypatch.setattr(quest, "_answer_type", MonkeyAnswer)
     quest.load_sequentially(iter(tupl))
 
     assert quest.text == tupl[0]
@@ -647,10 +609,9 @@ def test_question_load6(monkeypatch):
             self._attr_load_sequence = ("text", "image")
             self._type_caster_sequence = (str, str)
 
-    monkeypatch.setattr(exam, "Answer", MonkeyAnswer)
-
     tupl = ("t1", "s1", "p1", "1", "a00", "a01", "a10")
     quest = exam.Question()
+    monkeypatch.setattr(quest, "_answer_type", MonkeyAnswer)
     quest.load_sequentially(iter(tupl))
 
     assert quest.text == tupl[0]
@@ -662,359 +623,342 @@ def test_question_load6(monkeypatch):
     assert quest.answers[1].text == tupl[6]
 
 
-# @pytest.mark.parametrize(
-#     "tupl, q_text, q_subject, q_image, q_level, a1_text, a1_image, a2_text, a2_image",
-#     [
-#         (
-#             ("t", "s", "i", 1, "a1", "ai1", "a", "ai2"),
-#             "t1",
-#             "s1",
-#             Path("i1"),
-#             1,
-#             "a11",
-#             Path("ai11"),
-#             "a12",
-#             Path("ai12"),
-#         ),
-#         (
-#             iter(("", "s1", "", 2, "a11", "ai11", "", "ai12")),
-#             "",
-#             "s1",
-#             Path("."),
-#             2,
-#             "a11",
-#             Path("ai11"),
-#             "",
-#             Path("ai12"),
-#         ),
-#     ],
-# )
-# def test_question_load2(
-#     tupl, q_text, q_subject, q_image, q_level, a1_text, a1_image, a2_text, a2_image
-# ):
-#     """load question and two answers.
-#     """
-#     quest = exam.Question()
-#     quest.load_sequentially(iter(tupl))
-#
-#     assert quest.text == tupl[0]
-#     assert quest.subject == tupl[1]
-#     assert quest.image == tupl[2]
-#     assert quest.answers[0].text == tupl[3]
-#     assert quest.answers[0].image == tupl[4]
-#     assert quest.answers[1].text == tupl[5]
-#     assert quest.answers[1].image == a2_image
-#     with pytest.raises(IndexError):
-#         assert quest.answers[2].text == ""
-#     with pytest.raises(IndexError):
-#         assert quest.answers[2].image == Path(".")
-#
-#
-# def test_question_load3():
-#     """load question and only answer text;
-#     answer image checked for default value.
-#     """
-#     quest = exam.Question()
-#     sequence = ("Text", "Subject", "dir/ec/tor/y", 1, "Answer")
-#     iterator = iter(sequence)
-#     quest.load_sequentially(iterator)
-#
-#     assert quest.text == sequence[0]
-#     assert quest.subject == sequence[1]
-#     assert quest.image == Path(sequence[2])
-#     assert quest.level == sequence[3]
-#     assert quest.answers[0].text == sequence[4]
-#     assert quest.answers[0].image == Path(".")
-#     with pytest.raises(IndexError):
-#         assert quest.answers[1].text == ""
-#     with pytest.raises(IndexError):
-#         assert quest.answers[1].image == Path(".")
-#
-#
-# def test_question_load4():
-#     """load question and only some empty answers;
-#     check empty answers are not loaded.
-#     """
-#     quest = exam.Question()
-#     sequence = (
-#         "Text",
-#         "Subject",
-#         "dir/ec/tor/y",
-#         1,
-#         "",
-#         "",
-#         "Answer",
-#         "",
-#         "",
-#         "",
-#         "",
-#         "image.png",
-#     )
-#     iterator = iter(sequence)
-#     quest.load_sequentially(iterator)
-#
-#     assert quest.text == sequence[0]
-#     assert quest.subject == sequence[1]
-#     assert quest.image == Path(sequence[2])
-#     assert quest.level == sequence[3]
-#     assert quest.answers[0].text == sequence[6]
-#     assert quest.answers[0].image == Path(".")
-#     assert quest.answers[1].text == sequence[10]
-#     assert quest.answers[1].image == Path(sequence[11])
-#     with pytest.raises(IndexError):
-#         assert quest.answers[2].text == ""
-#     with pytest.raises(IndexError):
-#         assert quest.answers[2].image == Path(".")
-#
-#
-# def test_question_print():
-#     """test __str__ method
-#     """
-#     quest = exam.Question()
-#     quest_text = "Text"
-#     quest_subject = "Subject"
-#     quest_image = "dir/ec/tor/y"
-#     quest_level = 1
-#     answer_text = "Answer"
-#     iterator = iter((quest_text, quest_subject, quest_image, quest_level, answer_text))
-#     quest.load_sequentially(iterator)
-#
-#     assert f"text: {quest.text}" in quest.__str__()
-#     assert f"subject: {quest_subject}" in quest.__str__()
-#     assert f"image: {quest_image}" in quest.__str__()
-#     assert f"level: {quest_level}" in quest.__str__()
-#     assert f"text: {answer_text}" in quest.__str__()
-#     assert f"image: ." in quest.__str__()
-#
-#
-# def test_multichoice():
-#     quest = exam.MultiChoiceQuest("Who?", "Philosophy", Path("image.png"), 3)
-#
-#     assert quest.text == "Who?"
-#
-#
-# @pytest.fixture
-# def set_questions():
-#     return (
-#         exam.Question(),
-#         exam.Question("Who?"),
-#         exam.Question("What?"),
-#         exam.Question("When?"),
-#     )
-#
-#
-# def test_exam():
-#     """test Exam with no args
-#     """
-#     ex = exam.Exam()
-#
-#     assert ex.questions == tuple()
-#
-#
-# def test_exam_init(set_questions):
-#     """test Exam with one and two arguments
-#     """
-#     ex1 = exam.Exam(set_questions[1])
-#     ex2 = exam.Exam(set_questions[1], set_questions[2])
-#
-#     assert ex1.questions == (set_questions[1],)
-#     assert ex2.questions == (set_questions[1], set_questions[2])
-#
-#
-# def test_exam_questions_getter():
-#     """test question get with no question;
-#     question get with contents is tested before
-#     """
-#     ex = exam.Exam()
-#
-#     assert len(ex.questions) == 0
-#
-#
-# def test_exam_questions_setter(set_questions):
-#     """test question set; question added before disappear
-#     """
-#     ex = exam.Exam()
-#     ex.add_question(set_questions[1])
-#     ex.questions = (set_questions[2], set_questions[3])
-#
-#     assert set_questions[1] not in ex.questions
-#     assert set_questions[2] in ex.questions
-#     assert set_questions[3] in ex.questions
-#
-#
-# def test_exam_attribute_selector1():
-#     """test attribute_selector default value"""
-#     ex = exam.Exam()
-#
-#     assert ex.attribute_selector == ()
-#
-#
-# def test_exam_attribute_selector2():
-#     """test attribute_selector set and type conversion
-#     """
-#     ex = exam.Exam()
-#     expected = ("hello", "2", "times")
-#     ex.attribute_selector = (expected[0], int(expected[1]), expected[2])
-#
-#     assert ex.attribute_selector == expected
-#
-#
-# def test_exam_add_question1():
-#     """test add wrong question
-#     """
-#     ex = exam.Exam()
-#     not_a_question = "This is not a question"
-#     with pytest.raises(TypeError):
-#         ex.add_question(not_a_question)
-#
-#
-# def test_exam_add_question2(set_questions):
-#     """test add one question
-#     """
-#     ex = exam.Exam()
-#     ex.add_question(set_questions[0])
-#
-#     assert ex.questions == (set_questions[0],)
-#
-#
-# def test_exam_add_question3(set_questions):
-#     """test add two questions
-#     """
-#     ex = exam.Exam()
-#     ex.add_question(set_questions[2])
-#     ex.add_question(set_questions[3])
-#
-#     assert ex.questions == (set_questions[2], set_questions[3])
-#
-#
-# def test_exam_add_path_parent(set_questions):
-#     image = Path("images/image.png")
-#     path = Path("/project/A/")
-#     ex = exam.Exam()
-#     set_questions[0].image = Path()
-#     ans = exam.Answer("Answer", image)
-#     set_questions[0].add_answer(ans)
-#     ex.add_question(set_questions[0])
-#     set_questions[1].image = image
-#     ex.add_question(set_questions[1])
-#     ex.add_path_parent(path)
-#
-#     assert ex.questions[0].image == Path()
-#     assert ex.questions[0].answers[0].image == path.parent / image
-#     assert ex.questions[1].image == path.parent / image
-#
-#
-# def test_exam_load1():
-#     """test empty iterable
-#     """
-#     ex = exam.Exam()
-#     ex.load(iter(()))
-#
-#     assert ex.questions == tuple()
-#
-#
-# @pytest.mark.parametrize(
-#     (
-#         "iterator, text0, subject0, image0, level0, a00_text, a00_image, a01_text, a01_image, "
-#         + "text1, subject1, image1, level1, a10_text, a10_image, a11_text, a11_image"
-#     ),
-#     [
-#         (
-#             (
-#                 OrderedDict(
-#                     [
-#                         ("field A", "ab"),
-#                         ("field B", "ac"),
-#                         ("field C", "ad"),
-#                         ("field D", "1"),
-#                         ("field E", "ae"),
-#                         ("field F", "af"),
-#                         ("field G", "ag"),
-#                     ]
-#                 ),
-#                 OrderedDict(
-#                     [
-#                         ("field A", "ba"),
-#                         ("field B", "bc"),
-#                         ("field C", "bd"),
-#                         ("field D", "2"),
-#                         ("field E", "be"),
-#                         ("field F", "bf"),
-#                         ("field G", "bg"),
-#                     ]
-#                 ),
-#             ),
-#             "ab",
-#             "ac",
-#             Path("ad"),
-#             1,
-#             "ae",
-#             Path("af"),
-#             "ag",
-#             Path("."),
-#             "ba",
-#             "bc",
-#             Path("bd"),
-#             2,
-#             "be",
-#             Path("bf"),
-#             "bg",
-#             Path("."),
-#         )
-#     ],
-# )
-# def test_exam_load2(
-#     iterator,
-#     text0,
-#     subject0,
-#     image0,
-#     level0,
-#     a00_text,
-#     a00_image,
-#     a01_text,
-#     a01_image,
-#     text1,
-#     subject1,
-#     image1,
-#     level1,
-#     a10_text,
-#     a10_image,
-#     a11_text,
-#     a11_image,
-# ):
-#     """test without setting _attribute_selector
-#     2 rows -> 2 questions with 2 answers each but second answer image is not provided
-#     """
-#     ex = exam.Exam()
-#     ex.load(iterator)
-#
-#     assert ex.questions[0].text == text0  # first question
-#     assert ex.questions[0].subject == subject0
-#     assert ex.questions[0].image == image0
-#     assert ex.questions[0].level == level0
-#     assert ex.questions[0].answers[0].text == a00_text
-#     assert ex.questions[0].answers[0].image == a00_image
-#     assert ex.questions[0].answers[1].text == a01_text
-#     assert ex.questions[0].answers[1].image == a01_image  # default value
-#
-#     assert ex.questions[1].text == text1  # second question
-#     assert ex.questions[1].subject == subject1
-#     assert ex.questions[1].image == image1
-#     assert ex.questions[1].level == level1
-#     assert ex.questions[1].answers[0].text == a10_text
-#     assert ex.questions[1].answers[0].image == a10_image
-#     assert ex.questions[1].answers[1].text == a11_text
-#     assert ex.questions[1].answers[1].image == a11_image  # default value
-#
-#     # third answer of second question is not provided
-#     with pytest.raises(IndexError):
-#         assert ex.questions[1].answers[2].text == ""
-#
-#     # third question is not provided
-#     with pytest.raises(IndexError):
-#         assert ex.questions[2].text == ""  # Not provided
-#
-#
+def test_question_print():
+    """test __str__ method
+    """
+    quest = exam.Question()
+    quest_text = "Text"
+    quest_subject = "Subject"
+    quest_image = "dir/ec/tor/y"
+    quest_level = 1
+    iterator = iter((quest_text, quest_subject, quest_image, quest_level))
+    quest.load_sequentially(iterator)
+
+    assert f"text: {quest.text}" in quest.__str__()
+    assert f"subject: {quest_subject}" in quest.__str__()
+    assert f"image: {quest_image}" in quest.__str__()
+    assert f"level: {quest_level}" in quest.__str__()
+
+
+def test_mcquestion_init0():
+    """test init with no answer
+    """
+    q = exam.MultiChoiceQuest()
+
+    assert q.text == ""
+    assert q.subject == ""
+    assert q.image == Path()
+    assert q.level == 0
+
+
+def test_mcquestion_init1():
+    """test init with no answer
+    """
+    text, subject, image, level = ("q text", "q subject", Path("image.png"), 2)
+    q = exam.MultiChoiceQuest(text, subject, image, level)
+
+    assert q.text == text
+    assert q.subject == subject
+    assert q.image == image
+    assert q.level == level
+
+
+def test_mcquestion_shuffle0():
+    """Test shuffle with one question added
+    """
+    q = exam.MultiChoiceQuest("Who are you?")
+    a1 = exam.MultiChoiceAnswer("That's me.")
+    q.add_answer(a1)
+    random.seed(1)
+    q.shuffle()
+
+    assert q.correct_answer == a1
+    assert q.correct_index == 0
+    assert q.correct_option == "A"
+
+
+def test_mcquestion_shuffle1():
+    """Test shuffle with more question added
+    """
+    q = exam.MultiChoiceQuest("Who are you?")
+    a1 = exam.MultiChoiceAnswer("That's me.")
+    a2 = exam.MultiChoiceAnswer("That's not me.")
+    a3 = exam.MultiChoiceAnswer("That's him")
+    a4 = exam.MultiChoiceAnswer("That's her.")
+    q.add_answer(a1)
+    q.add_answer(a2, True)
+    q.add_answer(a3)
+    q.add_answer(a4)
+    random.seed(1)
+    q.shuffle()
+
+    assert q.answers == (a4, a1, a3, a2)
+    assert q.correct_answer == a2
+    assert q.correct_index == 3
+    assert q.correct_option == "D"
+
+
+def test_mcquestion_load0():
+    """load question and two answers.
+    """
+    tupl = ("t", "s", "i", 1, "a1", "ai1", "a", "ai2")
+    quest = exam.MultiChoiceQuest()
+    quest.load_sequentially(iter(tupl))
+
+    assert quest.text == tupl[0]
+    assert quest.subject == tupl[1]
+    assert quest.image == Path(tupl[2])
+    assert quest.level == tupl[3]
+    assert quest.answers != ()
+    assert quest.answers[0].text == tupl[4]
+    assert quest.answers[0].image == Path(tupl[5])
+    assert quest.answers[1].text == tupl[6]
+    assert quest.answers[1].image == Path(tupl[7])
+    with pytest.raises(IndexError):
+        _ = quest.answers[2]
+
+
+def test_mcquestion_load1():
+    """load question and only answer text;
+    answer image checked for default value.
+    """
+    quest = exam.MultiChoiceQuest()
+    sequence = ("Text", "Subject", "dir/ec/tor/y", 1, "Answer")
+    iterator = iter(sequence)
+    quest.load_sequentially(iterator)
+
+    assert quest.text == sequence[0]
+    assert quest.subject == sequence[1]
+    assert quest.image == Path(sequence[2])
+    assert quest.level == sequence[3]
+    assert quest.answers[0].text == sequence[4]
+    assert quest.answers[0].image == Path(".")
+    with pytest.raises(IndexError):
+        _ = quest.answers[1]
+
+
+def test_mcquestion_load2():
+    """load question and only some empty answers;
+    check empty answers are not loaded.
+    """
+    quest = exam.MultiChoiceQuest()
+    sequence = (
+        "Text",
+        "Subject",
+        "dir/ec/tor/y",
+        1,
+        "",
+        "",
+        "Answer",
+        "",
+        "",
+        "",
+        "",
+        "image.png",
+    )
+    iterator = iter(sequence)
+    quest.load_sequentially(iterator)
+
+    assert quest.text == sequence[0]
+    assert quest.subject == sequence[1]
+    assert quest.image == Path(sequence[2])
+    assert quest.level == sequence[3]
+    assert quest.answers[0].text == sequence[6]
+    assert quest.answers[0].image == Path(".")
+    assert quest.answers[1].text == sequence[10]
+    assert quest.answers[1].image == Path(sequence[11])
+    with pytest.raises(IndexError):
+        _ = quest.answers[2]
+
+
+def test_exam():
+    """test Exam with no args
+    """
+    ex = exam.Exam()
+
+    assert ex.questions == tuple()
+
+
+def test_exam_init():
+    """test Exam with one and two arguments
+    """
+    q1, q2 = exam.Question("q1 text", "q1 image"), exam.Question("q2 text", "q2 image")
+    ex1 = exam.Exam(q1)
+    ex2 = exam.Exam(q1, q2)
+
+    assert ex1.questions == (q1,)
+    assert ex2.questions == (q1, q2)
+
+
+def test_exam_questions_setter0():
+    """test question set
+    """
+    q1, q2 = exam.Question("q1 text", "q1 image"), exam.Question("q2 text", "q2 image")
+    ex = exam.Exam()
+    ex.add_question(q1)
+    ex.add_question(q2)
+
+    assert q1 in ex.questions
+    assert q2 in ex.questions
+
+
+def test_exam_questions_setter1():
+    """test question set; question added before overwritten
+    """
+    q1, q2 = exam.Question("q1 text", "q1 image"), exam.Question("q2 text", "q2 image")
+    ex = exam.Exam()
+    ex.add_question(q1)
+    ex.questions = (q2,)
+
+    assert q1 not in ex.questions
+    assert q2 in ex.questions
+
+
+def test_exam_attribute_selector1():
+    """test attribute_selector default value"""
+    ex = exam.Exam()
+
+    assert ex.attribute_selector == ()
+
+
+def test_exam_attribute_selector2():
+    """test attribute_selector set and type conversion
+    """
+    ex = exam.Exam()
+    expected = ("hello", "2", "times")
+    ex.attribute_selector = (expected[0], int(expected[1]), expected[2])
+
+    assert ex.attribute_selector == expected
+
+
+def test_exam_add_path_parent():
+    image = Path("images/image.png")
+    path = Path("/project/A/")
+    q1 = exam.MultiChoiceQuest("q1 text", "")
+    q1.answers = (exam.MultiChoiceAnswer("a1 text", image), exam.MultiChoiceAnswer("a2 text", image))
+    q2 = exam.MultiChoiceQuest("q2 text", "", image)
+    q2.add_answer(exam.MultiChoiceAnswer("a3 text"))
+    ex = exam.Exam(q1, q2)
+    ex.add_path_parent(path)
+
+    assert ex.questions[0].image == Path()
+    assert ex.questions[0].answers[0].image == path.parent / image
+    assert ex.questions[0].answers[1].image == path.parent / image
+    assert ex.questions[1].image == path.parent / image
+    assert ex.questions[1].answers[0].image == Path()
+
+
+def test_exam_load1():
+    """test empty iterable
+    """
+    ex = exam.Exam()
+    ex.load(iter(()))
+
+    assert ex.questions == tuple()
+
+
+@pytest.mark.parametrize(
+    (
+        "iterator, text0, subject0, image0, level0, a00_text, a00_image, a01_text, a01_image, "
+        + "text1, subject1, image1, level1, a10_text, a10_image, a11_text, a11_image"
+    ),
+    [
+        (
+            (
+                OrderedDict(
+                    [
+                        ("field A", "ab"),
+                        ("field B", "ac"),
+                        ("field C", "ad"),
+                        ("field D", "1"),
+                        ("field E", "ae"),
+                        ("field F", "af"),
+                        ("field G", "ag"),
+                    ]
+                ),
+                OrderedDict(
+                    [
+                        ("field A", "ba"),
+                        ("field B", "bc"),
+                        ("field C", "bd"),
+                        ("field D", "2"),
+                        ("field E", "be"),
+                        ("field F", "bf"),
+                        ("field G", "bg"),
+                    ]
+                ),
+            ),
+            "ab",
+            "ac",
+            Path("ad"),
+            1,
+            "ae",
+            Path("af"),
+            "ag",
+            Path("."),
+            "ba",
+            "bc",
+            Path("bd"),
+            2,
+            "be",
+            Path("bf"),
+            "bg",
+            Path("."),
+        )
+    ],
+)
+def test_exam_load2(
+    iterator,
+    text0,
+    subject0,
+    image0,
+    level0,
+    a00_text,
+    a00_image,
+    a01_text,
+    a01_image,
+    text1,
+    subject1,
+    image1,
+    level1,
+    a10_text,
+    a10_image,
+    a11_text,
+    a11_image,
+):
+    """test without setting _attribute_selector
+    2 rows -> 2 questions with 2 answers each but second answer image is not provided
+    """
+    ex = exam.Exam()
+    ex.load(iterator)
+
+    assert ex.questions[0].text == text0  # first question
+    assert ex.questions[0].subject == subject0
+    assert ex.questions[0].image == image0
+    assert ex.questions[0].level == level0
+    assert ex.questions[0].answers[0].text == a00_text
+    assert ex.questions[0].answers[0].image == a00_image
+    assert ex.questions[0].answers[1].text == a01_text
+    assert ex.questions[0].answers[1].image == a01_image  # default value
+
+    assert ex.questions[1].text == text1  # second question
+    assert ex.questions[1].subject == subject1
+    assert ex.questions[1].image == image1
+    assert ex.questions[1].level == level1
+    assert ex.questions[1].answers[0].text == a10_text
+    assert ex.questions[1].answers[0].image == a10_image
+    assert ex.questions[1].answers[1].text == a11_text
+    assert ex.questions[1].answers[1].image == a11_image  # default value
+
+    # third answer of second question is not provided
+    with pytest.raises(IndexError):
+        assert ex.questions[1].answers[2].text == ""
+
+    # third question is not provided
+    with pytest.raises(IndexError):
+        assert ex.questions[2].text == ""  # Not provided
+
+
 # def test_exam_load3():
 #     """test without setting _attribute_selector
 #     and missing row
