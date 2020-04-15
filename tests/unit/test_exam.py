@@ -180,9 +180,10 @@ def test_multichoiceanswer_print():
 
 
 def test_truefalse_init0():
-    with pytest.raises(TypeError):
-        exam.TrueFalseAnswer()
+    a = exam.TrueFalseAnswer()
 
+    assert a.boolean is False
+    assert a.text == "False"
 
 def test_truefalse_init1():
     a = exam.TrueFalseAnswer(True, Path())
@@ -195,6 +196,20 @@ def test_truefalse_init1():
 def test_truefalse_init2():
     a = exam.TrueFalseAnswer(True)
     a.boolean = False
+
+    assert a.boolean is False
+    assert a.text == "False"
+
+
+def test_truefalse_init3():
+    a = exam.TrueFalseAnswer(1)
+
+    assert a.boolean is True
+    assert a.text == "True"
+
+
+def test_truefalse_init4():
+    a = exam.TrueFalseAnswer(0)
 
     assert a.boolean is False
     assert a.text == "False"
@@ -743,6 +758,95 @@ def test_mcquestion_load2():
     assert quest.answers[0].image == Path(".")
     assert quest.answers[1].text == sequence[10]
     assert quest.answers[1].image == Path(sequence[11])
+    with pytest.raises(IndexError):
+        _ = quest.answers[2]
+
+
+def test_tfquestion_init0():
+    quest = exam.TrueFalseQuest()
+
+    assert quest.text == ""
+    assert quest.subject == ""
+    assert quest.image == Path()
+    assert quest.level == 0
+
+
+def test_tfquestion_init1():
+    """test init with no answer
+    """
+    text, subject, image, level = ("q text", "q subject", Path("image.png"), 2)
+    quest = exam.TrueFalseQuest(text, subject, image, level)
+
+    assert quest.text == text
+    assert quest.subject == subject
+    assert quest.image == image
+    assert quest.level == level
+
+
+def test_tfquestion_add0():
+    """test add an answer
+    """
+    answer = exam.TrueFalseAnswer(True)
+    quest = exam.TrueFalseQuest()
+    quest.add_answer(answer)
+
+    assert quest.answers == (answer,)
+    assert quest.correct_answer == answer
+
+
+def test_tfquestion_add1():
+    """test add 2 answer
+    """
+    true_answer = exam.TrueFalseAnswer(True)
+    false_answer = exam.TrueFalseAnswer(False)
+    quest = exam.TrueFalseQuest()
+    quest.answers = (true_answer, false_answer)
+
+    assert quest.answers == (true_answer, false_answer)
+    assert quest.correct_answer == true_answer
+
+
+def test_tfquestion_add2():
+    """test add 2 answer
+    """
+    true_answer_1 = exam.TrueFalseAnswer(True)
+    true_answer_2 = exam.TrueFalseAnswer(True)
+    quest = exam.TrueFalseQuest()
+    quest.add_answer(true_answer_1)
+
+    with pytest.raises(ValueError):
+        quest.add_answer(true_answer_2)
+
+
+def test_tfquestion_add3():
+    """test add 3 answer ... maybe redundant
+    """
+    true_answer_1 = exam.TrueFalseAnswer(True)
+    false_answer = exam.TrueFalseAnswer(False)
+    true_answer_2 = exam.TrueFalseAnswer(True)
+    quest = exam.TrueFalseQuest()
+    quest.add_answer(true_answer_1)
+
+    with pytest.raises(ValueError):
+        quest.answers = (true_answer_1, false_answer, true_answer_2)
+
+
+def test_tfquestion_load0():
+    """load question and two answers.
+    """
+    tupl = ("t", "s", "i", 1, "1", "image", "", "")
+    quest = exam.TrueFalseQuest()
+    quest.load_sequentially(iter(tupl))
+
+    assert quest.text == tupl[0]
+    assert quest.subject == tupl[1]
+    assert quest.image == Path(tupl[2])
+    assert quest.level == tupl[3]
+    assert quest.answers != ()
+    assert quest.answers[0].boolean == bool(tupl[4])
+    assert quest.answers[0].image == Path(tupl[5])
+    assert quest.answers[1].boolean == bool(tupl[6])
+    assert quest.answers[1].image == Path(tupl[7])
     with pytest.raises(IndexError):
         _ = quest.answers[2]
 

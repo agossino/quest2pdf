@@ -6,14 +6,14 @@ import exam
 
 @pytest.fixture
 def dummy_exam():
-    q1 = exam.Question("question 1", "subject 1", pathlib.Path("home/img1.png"))
-    a1 = exam.Answer("answer 1",pathlib.Path("home/img2.png"))
-    a2 = exam.Answer("answer 2", pathlib.Path("home/img3.png"))
+    q1 = exam.MultiChoiceQuest("question 1", "subject 1", pathlib.Path("home/img1.png"))
+    a1 = exam.MultiChoiceAnswer("answer 1",pathlib.Path("home/img2.png"))
+    a2 = exam.MultiChoiceAnswer("answer 2", pathlib.Path("home/img3.png"))
     q1.answers = (a1, a2)
     q1.correct_value = "B"
-    q2 = exam.Question("question 2", "subject 3", pathlib.Path("home/img4.png"))
-    q3 = exam.Question("question 3", "subject 3", pathlib.Path("home/img5.png"))
-    a1 = exam.Answer("answer 3", pathlib.Path("home/img6.png"))
+    q2 = exam.MultiChoiceQuest("question 2", "subject 3", pathlib.Path("home/img4.png"))
+    q3 = exam.MultiChoiceQuest("question 3", "subject 3", pathlib.Path("home/img5.png"))
+    a1 = exam.MultiChoiceAnswer("answer 3", pathlib.Path("home/img6.png"))
     q3.add_answer(a1)
     dummy_ex = exam.Exam(q1, q2, q3)
     return dummy_ex
@@ -78,15 +78,15 @@ def test_correction1(dummy_exam):
     assert item.image == pathlib.Path(".")
     item = next(expected)
     assert item.item_level == ItemLevel.sub
-    assert item.text == f"{my_exam.questions[0].correct_value}"
+    assert item.text == f"{my_exam.questions[0].correct_option}"
     assert item.image == pathlib.Path(".")
     item = next(expected)
     assert item.item_level == ItemLevel.sub
-    assert item.text == f"{my_exam.questions[1].correct_value}"
+    assert item.text == f"{my_exam.questions[1].correct_option}"
     assert item.image == pathlib.Path(".")
     item = next(expected)
     assert item.item_level == ItemLevel.sub
-    assert item.text == f"{my_exam.questions[2].correct_value}"
+    assert item.text == f"{my_exam.questions[2].correct_option}"
     assert item.image == pathlib.Path(".")
 
     with pytest.raises(StopIteration):

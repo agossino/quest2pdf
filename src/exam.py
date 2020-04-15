@@ -101,7 +101,7 @@ class MultiChoiceAnswer(Answer):
 
 
 class TrueFalseAnswer(Answer):
-    def __init__(self, boolean: bool, image: Path = Path()):
+    def __init__(self, boolean: bool = False, image: Path = Path()):
         self.boolean: bool = boolean
         self.image: Path = image
         self._text = "True" if self.boolean else "False"
@@ -115,11 +115,7 @@ class TrueFalseAnswer(Answer):
 
     @boolean.setter
     def boolean(self, boolean):
-        if isinstance(boolean, bool):
-            self._boolean = boolean
-            self._text = "True" if self.boolean else "False"
-        else:
-            raise TypeError(f"{boolean} is not a boolean")
+        self._boolean, self._text = (True, "True") if boolean else (False, "False")
 
     @property
     def image(self) -> Path:
@@ -338,7 +334,7 @@ class Question:
         is_empty = True
         attributes = 0
         try:
-            for a in answer.attr_load_sequence:
+            for _ in answer.attr_load_sequence:
                 iter_to_list.append(next(iterator))
                 attributes += 1
                 if iter_to_list[-1] != "":
@@ -408,9 +404,42 @@ class MultiChoiceQuest(Question):
 class TrueFalseQuest(Question):
     """Multi choice question.
     """
-
     def __init__(self, *args):
         super().__init__(*args)
+        self._answer_type = TrueFalseAnswer
+        self._answers: List[self._answer_type] = []
+
+    def add_answer(self, answer, is_correct: bool = False) -> None:
+        """Add an Answer. Correct answer is set.
+        The first answer is the correct one: successive answers
+        are set accordingly to is_correct argument.
+        """
+        if self._answers and answer.boolean == self._correct_answer.boolean:
+            raise ValueError("Only two alternative answers are allowed")
+
+        self._answers.append(answer)
+
+        if is_correct or self._correct_answer is None:
+            self.correct_answer = answer
+
+    def _load_1_answer(self, answer, iterator: Iterator[Any]) -> int:
+        iter_to_list = []
+        attributes = 0
+        try:
+            for _ in answer.attr_load_sequence:
+                iter_to_list.append(next(iterator))
+                attributes += 1
+            answer.load_sequentially(iter(iter_to_list))
+            self.add_answer(answer)
+        except StopIteration:
+            if len(iter_to_list) > 0:
+                try:
+                    answer.load_sequentially(iter(iter_to_list))
+                except StopIteration:
+                    self.add_answer(answer)
+                    raise
+            raise
+        return attributes
 
 
 class Exam:
