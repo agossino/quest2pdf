@@ -28,7 +28,6 @@ class Answer:
         self._attr_load_sequence: Tuple[str] = tuple()
         self._type_caster_sequence: Tuple[CasterType, ...] = tuple()
 
-
     @property
     def attr_load_sequence(self) -> Tuple[str, ...]:
         """Answer can be set by load_sequentially method: this attribute
@@ -332,7 +331,6 @@ class Question:
 
         while wrote_attr:
             answer = self._answer_type()
-            logging.warning("answer %s", self._answer_type)
             wrote_attr = self._load_1_answer(answer, iterator)
 
     def _load_1_answer(self, answer, iterator: Iterator[Any]) -> int:
@@ -341,20 +339,15 @@ class Question:
         attributes = 0
         try:
             for a in answer.attr_load_sequence:
-                logging.warning("attribute: %s", a)
                 iter_to_list.append(next(iterator))
                 attributes += 1
                 if iter_to_list[-1] != "":
                     is_empty = False
-                logging.warning("iter_to_list: %s, %s", iter_to_list, is_empty)
             if not is_empty:
                 answer.load_sequentially(iter(iter_to_list))
                 self.add_answer(answer)
         except StopIteration:
-            logging.warning("stop iteration")
-            logging.warning("iter_to_list: %s, %s", iter_to_list, is_empty)
             if len(iter_to_list) > 0 and not is_empty:
-                logging.warning("answer before loading %s", self.answers)
                 try:
                     answer.load_sequentially(iter(iter_to_list))
                 except StopIteration:
@@ -415,6 +408,7 @@ class MultiChoiceQuest(Question):
 class TrueFalseQuest(Question):
     """Multi choice question.
     """
+
     def __init__(self, *args):
         super().__init__(*args)
 
@@ -465,8 +459,10 @@ class Exam:
             question.add_parent_path(file_path)
 
     def load(self, iterable: Iterable[Mapping[str, Any]]) -> None:
-        questions_classes = {"MultiChoice": MultiChoiceQuest,
-                             "TrueFalse": TrueFalseQuest}
+        questions_classes = {
+            "MultiChoice": MultiChoiceQuest,
+            "TrueFalse": TrueFalseQuest,
+        }
         default_key = "MultiChoice"
         for row in iterable:
             quest = questions_classes[row.get(self._question_type_key, default_key)]()
@@ -477,7 +473,6 @@ class Exam:
             if data:
                 self.add_question(quest)
                 iterator = iter(data)
-                logging.warning("quest: %s", quest)
                 quest.load_sequentially(iterator)
 
     def shuffle(self):
