@@ -65,6 +65,7 @@ class GuiMixin:
 
     def enter_openfile(self) -> Tuple[Path, Path]:
         win = Toplevel()
+        win.geometry("+%d+%d" % (self.winfo_rootx() + 200, self.winfo_rooty() + 200))
         win.title("Seleziona sorgente e destinazione")
         file_label = "file di testo (CVS)"
         folder_label = "cartella di destinazione"

@@ -13,7 +13,6 @@ from exam import Exam
 from export import SerializeExam, RLInterface
 from _version import __version__
 
-
 LOGNAME = "quest2pdf"
 LOGGER = logging.getLogger(LOGNAME)
 
@@ -69,7 +68,7 @@ class ContentMix(MainWindow):
 
         if not rows:
             LOGGER.warning("Empty rows.")
-            self.errorbox("dati non validi")
+            self.errorbox("Invalid data")
             return
 
         try:
@@ -91,9 +90,9 @@ class ContentMix(MainWindow):
             exam.load(rows)
             exam.add_path_parent(input_file)
             serial_exam = SerializeExam(exam)
-            logging.warning("Parameter: %s", self.parameters)
             for number in range(self.parameters["number"]):
-                if self.parameters["not_shuffle"] is False:
+                logging.debug("not_shuffle parameter: %s", self.parameters["not_shuffle"])
+                if self.parameters["not_shuffle"] is True:
                     exam.shuffle()
                 output_file_name_exam = Path(f"{self.parameters['exam']}_{number}.pdf")
                 if isinstance(self.parameters["page_heading"], str):

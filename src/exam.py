@@ -234,12 +234,6 @@ class Question:
         The first answer is the correct one: successive answers
         are set accordingly to is_correct argument.
         """
-        # if isinstance(answer, self._answer_type):
-        #     self._answers.append(answer)
-        #     if is_correct or self._correct_answer is None:
-        #         self.correct_answer = answer
-        # else:
-        #     raise TypeError(f"{answer} is not an Answer")
         self._answers.append(answer)
         if is_correct or self._correct_answer is None:
             self.correct_answer = answer
@@ -375,6 +369,13 @@ class MultiChoiceQuest(Question):
         self._answer_type = MultiChoiceAnswer
         self._answers: List[self._answer_type] = []
 
+    @Question.correct_answer.setter
+    def correct_answer(self, value) -> None:
+        """Set the given answer as the correct one.
+        """
+        Question.correct_answer.fset(self, value)
+        self._correct_option = chr(ord(LETTER_A) + self.correct_index)
+
     @property
     def correct_option(self) -> Optional[str]:
         return self._correct_option
@@ -399,6 +400,11 @@ class MultiChoiceQuest(Question):
             pointer = self._answers.index(self._correct_answer)
             self._correct_index = pointer
             self._correct_option = chr(ord(LETTER_A) + pointer)
+
+    def __str__(self):
+        option = f"{self._correct_option}\n"
+        output = super().__str__() + option
+        return output
 
 
 class TrueFalseQuest(Question):

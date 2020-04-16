@@ -654,7 +654,18 @@ def test_mcquestion_init1():
     assert q.level == level
 
 
-def test_mcquestion_shuffle0():
+def test_mcquestion_add():
+    """Test add answer
+    """
+    q = exam.MultiChoiceQuest("Who are you?")
+    a1 = exam.MultiChoiceAnswer("That's me.")
+    q.add_answer(a1)
+
+    assert q.correct_answer == a1
+    assert q.correct_index == 0
+    assert q.correct_option == "A"
+
+def test_mcquestion_shuffle1():
     """Test shuffle with one question added
     """
     q = exam.MultiChoiceQuest("Who are you?")
@@ -668,7 +679,7 @@ def test_mcquestion_shuffle0():
     assert q.correct_option == "A"
 
 
-def test_mcquestion_shuffle1():
+def test_mcquestion_shuffle2():
     """Test shuffle with more question added
     """
     q = exam.MultiChoiceQuest("Who are you?")
