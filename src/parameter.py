@@ -78,11 +78,7 @@ def cli_parser() -> argparse.ArgumentParser:
         "-n", "--number", type=int, nargs="?", help="number of output files.", default=1
     )
     parser.add_argument(
-        "-e",
-        "--exam",
-        help="output file name prefix.",
-        type=str,
-        default="Exam",
+        "-e", "--exam", help="output file name prefix.", type=str, default="Exam"
     )
     parser.add_argument(
         "-c",
@@ -243,7 +239,7 @@ def try_conf_file(file_path: pathlib.Path) -> Optional[Dict[str, Any]]:
 def convert_from_str_to_type(parameter: Dict[str, Any]) -> None:
     key = "number"
     try:
-        parameter[key]= int(parameter.get(key, 1))
+        parameter[key] = int(parameter.get(key, 1))
     except ValueError:
         parameter[key] = 1
 

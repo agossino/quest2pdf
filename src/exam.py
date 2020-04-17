@@ -410,6 +410,7 @@ class MultiChoiceQuest(Question):
 class TrueFalseQuest(Question):
     """Multi choice question.
     """
+
     def __init__(self, *args):
         super().__init__(*args)
         self._answer_type = TrueFalseAnswer

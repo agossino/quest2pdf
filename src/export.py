@@ -63,7 +63,7 @@ class RLInterface:
             top_item_bullet_type=top_item_bullet_type,
             sub_item_bullet_type=sub_item_bullet_type,
             page_heading=page_heading,
-            page_footer=page_footer
+            page_footer=page_footer,
         )
 
     def build(self) -> None:

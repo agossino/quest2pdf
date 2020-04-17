@@ -91,7 +91,9 @@ class ContentMix(MainWindow):
             exam.add_path_parent(input_file)
             serial_exam = SerializeExam(exam)
             for number in range(self.parameters["number"]):
-                logging.debug("not_shuffle parameter: %s", self.parameters["not_shuffle"])
+                logging.debug(
+                    "not_shuffle parameter: %s", self.parameters["not_shuffle"]
+                )
                 if self.parameters["not_shuffle"] is True:
                     exam.shuffle()
                 output_file_name_exam = Path(f"{self.parameters['exam']}_{number}.pdf")
@@ -124,7 +126,7 @@ class ContentMix(MainWindow):
                     destination=output_folder,
                     top_item_bullet_type="A",
                     sub_item_bullet_type="1",
-                    heading=output_file_name_exam.name
+                    heading=output_file_name_exam.name,
                 )
                 to_pdf_interface.build()
         except Exception as err:

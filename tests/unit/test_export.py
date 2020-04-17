@@ -7,7 +7,7 @@ import exam
 @pytest.fixture
 def dummy_exam():
     q1 = exam.MultiChoiceQuest("question 1", "subject 1", pathlib.Path("home/img1.png"))
-    a1 = exam.MultiChoiceAnswer("answer 1",pathlib.Path("home/img2.png"))
+    a1 = exam.MultiChoiceAnswer("answer 1", pathlib.Path("home/img2.png"))
     a2 = exam.MultiChoiceAnswer("answer 2", pathlib.Path("home/img3.png"))
     q1.answers = (a1, a2)
     q1.correct_value = "B"

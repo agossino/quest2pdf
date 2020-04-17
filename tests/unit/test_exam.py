@@ -185,6 +185,7 @@ def test_truefalse_init0():
     assert a.boolean is False
     assert a.text == "False"
 
+
 def test_truefalse_init1():
     a = exam.TrueFalseAnswer(True, Path())
 
@@ -664,6 +665,7 @@ def test_mcquestion_add():
     assert q.correct_answer == a1
     assert q.correct_index == 0
     assert q.correct_option == "A"
+
 
 def test_mcquestion_shuffle1():
     """Test shuffle with one question added
