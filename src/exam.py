@@ -415,27 +415,41 @@ class TrueFalseQuest(Question):
         super().__init__(*args)
         self._answer_type = TrueFalseAnswer
         self._answers: List[self._answer_type] = []
+        self.correct_option: str = ""
 
     def add_answer(self, answer, is_correct: bool = False) -> None:
         """Add an Answer. Correct answer is set.
         The first answer is the correct one: successive answers
         are set accordingly to is_correct argument.
         """
-        if self._answers and answer.boolean == self._correct_answer.boolean:
+        logging.warning("actual answar: %s", answer)
+        for ans in self.answers:
+            logging.warning("pre answer: %s", ans)
+
+        if len(self._answers) == 0:
+            self._answers.append(answer)
+            self.correct_answer = answer
+            self.correct_option = self.correct_answer.boolean
+        elif len(self._answers) == 1:
+            if answer.boolean == self._correct_answer.boolean:
+                raise ValueError("Only two alternative answers are allowed")
+            self._answers.append(answer)
+            if is_correct:
+                self.correct_answer = answer
+                self.correct_option = self.correct_answer.boolean
+        else:
             raise ValueError("Only two alternative answers are allowed")
 
-        self._answers.append(answer)
-
-        if is_correct or self._correct_answer is None:
-            self.correct_answer = answer
-
     def _load_1_answer(self, answer, iterator: Iterator[Any]) -> int:
+        if len(self._answers) == 2:
+            return 0
         iter_to_list = []
         attributes = 0
         try:
             for _ in answer.attr_load_sequence:
                 iter_to_list.append(next(iterator))
                 attributes += 1
+            logging.warning("bool/image: %s", iter_to_list)
             answer.load_sequentially(iter(iter_to_list))
             self.add_answer(answer)
         except StopIteration:
@@ -447,6 +461,16 @@ class TrueFalseQuest(Question):
                     raise
             raise
         return attributes
+
+    def shuffle(self):
+        try:
+            if self.answers[1].boolean:
+                correct_answer = self.correct_answer
+                self.answers = (self._answers[1], self._answers[0])
+                self.correct_answer = correct_answer
+                self.correct_option = self.correct_answer.boolean
+        except KeyError:
+            pass
 
 
 class Exam:
