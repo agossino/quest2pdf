@@ -1139,3 +1139,47 @@ def test_exam_print():
     assert q_image in ex.__str__()
     assert level in ex.__str__()
     assert a_image in ex.__str__()
+
+
+def test_exam_mcquestion():
+    mcquestion1 = exam.MultiChoiceQuest("mc quest1 text", "subject")
+    mcquestion1.answers = (exam.MultiChoiceAnswer("Q1 A1"), exam.MultiChoiceAnswer("Q1 A2"),
+                           exam.MultiChoiceAnswer("Q1 A3"))
+    mcquestion2 = exam.MultiChoiceQuest("mc quest2 text", "subject")
+    mcquestion2.answers = (exam.MultiChoiceAnswer("Q2 A1"), exam.MultiChoiceAnswer("Q2 A2"),
+                           exam.MultiChoiceAnswer("Q2 A3"))
+
+    ex = exam.Exam(mcquestion1, mcquestion2)
+
+    assert ex.questions[0].answers[1].image == Path()
+    assert ex.questions[0].correct_answer.text == "Q1 A1"
+    assert ex.questions[1].text == "mc quest2 text"
+
+
+def test_exam_tfquestion():
+    tfquestion1 = exam.MultiChoiceQuest("mc quest1 text", "subject")
+    tfquestion1.answers = (exam.TrueFalseAnswer(True), exam.TrueFalseAnswer(False))
+    tfquestion2 = exam.MultiChoiceQuest("mc quest2 text", "subject")
+    tfquestion2.answers = (exam.TrueFalseAnswer(False), exam.TrueFalseAnswer(True))
+
+    ex = exam.Exam(tfquestion1, tfquestion2)
+
+    assert ex.questions[0].answers[1].image == Path()
+    assert ex.questions[0].correct_answer.boolean is True
+    assert ex.questions[1].text == "mc quest2 text"
+    assert ex.questions[1].correct_answer.text == "False"
+
+
+def test_exam_mixquestion():
+    mcquestion = exam.MultiChoiceQuest("mc quest1 text", "subject")
+    mcquestion.answers = (exam.MultiChoiceAnswer("Q1 A1"), exam.MultiChoiceAnswer("Q1 A2"),
+                           exam.MultiChoiceAnswer("Q1 A3"))
+    tfquestion = exam.MultiChoiceQuest("mc quest2 text", "subject")
+    tfquestion.answers = (exam.TrueFalseAnswer(False), exam.TrueFalseAnswer(True))
+
+    ex = exam.Exam(mcquestion, tfquestion)
+
+    assert ex.questions[0].answers[1].image == Path()
+    assert ex.questions[0].correct_option == "A"
+    assert ex.questions[1].text == "mc quest2 text"
+    assert ex.questions[1].correct_answer.text == "False"
