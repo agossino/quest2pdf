@@ -1,5 +1,5 @@
 test:
-	PYTHONPATH=src/ pytest tests/
+	PYTHONPATH=quest2pdf/ pytest tests/
 
 clean:
 	find . -name '*.pyc' -execdir rm -f {} +

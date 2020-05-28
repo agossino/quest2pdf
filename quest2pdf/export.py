@@ -1,51 +1,8 @@
-from enum import Enum
-from collections import namedtuple
 from pathlib import Path
-from typing import Iterator, Generator
+from typing import Iterator
 import rlwrapper
-import exam
 
-
-class ItemLevel(Enum):
-    """top level text
-       top level image
-           sub level text
-           sub level image
-
-           sub level test
-
-       top level image
-           sub level text
-
-           sub level image
-    """
-
-    top = 0
-    sub = 1
-
-
-Item = namedtuple("Item", ["item_level", "text", "image"])
-
-
-class SerializeExam:
-    """Serialize questions, made of text and image, and
-    answers, made of text and image.
-    """
-
-    def __init__(self, exam_alike: exam.Exam):
-        self._exam: exam.Exam = exam_alike
-
-    def assignment(self) -> Generator[Item, None, None]:
-        for question in self._exam.questions:
-            yield Item(ItemLevel.top, question.text, question.image)
-            for answer in question.answers:
-                yield Item(ItemLevel.sub, answer.text, answer.image)
-
-    def correction(self) -> Generator[Item, None, None]:
-        if self._exam.questions != ():
-            yield Item(ItemLevel.top, f"correction", Path("."))
-        for question in self._exam.questions:
-            yield Item(ItemLevel.sub, f"{question.correct_option}", Path("."))
+from quest2pdf.exam import ItemLevel, Item
 
 
 class RLInterface:
