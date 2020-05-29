@@ -2,8 +2,9 @@ import logging
 from pathlib import Path
 from random import shuffle
 from typing import Tuple, Iterator, Any, Optional, List, Iterable, Callable
+from .utility import safe_int, Quest2pdfException
 
-from quest2pdf.utility import safe_int
+# from .utility import safe_int
 
 
 CasterType = Callable[[Any], Any]
@@ -293,7 +294,10 @@ class Question:
 
         try:
             while attribute is not None and caster is not None:
-                setattr(self, attribute, caster(next(iterator)))
+                try:
+                    setattr(self, attribute, caster(next(iterator)))
+                except TypeError:
+                    raise Quest2pdfException("Invalid type in cvs file")
 
                 attribute = next(attribute_iterator, None)
                 caster = next(caster_iterator, None)
@@ -413,10 +417,6 @@ class TrueFalseQuest(Question):
         The first answer is the correct one: successive answers
         are set accordingly to is_correct argument.
         """
-        logging.warning("actual answar: %s", answer)
-        for ans in self.answers:
-            logging.warning("pre answer: %s", ans)
-
         if len(self._answers) == 0:
             self._answers.append(answer)
             self.correct_answer = answer
@@ -440,7 +440,6 @@ class TrueFalseQuest(Question):
             for _ in answer.attr_load_sequence:
                 iter_to_list.append(next(iterator))
                 attributes += 1
-            logging.warning("bool/image: %s", iter_to_list)
             answer.load_sequentially(iter(iter_to_list))
             self.add_answer(answer)
         except StopIteration:

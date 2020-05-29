@@ -1,8 +1,7 @@
 from pathlib import Path
 from typing import Iterator
-import rlwrapper
-
-from quest2pdf.exam import ItemLevel, Item
+from .rlwrapper import PDFDoc
+from .utility import ItemLevel, Item
 
 
 class RLInterface:
@@ -15,7 +14,7 @@ class RLInterface:
         top_item_bullet_type: str = kwargs.get("top_item_bullet_type", "1")
         page_heading: str = kwargs.get("heading", "")
         page_footer: str = kwargs.get("footer", "")
-        self._doc = rlwrapper.PDFDoc(
+        self._doc = PDFDoc(
             file_name,
             top_item_bullet_type=top_item_bullet_type,
             sub_item_bullet_type=sub_item_bullet_type,

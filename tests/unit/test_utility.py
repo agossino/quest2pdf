@@ -1,5 +1,5 @@
 import pytest
-from utility import exception_printer, safe_int
+from quest2pdf.utility import exception_printer, safe_int
 
 
 def test_exception_printer0():

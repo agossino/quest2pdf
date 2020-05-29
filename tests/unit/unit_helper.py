@@ -41,3 +41,8 @@ def save_log_configuration(file_path):
     "version": 1
 }"""
     file_path.write_text(text)
+
+
+def save_question_data(file_path):
+    text = "question,subject,image,level,A,Ai,B,Bi,C,Ci\nQ,S,I,1,a,ai,b,bi,c,ci"
+    file_path.write_text(text)

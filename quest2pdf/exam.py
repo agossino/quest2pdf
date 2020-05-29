@@ -6,14 +6,14 @@
 # Question attribute type_of_question
 # open_ended, yes_no, multi_choice
 # based on number of alternative answers provided
-from collections import namedtuple
-from enum import Enum
+
 
 from pathlib import Path
-from typing import Tuple, List, Iterable, Any, Callable, Mapping, Generator
+import csv
+from typing import Tuple, List, Iterable, Any, Mapping, Generator, Dict
 import logging
-
-from . import Question, MultiChoiceQuest, TrueFalseQuest
+from .question import Question, MultiChoiceQuest, TrueFalseQuest
+from .utility import ItemLevel, Item, Quest2pdfException
 
 
 LOGNAME = "quest2pdf." + __name__
@@ -74,13 +74,31 @@ class Exam:
         for row in iterable:
             quest = questions_classes[row.get(self._question_type_key, default_key)]()
             if self._attribute_selector:
-                data = [row[key] for key in self._attribute_selector]
+                try:
+                    data = [row[key] for key in self._attribute_selector]
+                except KeyError:
+                    raise Quest2pdfException("Key mismatch in cvs file")
             else:
                 data = [row[key] for key in row]
             if data:
                 self.add_question(quest)
                 iterator = iter(data)
                 quest.load_sequentially(iterator)
+
+    def from_csv(self, file_path):
+        """Read from csv file a series of questions.
+        """
+        with file_path.open(encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+            rows: List[Dict[str, str]] = [row for row in reader]
+
+        self.load(rows)
+        self.add_path_parent(file_path)
+
+    def print(self, shuffle: bool = True) -> bytes:
+        """Print in PDF all the questions and correction
+        """
+        return b""
 
     def shuffle(self):
         for question in self._questions:
@@ -91,27 +109,6 @@ class Exam:
         for question in self._questions:
             output.append(question.__str__())
         return "".join(output)
-
-
-class ItemLevel(Enum):
-    """top level text
-       top level image
-           sub level text
-           sub level image
-
-           sub level test
-
-       top level image
-           sub level text
-
-           sub level image
-    """
-
-    top = 0
-    sub = 1
-
-
-Item = namedtuple("Item", ["item_level", "text", "image"])
 
 
 class SerializeExam:
@@ -133,3 +130,52 @@ class SerializeExam:
             yield Item(ItemLevel.top, f"correction", Path("."))
         for question in self._exam.questions:
             yield Item(ItemLevel.sub, f"{question.correct_option}", Path("."))
+
+
+# if __name__ == "__main__":
+#     import csv
+#     from typing import Dict
+#     from .export import RLInterface
+#
+#     file_name = Path("../Example_questfile/question.csv")
+#     with file_name.open(encoding="utf-8") as csv_file:
+#         cvs_reader = csv.DictReader(csv_file, delimiter=",")
+#         rows: List[Dict[str, str]] = [row for row in cvs_reader]
+#
+#     exam = Exam()
+#     exam.attribute_selector = (
+#         "question",
+#         "subject",
+#         "image",
+#         "void",
+#         "A",
+#         "void",
+#         "B",
+#         "void",
+#         "C",
+#         "void",
+#         "D",
+#         "void",
+#     )
+#     exam.load(rows)
+#     exam.add_path_parent(file_name)
+#     serial_exam = SerializeExam(exam)
+#
+#     to_pdf_interface = RLInterface(
+#         serial_exam.assignment(),
+#         Path("exam.pdf"),
+#         destination=".",
+#         heading="",
+#         footer="",
+#     )
+#     to_pdf_interface.build()
+#
+#     to_pdf_interface = RLInterface(
+#         serial_exam.correction(),
+#         Path("correction.pdf"),
+#         destination=".",
+#         top_item_bullet_type="A",
+#         sub_item_bullet_type="1",
+#         heading=".",
+#     )
+#     to_pdf_interface.build()
