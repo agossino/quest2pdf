@@ -1,32 +1,6 @@
-import pytest
-import pathlib
 # from export import ItemLevel, SerializeExam, Item, RLInterface
-import quest2pdf.exam
 
-#
-# @pytest.fixture
-# def dummy_exam():
-#     q1 = quest2pdf.question.MultiChoiceQuest("question 1", "subject 1", pathlib.Path("home/img1.png"))
-#     a1 = quest2pdf.question.MultiChoiceAnswer("answer 1", pathlib.Path("home/img2.png"))
-#     a2 = quest2pdf.question.MultiChoiceAnswer("answer 2", pathlib.Path("home/img3.png"))
-#     q1.answers = (a1, a2)
-#     q1.correct_value = "B"
-#     q2 = quest2pdf.question.MultiChoiceQuest("question 2", "subject 3", pathlib.Path("home/img4.png"))
-#     q3 = quest2pdf.question.MultiChoiceQuest("question 3", "subject 3", pathlib.Path("home/img5.png"))
-#     a1 = quest2pdf.question.MultiChoiceAnswer("answer 3", pathlib.Path("home/img6.png"))
-#     q3.add_answer(a1)
-#     dummy_ex = exam.Exam(q1, q2, q3)
-#     return dummy_ex
-#
-#
-# def test_assignment0():
-#     my_exam = exam.Exam()
-#     expected = SerializeExam(my_exam).assignment()
-#
-#     with pytest.raises(StopIteration):
-#         next(expected)
-#
-#
+
 # def test_assignment1(dummy_exam):
 #     my_exam = dummy_exam
 #     expected = SerializeExam(my_exam).assignment()

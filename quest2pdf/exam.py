@@ -10,10 +10,11 @@
 
 from pathlib import Path
 import csv
-from typing import Tuple, List, Iterable, Any, Mapping, Generator, Dict
+from typing import Tuple, List, Iterable, Any, Mapping, Generator, Dict, Optional
 import logging
 from .question import Question, MultiChoiceQuest, TrueFalseQuest
 from .utility import ItemLevel, Item, Quest2pdfException
+from .export import RLInterface
 
 
 LOGNAME = "quest2pdf." + __name__
@@ -95,10 +96,36 @@ class Exam:
         self.load(rows)
         self.add_path_parent(file_path)
 
-    def print(self, shuffle: bool = True) -> bytes:
+    def print(
+        self,
+        exam_file_name: Path,
+        correction_file_name: Optional[Path] = None,
+        shuffle: bool = True,
+    ) -> None:
         """Print in PDF all the questions and correction
         """
-        return b""
+        questions_serialized = SerializeExam(self.questions)
+
+        interface = RLInterface(
+            questions_serialized.assignment(),
+            exam_file_name,
+            destination=".",
+            heading="",
+            footer="",
+        )
+        interface.build()
+
+        if shuffle is None:
+            self.shuffle()
+        if correction_file_name is not None:
+            interface = RLInterface(
+                questions_serialized.correction(),
+                correction_file_name,
+                destination=".",
+                heading="",
+                footer=""
+            )
+            interface.build()
 
     def shuffle(self):
         for question in self._questions:
@@ -116,19 +143,19 @@ class SerializeExam:
     answers, made of text and image.
     """
 
-    def __init__(self, exam_alike: Exam):
-        self._exam: Exam = exam_alike
+    def __init__(self, serial_data: Iterable):
+        self._serial_data: Iterable = serial_data
 
     def assignment(self) -> Generator[Item, None, None]:
-        for question in self._exam.questions:
+        for question in self._serial_data:
             yield Item(ItemLevel.top, question.text, question.image)
             for answer in question.answers:
                 yield Item(ItemLevel.sub, answer.text, answer.image)
 
     def correction(self) -> Generator[Item, None, None]:
-        if self._exam.questions != ():
+        if self._serial_data != ():
             yield Item(ItemLevel.top, f"correction", Path("."))
-        for question in self._exam.questions:
+        for question in self._serial_data:
             yield Item(ItemLevel.sub, f"{question.correct_option}", Path("."))
 
 

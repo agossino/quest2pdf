@@ -1,8 +1,19 @@
+import pathlib
+
 import pytest
+import os
 from pathlib import Path
 import random
 import quest2pdf
 from unit_helper import save_question_data
+
+
+def fd_input(prompt):
+    with os.fdopen(os.dup(1), "w") as stdout:
+        stdout.write(f"\n{prompt}? ")
+
+    with os.fdopen(os.dup(2), "r") as stdin:
+        return stdin.readline()
 
 
 def test_exam():
@@ -16,7 +27,10 @@ def test_exam():
 def test_exam_init():
     """test Exam with one and two arguments
     """
-    q1, q2 = quest2pdf.question.Question("q1 text", "q1 image"), quest2pdf.question.Question("q2 text", "q2 image")
+    q1, q2 = (
+        quest2pdf.question.Question("q1 text", "q1 image"),
+        quest2pdf.question.Question("q2 text", "q2 image"),
+    )
     ex1 = quest2pdf.Exam(q1)
     ex2 = quest2pdf.Exam(q1, q2)
 
@@ -27,7 +41,10 @@ def test_exam_init():
 def test_exam_questions_setter0():
     """test question set
     """
-    q1, q2 = quest2pdf.question.Question("q1 text", "q1 image"), quest2pdf.question.Question("q2 text", "q2 image")
+    q1, q2 = (
+        quest2pdf.question.Question("q1 text", "q1 image"),
+        quest2pdf.question.Question("q2 text", "q2 image"),
+    )
     ex = quest2pdf.Exam()
     ex.add_question(q1)
     ex.add_question(q2)
@@ -39,7 +56,10 @@ def test_exam_questions_setter0():
 def test_exam_questions_setter1():
     """test question set; question added before overwritten
     """
-    q1, q2 = quest2pdf.question.Question("q1 text", "q1 image"), quest2pdf.question.Question("q2 text", "q2 image")
+    q1, q2 = (
+        quest2pdf.question.Question("q1 text", "q1 image"),
+        quest2pdf.question.Question("q2 text", "q2 image"),
+    )
     ex = quest2pdf.Exam()
     ex.add_question(q1)
     ex.questions = (q2,)
@@ -285,11 +305,17 @@ def test_exam_print():
 
 def test_exam_mcquestion():
     mcquestion1 = quest2pdf.question.MultiChoiceQuest("mc quest1 text", "subject")
-    mcquestion1.answers = (quest2pdf.question.MultiChoiceAnswer("Q1 A1"), quest2pdf.question.MultiChoiceAnswer("Q1 A2"),
-                           quest2pdf.question.MultiChoiceAnswer("Q1 A3"))
+    mcquestion1.answers = (
+        quest2pdf.question.MultiChoiceAnswer("Q1 A1"),
+        quest2pdf.question.MultiChoiceAnswer("Q1 A2"),
+        quest2pdf.question.MultiChoiceAnswer("Q1 A3"),
+    )
     mcquestion2 = quest2pdf.question.MultiChoiceQuest("mc quest2 text", "subject")
-    mcquestion2.answers = (quest2pdf.question.MultiChoiceAnswer("Q2 A1"), quest2pdf.question.MultiChoiceAnswer("Q2 A2"),
-                           quest2pdf.question.MultiChoiceAnswer("Q2 A3"))
+    mcquestion2.answers = (
+        quest2pdf.question.MultiChoiceAnswer("Q2 A1"),
+        quest2pdf.question.MultiChoiceAnswer("Q2 A2"),
+        quest2pdf.question.MultiChoiceAnswer("Q2 A3"),
+    )
 
     ex = quest2pdf.Exam(mcquestion1, mcquestion2)
 
@@ -300,9 +326,15 @@ def test_exam_mcquestion():
 
 def test_exam_tfquestion():
     tfquestion1 = quest2pdf.question.MultiChoiceQuest("mc quest1 text", "subject")
-    tfquestion1.answers = (quest2pdf.question.TrueFalseAnswer(True), quest2pdf.question.TrueFalseAnswer(False))
+    tfquestion1.answers = (
+        quest2pdf.question.TrueFalseAnswer(True),
+        quest2pdf.question.TrueFalseAnswer(False),
+    )
     tfquestion2 = quest2pdf.question.MultiChoiceQuest("mc quest2 text", "subject")
-    tfquestion2.answers = (quest2pdf.question.TrueFalseAnswer(False), quest2pdf.question.TrueFalseAnswer(True))
+    tfquestion2.answers = (
+        quest2pdf.question.TrueFalseAnswer(False),
+        quest2pdf.question.TrueFalseAnswer(True),
+    )
 
     ex = quest2pdf.Exam(tfquestion1, tfquestion2)
 
@@ -314,10 +346,16 @@ def test_exam_tfquestion():
 
 def test_exam_mixquestion():
     mcquestion = quest2pdf.question.MultiChoiceQuest("mc quest1 text", "subject")
-    mcquestion.answers = (quest2pdf.question.MultiChoiceAnswer("Q1 A1"), quest2pdf.question.MultiChoiceAnswer("Q1 A2"),
-                          quest2pdf.question.MultiChoiceAnswer("Q1 A3"))
+    mcquestion.answers = (
+        quest2pdf.question.MultiChoiceAnswer("Q1 A1"),
+        quest2pdf.question.MultiChoiceAnswer("Q1 A2"),
+        quest2pdf.question.MultiChoiceAnswer("Q1 A3"),
+    )
     tfquestion = quest2pdf.question.MultiChoiceQuest("mc quest2 text", "subject")
-    tfquestion.answers = (quest2pdf.question.TrueFalseAnswer(False), quest2pdf.question.TrueFalseAnswer(True))
+    tfquestion.answers = (
+        quest2pdf.question.TrueFalseAnswer(False),
+        quest2pdf.question.TrueFalseAnswer(True),
+    )
 
     ex = quest2pdf.Exam(mcquestion, tfquestion)
 
@@ -340,15 +378,73 @@ def test_from_csv(tmp_path):
     assert ex.questions[0].answers[2].image == tmp_path / "ci"
 
 
-def test_print():
+def test_print_exam(tmp_path):
     pdf_magic_no = b"PDF"
+    file_path = tmp_path / "Exam"
     q1 = quest2pdf.question.MultiChoiceQuest("q1 text", "")
     q1.answers = (
         quest2pdf.question.MultiChoiceAnswer("a1 text"),
         quest2pdf.question.MultiChoiceAnswer("a2 text"),
     )
     ex = quest2pdf.Exam(q1)
+    ex.print(file_path)
 
-    data = ex.print()
+    try:
+        data = file_path.read_bytes()
+    except FileNotFoundError:
+        assert False, "File not found"
 
     assert data.find(pdf_magic_no) == 1
+
+
+def test_print_correction(tmp_path):
+    pdf_magic_no = b"PDF"
+    exam_file_path = tmp_path / "Exam"
+    correction_file_path = tmp_path / "Correction"
+    q1 = quest2pdf.question.MultiChoiceQuest("q1 text", "")
+    q1.answers = (
+        quest2pdf.question.MultiChoiceAnswer("a1 text"),
+        quest2pdf.question.MultiChoiceAnswer("a2 text"),
+    )
+    ex = quest2pdf.Exam(q1)
+    ex.print(exam_file_path, correction_file_name=correction_file_path)
+
+    try:
+        correction_data = correction_file_path.read_bytes()
+    except FileNotFoundError:
+        assert False, "Correction file not found"
+
+    assert correction_data.find(pdf_magic_no) == 1
+
+
+def test_print_have_a_look(tmp_path):
+    import subprocess
+    file_path = tmp_path / "Exam"
+    q1 = quest2pdf.question.MultiChoiceQuest("q1 text", "")
+    q1.answers = (
+        quest2pdf.question.MultiChoiceAnswer("a1 text"),
+        quest2pdf.question.MultiChoiceAnswer("a2 text"),
+    )
+    ex = quest2pdf.Exam(q1)
+    ex.print(file_path)
+
+    subprocess.call(["evince", str(file_path)])
+
+    answer = fd_input("Is it correct (y)? ")
+    assert answer == "y\n"
+
+
+@pytest.fixture
+def dummy_exam():
+    q1 = quest2pdf.question.MultiChoiceQuest("question 1", "subject 1", pathlib.Path("home/img1.png"))
+    a1 = quest2pdf.question.MultiChoiceAnswer("answer 1", pathlib.Path("home/img2.png"))
+    a2 = quest2pdf.question.MultiChoiceAnswer("answer 2", pathlib.Path("home/img3.png"))
+    q1.answers = (a1, a2)
+    q1.correct_value = "B"
+    q2 = quest2pdf.question.MultiChoiceQuest("question 2", "subject 3", pathlib.Path("home/img4.png"))
+    q3 = quest2pdf.question.MultiChoiceQuest("question 3", "subject 3", pathlib.Path("home/img5.png"))
+    a1 = quest2pdf.question.MultiChoiceAnswer("answer 3", pathlib.Path("home/img6.png"))
+    q3.add_answer(a1)
+    dummy_ex = quest2pdf.Exam(q1, q2, q3)
+    return dummy_ex
+
