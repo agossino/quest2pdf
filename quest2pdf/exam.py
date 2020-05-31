@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# TODO
-# answers setter in question, like question setter in Exam
-# Question attribute type_of_question
-# open_ended, yes_no, multi_choice
-# based on number of alternative answers provided
-
-
 from pathlib import Path
 import csv
 from typing import Tuple, List, Iterable, Any, Mapping, Generator, Dict, Optional
@@ -103,10 +93,13 @@ class Exam:
         shuffle: bool = True,
         destination: Path = Path(),
         heading: str = "",
-        footer: str = ""
+        footer: str = "",
     ) -> None:
         """Print in PDF all the questions and correction
         """
+        if shuffle:
+            self.shuffle()
+
         questions_serialized = SerializeExam(self.questions)
 
         interface = RLInterface(
@@ -118,8 +111,6 @@ class Exam:
         )
         interface.build()
 
-        if shuffle:
-            self.shuffle()
         if correction_file_name is not None:
             interface = RLInterface(
                 questions_serialized.correction(),
@@ -127,6 +118,8 @@ class Exam:
                 destination=destination,
                 heading=heading,
                 footer=footer,
+                top_item_bullet_type="A",
+                sub_item_bullet_type="1",
             )
             interface.build()
 
@@ -160,52 +153,3 @@ class SerializeExam:
             yield Item(ItemLevel.top, f"correction", Path("."))
         for question in self._serial_data:
             yield Item(ItemLevel.sub, f"{question.correct_option}", Path("."))
-
-
-# if __name__ == "__main__":
-#     import csv
-#     from typing import Dict
-#     from .export import RLInterface
-#
-#     file_name = Path("../Example_questfile/question.csv")
-#     with file_name.open(encoding="utf-8") as csv_file:
-#         cvs_reader = csv.DictReader(csv_file, delimiter=",")
-#         rows: List[Dict[str, str]] = [row for row in cvs_reader]
-#
-#     exam = Exam()
-#     exam.attribute_selector = (
-#         "question",
-#         "subject",
-#         "image",
-#         "void",
-#         "A",
-#         "void",
-#         "B",
-#         "void",
-#         "C",
-#         "void",
-#         "D",
-#         "void",
-#     )
-#     exam.load(rows)
-#     exam.add_path_parent(file_name)
-#     serial_exam = SerializeExam(exam)
-#
-#     to_pdf_interface = RLInterface(
-#         serial_exam.assignment(),
-#         Path("exam.pdf"),
-#         destination=".",
-#         heading="",
-#         footer="",
-#     )
-#     to_pdf_interface.build()
-#
-#     to_pdf_interface = RLInterface(
-#         serial_exam.correction(),
-#         Path("correction.pdf"),
-#         destination=".",
-#         top_item_bullet_type="A",
-#         sub_item_bullet_type="1",
-#         heading=".",
-#     )
-#     to_pdf_interface.build()

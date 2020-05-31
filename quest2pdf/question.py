@@ -396,11 +396,6 @@ class MultiChoiceQuest(Question):
             self._correct_index = pointer
             self._correct_option = chr(ord(LETTER_A) + pointer)
 
-    def __str__(self):
-        option = f"{self._correct_option}\n"
-        output = super().__str__() + option
-        return output
-
 
 class TrueFalseQuest(Question):
     """Multi choice question.

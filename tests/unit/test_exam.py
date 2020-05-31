@@ -1,7 +1,6 @@
 import pathlib
 import pytest
 import os
-import logging
 from pathlib import Path
 import subprocess
 import random
@@ -422,35 +421,44 @@ def test_print_correction(tmp_path):
 @pytest.fixture
 def dummy_exam():
     q1 = quest2pdf.question.MultiChoiceQuest(
-        "question 1: B", "subject 1", pathlib.Path("a.png")
+        "question 1: correct is n. 2", "subject 1", pathlib.Path("a.png")
     )
     a1 = quest2pdf.question.MultiChoiceAnswer("answer 1", pathlib.Path("b.png"))
     a2 = quest2pdf.question.MultiChoiceAnswer("answer 2", pathlib.Path("c.png"))
     a3 = quest2pdf.question.MultiChoiceAnswer("answer 3", pathlib.Path("t1.jpg"))
     q1.answers = (a1, a2, a3)
-    q1.correct_value = "B"
+    q1.correct_option = "B"
 
     q2 = quest2pdf.question.MultiChoiceQuest(
         "question 2: no answer", "subject 2", pathlib.Path("t1.jpg")
     )
 
     q3 = quest2pdf.question.TrueFalseQuest(
-        "question 3: False", "subject 3", pathlib.Path("test.png")
+        "question 3: correct is False (first added)",
+        "subject 3",
+        pathlib.Path("test.png"),
     )
     a1 = quest2pdf.TrueFalseAnswer(False)
     a2 = quest2pdf.TrueFalseAnswer(True)
     q3.answers = (a1, a2)
 
     q4 = quest2pdf.question.MultiChoiceQuest(
-        "question 4: A", "subject 4", pathlib.Path("t2.png")
+        "question 4: correct is n. 3", "subject 4", pathlib.Path("t2.png")
     )
-    a1 = quest2pdf.question.MultiChoiceAnswer("answer 1", pathlib.Path("test.png"))
+    a1 = quest2pdf.question.MultiChoiceAnswer("answer 1")
+    a2 = quest2pdf.question.MultiChoiceAnswer("answer 2")
+    a3 = quest2pdf.question.MultiChoiceAnswer("answer 3")
+    a4 = quest2pdf.question.MultiChoiceAnswer("answer 4")
     q4.add_answer(a1)
-    dummy_ex = quest2pdf.Exam(q1, q2, q3)
+    q4.add_answer(a2)
+    q4.add_answer(a3, is_correct=True)
+    q4.add_answer(a4)
+    dummy_ex = quest2pdf.Exam(q1, q2, q3, q4)
+
     return dummy_ex
 
 
-def test_print_have_a_look_exam(tmp_path, dummy_exam):
+def test_print_have_a_look(tmp_path, dummy_exam):
     image_folder = Path("tests/unit/resources")
     image_tmp_folder = tmp_path / image_folder.name
     image_tmp_folder.mkdir()
@@ -459,26 +467,7 @@ def test_print_have_a_look_exam(tmp_path, dummy_exam):
         copied_file = tmp_path / image_folder.name / file.name
         copied_file.write_bytes(data)
 
-    file_path = tmp_path / "Exam"
-    ex = dummy_exam
-    dummy_file = image_tmp_folder / "dummy"
-    ex.add_path_parent(dummy_file)
-    ex.print(file_path)
-
-    subprocess.call(["evince", str(file_path)])
-
-    answer = fd_input("Is it correct (y)? ")
-    assert answer == "y\n"
-
-
-def test_print_have_a_look_correction(tmp_path, dummy_exam):
-    image_folder = Path("tests/unit/resources")
-    image_tmp_folder = tmp_path / image_folder.name
-    image_tmp_folder.mkdir()
-    for file in chain(image_folder.glob("*.png"), image_folder.glob("*.jpg")):
-        data = file.read_bytes()
-        copied_file = tmp_path / image_folder.name / file.name
-        copied_file.write_bytes(data)
+    random.seed()
 
     exam_file_path = tmp_path / "Exam"
     correction_file_path = tmp_path / "Correction"
@@ -487,6 +476,7 @@ def test_print_have_a_look_correction(tmp_path, dummy_exam):
     ex.add_path_parent(dummy_file)
     ex.print(exam_file_path, correction_file_name=correction_file_path)
 
+    subprocess.Popen(["evince", str(exam_file_path)])
     subprocess.call(["evince", str(correction_file_path)])
 
     answer = fd_input("Is it correct (y)? ")
