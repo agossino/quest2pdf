@@ -7,7 +7,7 @@ clean:
 	find . -name '*.log' -execdir rm -f {} +
 
 black:
-	black src/
+	black quest2pdf/
 	black tests/unit/
 
 build:

@@ -1,9 +1,11 @@
 import pathlib
-
 import pytest
 import os
+import logging
 from pathlib import Path
+import subprocess
 import random
+from itertools import chain
 import quest2pdf
 from unit_helper import save_question_data
 
@@ -417,15 +419,50 @@ def test_print_correction(tmp_path):
     assert correction_data.find(pdf_magic_no) == 1
 
 
-def test_print_have_a_look(tmp_path):
-    import subprocess
-    file_path = tmp_path / "Exam"
-    q1 = quest2pdf.question.MultiChoiceQuest("q1 text", "")
-    q1.answers = (
-        quest2pdf.question.MultiChoiceAnswer("a1 text"),
-        quest2pdf.question.MultiChoiceAnswer("a2 text"),
+@pytest.fixture
+def dummy_exam():
+    q1 = quest2pdf.question.MultiChoiceQuest(
+        "question 1: B", "subject 1", pathlib.Path("a.png")
     )
-    ex = quest2pdf.Exam(q1)
+    a1 = quest2pdf.question.MultiChoiceAnswer("answer 1", pathlib.Path("b.png"))
+    a2 = quest2pdf.question.MultiChoiceAnswer("answer 2", pathlib.Path("c.png"))
+    a3 = quest2pdf.question.MultiChoiceAnswer("answer 3", pathlib.Path("t1.jpg"))
+    q1.answers = (a1, a2, a3)
+    q1.correct_value = "B"
+
+    q2 = quest2pdf.question.MultiChoiceQuest(
+        "question 2: no answer", "subject 2", pathlib.Path("t1.jpg")
+    )
+
+    q3 = quest2pdf.question.TrueFalseQuest(
+        "question 3: False", "subject 3", pathlib.Path("test.png")
+    )
+    a1 = quest2pdf.TrueFalseAnswer(False)
+    a2 = quest2pdf.TrueFalseAnswer(True)
+    q3.answers = (a1, a2)
+
+    q4 = quest2pdf.question.MultiChoiceQuest(
+        "question 4: A", "subject 4", pathlib.Path("t2.png")
+    )
+    a1 = quest2pdf.question.MultiChoiceAnswer("answer 1", pathlib.Path("test.png"))
+    q4.add_answer(a1)
+    dummy_ex = quest2pdf.Exam(q1, q2, q3)
+    return dummy_ex
+
+
+def test_print_have_a_look_exam(tmp_path, dummy_exam):
+    image_folder = Path("tests/unit/resources")
+    image_tmp_folder = tmp_path / image_folder.name
+    image_tmp_folder.mkdir()
+    for file in chain(image_folder.glob("*.png"), image_folder.glob("*.jpg")):
+        data = file.read_bytes()
+        copied_file = tmp_path / image_folder.name / file.name
+        copied_file.write_bytes(data)
+
+    file_path = tmp_path / "Exam"
+    ex = dummy_exam
+    dummy_file = image_tmp_folder / "dummy"
+    ex.add_path_parent(dummy_file)
     ex.print(file_path)
 
     subprocess.call(["evince", str(file_path)])
@@ -434,17 +471,23 @@ def test_print_have_a_look(tmp_path):
     assert answer == "y\n"
 
 
-@pytest.fixture
-def dummy_exam():
-    q1 = quest2pdf.question.MultiChoiceQuest("question 1", "subject 1", pathlib.Path("home/img1.png"))
-    a1 = quest2pdf.question.MultiChoiceAnswer("answer 1", pathlib.Path("home/img2.png"))
-    a2 = quest2pdf.question.MultiChoiceAnswer("answer 2", pathlib.Path("home/img3.png"))
-    q1.answers = (a1, a2)
-    q1.correct_value = "B"
-    q2 = quest2pdf.question.MultiChoiceQuest("question 2", "subject 3", pathlib.Path("home/img4.png"))
-    q3 = quest2pdf.question.MultiChoiceQuest("question 3", "subject 3", pathlib.Path("home/img5.png"))
-    a1 = quest2pdf.question.MultiChoiceAnswer("answer 3", pathlib.Path("home/img6.png"))
-    q3.add_answer(a1)
-    dummy_ex = quest2pdf.Exam(q1, q2, q3)
-    return dummy_ex
+def test_print_have_a_look_correction(tmp_path, dummy_exam):
+    image_folder = Path("tests/unit/resources")
+    image_tmp_folder = tmp_path / image_folder.name
+    image_tmp_folder.mkdir()
+    for file in chain(image_folder.glob("*.png"), image_folder.glob("*.jpg")):
+        data = file.read_bytes()
+        copied_file = tmp_path / image_folder.name / file.name
+        copied_file.write_bytes(data)
 
+    exam_file_path = tmp_path / "Exam"
+    correction_file_path = tmp_path / "Correction"
+    ex = dummy_exam
+    dummy_file = image_tmp_folder / "dummy"
+    ex.add_path_parent(dummy_file)
+    ex.print(exam_file_path, correction_file_name=correction_file_path)
+
+    subprocess.call(["evince", str(correction_file_path)])
+
+    answer = fd_input("Is it correct (y)? ")
+    assert answer == "y\n"

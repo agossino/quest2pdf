@@ -101,6 +101,9 @@ class Exam:
         exam_file_name: Path,
         correction_file_name: Optional[Path] = None,
         shuffle: bool = True,
+        destination: Path = Path(),
+        heading: str = "",
+        footer: str = ""
     ) -> None:
         """Print in PDF all the questions and correction
         """
@@ -109,21 +112,21 @@ class Exam:
         interface = RLInterface(
             questions_serialized.assignment(),
             exam_file_name,
-            destination=".",
-            heading="",
-            footer="",
+            destination=destination,
+            heading=heading,
+            footer=footer,
         )
         interface.build()
 
-        if shuffle is None:
+        if shuffle:
             self.shuffle()
         if correction_file_name is not None:
             interface = RLInterface(
                 questions_serialized.correction(),
                 correction_file_name,
-                destination=".",
-                heading="",
-                footer=""
+                destination=destination,
+                heading=heading,
+                footer=footer,
             )
             interface.build()
 
