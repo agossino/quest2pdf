@@ -451,7 +451,7 @@ def test_question_set_correct(attribute_set, expected, attribute1_get, expected1
 
 
 def test_question_add_path_parent0():
-    """Test whether path is added to Answer.image
+    """Test whether not existing file path is added to Answer.image
     """
     path = Path("home/my_home/file.txt")
     quest = quest2pdf.question.Question("question text", image=Path())
@@ -468,11 +468,12 @@ def test_question_add_path_parent0():
     assert quest.answers[1].image == Path()
 
 
-def test_question_add_path_parent1():
-    """Test whether path is added to Answer.image and
+def test_question_add_path_parent1(tmp_path):
+    """Test whether existing folder path is added to Answer.image and
     Question.image
     """
-    path = Path("home/my_home/file.txt")
+    folder_path = tmp_path / "home"
+    folder_path.mkdir()
     image_path = Path("image1.png")
     quest = quest2pdf.question.Question("question text", image=image_path)
     answer_1 = quest2pdf.question.Answer()
@@ -480,11 +481,11 @@ def test_question_add_path_parent1():
     answer_2 = quest2pdf.question.Answer()
     answer_2.image = image_path
     quest.answers = (answer_1, answer_2)
-    quest.add_parent_path(path)
+    quest.add_parent_path(folder_path)
 
-    assert quest.image == path.parent / image_path
+    assert quest.image == folder_path / image_path
     assert quest.answers[0].image == Path()
-    assert quest.answers[1].image == path.parent / image_path
+    assert quest.answers[1].image == folder_path / image_path
 
 
 def test_question_load0():

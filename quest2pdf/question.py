@@ -262,15 +262,17 @@ class Question:
         # self._correct_letter = chr(ord(LETTER_A) + value)
 
     def add_parent_path(self, file_path: Path) -> None:
-        self.image = (
-            file_path.parent / self.image if self.image != Path() else self.image
-        )
+        """Add the given path to all images. If the given path is not a
+        directory, it is supposed to be a file.
+        """
+        parent: Path = file_path if file_path.is_dir() else file_path.parent
+
+        if self.image != Path():
+            self.image = parent / self.image
+
         for answer in self.answers:
-            answer.image = (
-                file_path.parent / answer.image
-                if answer.image != Path()
-                else answer.image
-            )
+            if answer.image != Path():
+                answer.image = parent / answer.image
 
     @property
     def attr_load_sequence(self) -> Tuple[str, ...]:

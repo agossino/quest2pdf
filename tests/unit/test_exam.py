@@ -86,9 +86,12 @@ def test_exam_attribute_selector2():
     assert ex.attribute_selector == expected
 
 
-def test_exam_add_path_parent():
+def test_exam_add_path_parent1(tmp_path):
+    """test with a file path
+    """
     image = Path("images/image.png")
-    path = Path("/project/A/")
+    file_path = tmp_path / "A.txt"
+    file_path.touch()
     q1 = quest2pdf.question.MultiChoiceQuest("q1 text", "")
     q1.answers = (
         quest2pdf.question.MultiChoiceAnswer("a1 text", image),
@@ -97,16 +100,36 @@ def test_exam_add_path_parent():
     q2 = quest2pdf.question.MultiChoiceQuest("q2 text", "", image)
     q2.add_answer(quest2pdf.question.MultiChoiceAnswer("a3 text"))
     ex = quest2pdf.Exam(q1, q2)
-    ex.add_path_parent(path)
+    ex.add_path_parent(file_path)
 
     assert ex.questions[0].image == Path()
-    assert ex.questions[0].answers[0].image == path.parent / image
-    assert ex.questions[0].answers[1].image == path.parent / image
-    assert ex.questions[1].image == path.parent / image
+    assert ex.questions[0].answers[0].image == file_path.parent / image
+    assert ex.questions[0].answers[1].image == file_path.parent / image
+    assert ex.questions[1].image == file_path.parent / image
     assert ex.questions[1].answers[0].image == Path()
 
 
-def test_exam_load1():
+def test_exam_add_path_parent2(tmp_path):
+    image = Path("images/image.png")
+    folder_path = tmp_path
+    q1 = quest2pdf.question.MultiChoiceQuest("q1 text", "")
+    q1.answers = (
+        quest2pdf.question.MultiChoiceAnswer("a1 text", image),
+        quest2pdf.question.MultiChoiceAnswer("a2 text", image),
+    )
+    q2 = quest2pdf.question.MultiChoiceQuest("q2 text", "", image)
+    q2.add_answer(quest2pdf.question.MultiChoiceAnswer("a3 text"))
+    ex = quest2pdf.Exam(q1, q2)
+    ex.add_path_parent(folder_path)
+
+    assert ex.questions[0].image == Path()
+    assert ex.questions[0].answers[0].image == folder_path / image
+    assert ex.questions[0].answers[1].image == folder_path / image
+    assert ex.questions[1].image == folder_path / image
+    assert ex.questions[1].answers[0].image == Path()
+
+
+def test_exam_load0():
     """test empty iterable
     """
     ex = quest2pdf.Exam()
@@ -115,7 +138,7 @@ def test_exam_load1():
     assert ex.questions == tuple()
 
 
-def test_exam_load2():
+def test_exam_load1():
     """test without setting _attribute_selector
     2 rows -> 2 questions with 2 answers each but second answer image is not provided
     """
@@ -165,7 +188,7 @@ def test_exam_load2():
         _ = ex.questions[2]
 
 
-def test_exam_load3():
+def test_exam_load2():
     """test without setting _attribute_selector
     and missing row
     """
@@ -179,7 +202,7 @@ def test_exam_load3():
     assert ex.questions[0].subject == "topic"
 
 
-def test_exam_load4():
+def test_exam_load3():
     """test setting _attribute_selector
     """
     data = (
@@ -226,6 +249,31 @@ def test_exam_load4():
         _ = ex.questions[0].answers[3]
     with pytest.raises(IndexError):
         _ = ex.questions[1].answers[2]
+
+
+def test_exam_load4():
+    """test setting _attribute_selector
+    """
+    data = (
+        dict(
+            [
+                ("text", "T"),
+                ("subject", "S"),
+                ("XXX level", 2),
+                ("void", ""),
+            ]
+        ),
+    )
+    ex = quest2pdf.Exam()
+    ex.attribute_selector = (
+        "text",
+        "subject",
+        "void",
+        "level"
+    )
+
+    with pytest.raises(quest2pdf.Quest2pdfException):
+        ex.load(data)
 
 
 def test_shuffle():
@@ -379,7 +427,21 @@ def test_from_csv(tmp_path):
     assert ex.questions[0].answers[2].image == tmp_path / "ci"
 
 
-def test_print_exam(tmp_path):
+def test_print_exam0(tmp_path):
+    pdf_magic_no = b"PDF"
+    file_path = tmp_path / "Exam"
+    ex = quest2pdf.Exam()
+    ex.print(file_path)
+
+    try:
+        data = file_path.read_bytes()
+    except FileNotFoundError:
+        assert False, "File not found"
+
+    assert data.find(pdf_magic_no) == 1
+
+
+def test_print_exam1(tmp_path):
     pdf_magic_no = b"PDF"
     file_path = tmp_path / "Exam"
     q1 = quest2pdf.question.MultiChoiceQuest("q1 text", "")
@@ -398,7 +460,45 @@ def test_print_exam(tmp_path):
     assert data.find(pdf_magic_no) == 1
 
 
-def test_print_correction(tmp_path):
+def test_print_exam2(tmp_path):
+    """Test if shuttle argument in print, works
+    """
+    file_path = tmp_path / "Exam"
+    q1 = quest2pdf.question.MultiChoiceQuest("q1 text", "")
+    q1.answers = (
+        quest2pdf.question.MultiChoiceAnswer("a1 text"),
+        quest2pdf.question.MultiChoiceAnswer("a2 text"),
+    )
+    q2 = quest2pdf.question.MultiChoiceQuest("q2 text", "")
+    q2.answers = (
+        quest2pdf.question.MultiChoiceAnswer("a1 text"),
+        quest2pdf.question.MultiChoiceAnswer("a2 text"),
+        quest2pdf.question.MultiChoiceAnswer("a3 text"),
+        quest2pdf.question.MultiChoiceAnswer("a4 text")
+    )
+    ex = quest2pdf.Exam(q1, q2)
+    ex.print(file_path, shuffle=False)
+
+    assert ex.questions[0].correct_index == 0
+    assert ex.questions[1].correct_index == 0
+
+
+def test_print_correction0(tmp_path):
+    pdf_magic_no = b"PDF"
+    exam_file_path = tmp_path / "Exam"
+    correction_file_path = tmp_path / "Correction"
+    ex = quest2pdf.Exam()
+    ex.print(exam_file_path, correction_file_name=correction_file_path)
+
+    try:
+        correction_data = correction_file_path.read_bytes()
+    except FileNotFoundError:
+        assert False, "Correction file not found"
+
+    assert correction_data.find(pdf_magic_no) == 1
+
+
+def test_print_correction1(tmp_path):
     pdf_magic_no = b"PDF"
     exam_file_path = tmp_path / "Exam"
     correction_file_path = tmp_path / "Correction"
@@ -472,8 +572,8 @@ def test_print_have_a_look(tmp_path, dummy_exam):
     exam_file_path = tmp_path / "Exam"
     correction_file_path = tmp_path / "Correction"
     ex = dummy_exam
-    dummy_file = image_tmp_folder / "dummy"
-    ex.add_path_parent(dummy_file)
+    folder = image_tmp_folder
+    ex.add_path_parent(folder)
     ex.print(exam_file_path, correction_file_name=correction_file_path)
 
     subprocess.Popen(["evince", str(exam_file_path)])
