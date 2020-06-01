@@ -6,7 +6,7 @@ import subprocess
 import random
 from itertools import chain
 import quest2pdf
-from unit_helper import save_question_data
+from unit_helper import save_empty_question, save_question_data, save_tf_question
 
 
 def fd_input(prompt):
@@ -414,7 +414,16 @@ def test_exam_mixquestion():
     assert ex.questions[1].correct_answer.text == "False"
 
 
-def test_from_csv(tmp_path):
+def test_from_csv0(tmp_path):
+    file_path = tmp_path / "question.csv"
+    save_empty_question(file_path)
+
+    ex = quest2pdf.Exam()
+    with pytest.raises(quest2pdf.Quest2pdfException):
+        ex.from_csv(file_path)
+
+
+def test_from_csv1(tmp_path):
     file_path = tmp_path / "question.csv"
     save_question_data(file_path)
 
@@ -425,6 +434,17 @@ def test_from_csv(tmp_path):
     assert ex.questions[0].text == "Q"
     assert len(ex.questions[0].answers) == 3
     assert ex.questions[0].answers[2].image == tmp_path / "ci"
+
+
+def test_from_csv2(tmp_path):
+    file_path = tmp_path / "question.csv"
+    save_tf_question(file_path)
+
+    ex = quest2pdf.Exam()
+    ex.attribute_selector = ("question", "void", "void", "void", "A", "void", "B")
+    ex.from_csv(file_path)
+
+    assert ex.questions[0].correct_option == False
 
 
 def test_print_exam0(tmp_path):

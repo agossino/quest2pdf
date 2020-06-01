@@ -656,7 +656,7 @@ def test_mcquestion_init1():
     assert q.level == level
 
 
-def test_mcquestion_add():
+def test_mcquestion_add0():
     """Test add answer
     """
     q = quest2pdf.question.MultiChoiceQuest("Who are you?")
@@ -666,6 +666,32 @@ def test_mcquestion_add():
     assert q.correct_answer == a1
     assert q.correct_index == 0
     assert q.correct_option == "A"
+
+
+def test_mcquestion_add1():
+    """Test add answer
+    """
+    q = quest2pdf.question.MultiChoiceQuest("Who are you?")
+    a1 = quest2pdf.question.MultiChoiceAnswer("That's me.")
+    a2 = quest2pdf.question.MultiChoiceAnswer("That's you.")
+    q.add_answer(a1), q.add_answer(a2)
+    q.correct_option = "B"
+
+    assert q.correct_answer == a2
+    assert q.correct_index == 1
+    assert q.correct_option == "B"
+
+
+def test_mcquestion_add2():
+    """Test add answer
+    """
+    q = quest2pdf.question.MultiChoiceQuest("Who are you?")
+    a1 = quest2pdf.question.MultiChoiceAnswer("That's me.")
+    a2 = quest2pdf.question.MultiChoiceAnswer("That's you.")
+    q.add_answer(a1), q.add_answer(a2)
+
+    with pytest.raises(ValueError):
+        q.correct_option = "X"
 
 
 def test_mcquestion_shuffle1():
@@ -833,6 +859,18 @@ def test_tfquestion_add2():
 
 
 def test_tfquestion_add3():
+    """test add 2 answer
+    """
+    true_answer = quest2pdf.question.TrueFalseAnswer(True)
+    false_answer = quest2pdf.question.TrueFalseAnswer(False)
+    quest = quest2pdf.question.TrueFalseQuest()
+    quest.add_answer(true_answer)
+    quest.add_answer(false_answer, is_correct=True)
+
+    assert quest.correct_answer == false_answer
+
+
+def test_tfquestion_add4():
     """test add 3 answer ... maybe redundant
     """
     true_answer_1 = quest2pdf.question.TrueFalseAnswer(True)
@@ -843,6 +881,32 @@ def test_tfquestion_add3():
 
     with pytest.raises(ValueError):
         quest.answers = (true_answer_1, false_answer, true_answer_2)
+
+
+def test_tfquestioin_shuffle0():
+    """test shuffle without answer
+    """
+    quest = quest2pdf.question.TrueFalseQuest()
+
+    quest.shuffle()
+
+    assert True
+
+
+def test_tfquestioin_shuffle1():
+    """test shuffle for true false question
+    """
+    false_answer = quest2pdf.question.TrueFalseAnswer(False)
+    true_answer = quest2pdf.question.TrueFalseAnswer(True)
+    quest = quest2pdf.question.TrueFalseQuest()
+    quest.add_answer(false_answer)
+    quest.add_answer(true_answer)
+
+    assert quest.answers[1].boolean is True
+
+    quest.shuffle()
+
+    assert quest.answers[0] == true_answer
 
 
 def test_tfquestion_load0():

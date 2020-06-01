@@ -456,5 +456,5 @@ class TrueFalseQuest(Question):
                 self.answers = (self._answers[1], self._answers[0])
                 self.correct_answer = correct_answer
                 self.correct_option = self.correct_answer.boolean
-        except KeyError:
+        except IndexError:
             pass

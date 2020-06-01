@@ -25,15 +25,13 @@ class RLInterface:
     def build(self) -> None:
         try:
             item = next(self._input)
-            assert item.item_level == ItemLevel.top
+            assert item.item_level == ItemLevel.top, "The first ItemLevel must be top"
             self._doc.add_item(item)
             while True:
                 item = next(self._input)
                 if item.item_level == ItemLevel.top:
                     self._doc.add_item(item)
-                elif item.item_level == ItemLevel.sub:
-                    self._doc.add_sub_item(item)
                 else:
-                    raise ValueError
+                    self._doc.add_sub_item(item)
         except StopIteration:
             self._doc.build()
