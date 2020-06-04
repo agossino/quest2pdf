@@ -33,9 +33,10 @@ def test_default1(tmp_path, caplog, monkeypatch):
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
         "page_heading": False,
+        "page_footer": False,
         "encoding": "utf-8",
         "delimiter": ",",
-        "shuffle": True,
+        "not_shuffle": True,
     }
 
     monkeypatch.chdir(tmp_path)
@@ -62,9 +63,10 @@ def test_default2(tmp_path, caplog, monkeypatch):
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
         "page_heading": False,
+        "page_footer": False,
         "encoding": "utf-8",
         "delimiter": ",",
-        "shuffle": True,
+        "not_shuffle": True,
     }
 
     mock_path = tmp_path
@@ -92,9 +94,10 @@ def test_default3(tmp_path, caplog, monkeypatch):
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
         "page_heading": False,
+        "page_footer": False,
         "encoding": "utf-8",
         "delimiter": ",",
-        "shuffle": True,
+        "not_shuffle": True,
     }
 
     monkeypatch.setenv("HOME", str(tmp_path))
@@ -135,9 +138,10 @@ def test_default5(tmp_path, monkeypatch):
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
         "page_heading": False,
+        "page_footer": False,
         "encoding": "utf-8",
         "delimiter": ",",
-        "shuffle": True,
+        "not_shuffle": True,
     }
 
     log_file = tmp_path / "application.log"
@@ -166,9 +170,10 @@ def test_default6(tmp_path, monkeypatch):
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
         "page_heading": False,
+        "page_footer": False,
         "encoding": "utf-8",
         "delimiter": ",",
-        "shuffle": True,
+        "not_shuffle": True,
     }
 
     script_dir = tmp_path / "script_dir"
@@ -201,9 +206,10 @@ def test_default7(tmp_path, monkeypatch):
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
         "page_heading": False,
+        "page_footer": False,
         "encoding": "utf-8",
         "delimiter": ",",
-        "shuffle": True,
+        "not_shuffle": True,
     }
 
     home_dir = tmp_path / "home_dir"
@@ -235,9 +241,10 @@ def test_cli_set1(tmp_path, monkeypatch):
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
         "page_heading": False,
+        "page_footer": False,
         "encoding": "utf-8",
         "delimiter": ",",
-        "shuffle": True,
+        "not_shuffle": True,
     }
 
     input_arg = expected["input"]
