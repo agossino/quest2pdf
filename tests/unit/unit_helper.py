@@ -1,3 +1,6 @@
+import os
+
+
 def save_app_configuration(file_path):
     text = "[Default]\n"
     file_path.write_text(text)
@@ -40,4 +43,28 @@ def save_log_configuration(file_path):
     },
     "version": 1
 }"""
+    file_path.write_text(text)
+
+
+def fd_input(prompt: str) -> str:
+    with os.fdopen(os.dup(1), "w") as fout:
+        fout.write(f"\n{prompt}? ")
+
+    with os.fdopen(os.dup(2), "r") as fin:
+        return fin.readline()
+
+
+def save_empty_question(file_path):
+    text = "question,subject,image,level,A,Ai,B,Bi,C,Ci\n "
+    file_path.write_text(text)
+
+
+def save_tf_question(file_path):
+    text = """Question type,question,A,B,void
+TrueFalse,Q,,1,"""
+    file_path.write_text(text)
+
+
+def save_question_data(file_path):
+    text = "question,subject,image,level,A,Ai,B,Bi,C,Ci\nQ,S,I,1,a,ai,b,bi,c,ci"
     file_path.write_text(text)
