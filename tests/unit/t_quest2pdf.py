@@ -19,7 +19,7 @@ def dummy_exam():
     a2 = Answer("answer 2", Path("resources/c.png"))
     a3 = Answer("answer 3", Path("resources/a.png"))
     q1.answers = (a1, a2, a3)
-    q1.correct_option = "B"
+    q1.correct_letter = "B"
 
     q2 = Question(
         "question 2: no answer", "subject 2", Path("resources/b.png")
