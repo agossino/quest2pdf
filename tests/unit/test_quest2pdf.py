@@ -12,22 +12,16 @@ from unit_helper import fd_input
 
 @pytest.fixture
 def dummy_exam():
-    q1 = Question(
-        "question 1: correct is n. 2", "subject 1", Path("resources/a.png")
-    )
+    q1 = Question("question 1: correct is n. 2", "subject 1", Path("resources/a.png"))
     a1 = Answer("answer 1", Path("resources/b.png"))
     a2 = Answer("answer 2", Path("resources/c.png"))
     a3 = Answer("answer 3", Path("resources/a.png"))
     q1.answers = (a1, a2, a3)
     q1.correct_letter = "B"
 
-    q2 = Question(
-        "question 2: no answer", "subject 2", Path("resources/b.png")
-    )
+    q2 = Question("question 2: no answer", "subject 2", Path("resources/b.png"))
 
-    q4 = Question(
-        "question 4: correct is n. 3", "subject 4", Path("resources/c.png")
-    )
+    q4 = Question("question 4: correct is n. 3", "subject 4", Path("resources/c.png"))
     a1 = Answer("answer 1")
     a2 = Answer("answer 2")
     a3 = Answer("answer 3")

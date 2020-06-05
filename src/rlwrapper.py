@@ -52,6 +52,7 @@ def get_std_aspect_image(file_name: Path, width: int = 50 * mm) -> Image:
 
 class PDFDoc:
     """PDF Document builder. Mainly designed for ordered/unordered lists."""
+
     def __init__(self, output_file: Path, **kwargs):
         self._file_name: str = str(output_file)
         self._doc: List[ListFlowable, ...] = []
