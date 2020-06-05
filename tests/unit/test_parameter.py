@@ -10,8 +10,7 @@ from unit_helper import (
 
 
 def test_default0(caplog):
-    """test no arguments on command line
-    amd no logging configuration and
+    """test no logging configuration and
     no app configuration file found
     """
     parameter.param_parser([])
@@ -112,23 +111,23 @@ def test_default3(tmp_path, caplog, monkeypatch):
 
 
 def test_default4(tmp_path, caplog, monkeypatch):
-    """test app configuration path in command line but no file saved
+    """test app configuration given as argument but no file saved
     no logging configuration
     """
-    app_configuration_file = str(pathlib.Path.home() / "conf.ini")
+    file_name = "conf.ini"
+    app_configuration_file = str(pathlib.Path.home() / file_name)
 
-    parameter.param_parser(["--app_configuration_file", app_configuration_file])
+    parameter.param_parser(["app_configuration_file", app_configuration_file])
 
     assert caplog.record_tuples[3][1] == logging.WARNING
-    assert app_configuration_file in caplog.record_tuples[4][2]
-    assert app_configuration_file in caplog.record_tuples[5][2]
-    assert app_configuration_file in caplog.record_tuples[6][2]
+    assert file_name in caplog.record_tuples[4][2]
+    assert file_name in caplog.record_tuples[5][2]
+    assert file_name in caplog.record_tuples[6][2]
     assert caplog.record_tuples[7][1] == logging.WARNING
 
 
 def test_default5(tmp_path, monkeypatch):
-    """test no arguments on command line,
-    log and app configuration file in current dir
+    """test log and app configuration file in current dir
     """
     expected = {
         "input": "questions.csv",
@@ -159,8 +158,7 @@ def test_default5(tmp_path, monkeypatch):
 
 
 def test_default6(tmp_path, monkeypatch):
-    """test no arguments on command line,
-    log and app configuration file in script dir
+    """test log and app configuration file in script dir
     """
     expected = {
         "input": "questions.csv",
@@ -195,8 +193,7 @@ def test_default6(tmp_path, monkeypatch):
 
 
 def test_default7(tmp_path, monkeypatch):
-    """test no arguments on command line,
-    log and app configuration file in home dir
+    """test log and app configuration file in home dir
     """
     expected = {
         "input": "questions.csv",
@@ -230,7 +227,7 @@ def test_default7(tmp_path, monkeypatch):
 
 
 def test_cli_set1(tmp_path, monkeypatch):
-    """test arguments: cli has precedence on config file (number),
+    """test arguments: argument has precedence on config file (number),
     config file has precedence on default (exam)
     """
     expected = {
@@ -247,12 +244,13 @@ def test_cli_set1(tmp_path, monkeypatch):
         "not_shuffle": True,
     }
 
-    input_arg = expected["input"]
     monkeypatch.chdir(tmp_path)
     app_configuration_file = expected["app_configuration_file"]
     save_app_configuration_set(tmp_path / app_configuration_file)
     log_configuration_file = expected["log_configuration_file"]
     save_log_configuration(tmp_path / log_configuration_file)
-    parsed = parameter.param_parser([input_arg, "--number", "2"])
+    parsed = parameter.param_parser(
+        ["input", expected["input"], "number", expected["number"]]
+    )
 
     assert parsed == expected

@@ -125,7 +125,7 @@ class ContentMix(MainWindow):
                     destination=output_folder,
                     top_item_bullet_type="A",
                     sub_item_bullet_type="1",
-                    heading=output_file_name_exam.name
+                    heading=output_file_name_exam.name,
                 )
                 to_pdf_interface.build()
         except Exception as err:
