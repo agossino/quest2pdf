@@ -48,7 +48,7 @@ def save_log_configuration(file_path):
 
 def fd_input(prompt: str) -> str:
     with os.fdopen(os.dup(1), "w") as fout:
-        fout.write(f"\n{prompt}? ")
+        fout.write(f"\n{prompt} ")
 
     with os.fdopen(os.dup(2), "r") as fin:
         return fin.readline()

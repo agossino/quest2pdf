@@ -87,7 +87,10 @@ def start_logger(file_name: pathlib.Path) -> None:
             return
 
     logger.warning(
-        "logging configuration file not found: default configuration will be used."
+        "logging configuration file not found in %s, %s and %s: default configuration will be used.",
+        str(pathlib.Path.cwd()),
+        str(script_path),
+        str(home_path)
     )
 
 
@@ -107,7 +110,7 @@ def try_log_conf_file(file_path: pathlib.Path) -> bool:
             logger.info("%s found", str(file_path))
             return True
     except FileNotFoundError as e:
-        logger.info("%s not found", str(file_path))
+        logger.info("%s not found: %s", str(file_path), str(e))
         return False
 
 
@@ -125,9 +128,10 @@ def conf_file_parser(file_name: pathlib.Path) -> Dict[str, Any]:
             return output
 
     logger.warning(
-        "app configuration file not found in %s and %s: : default configuration will be used.",
+        "app configuration file not found in %s, %s and %s: : default configuration will be used.",
+        str(pathlib.Path.cwd()),
         str(script_path),
-        str(home_path),
+        str(home_path)
     )
     return dict()
     # raise FileNotFoundError
