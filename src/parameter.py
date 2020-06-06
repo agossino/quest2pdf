@@ -90,7 +90,7 @@ def start_logger(file_name: pathlib.Path) -> None:
         "logging configuration file not found in %s, %s and %s: default configuration will be used.",
         str(pathlib.Path.cwd()),
         str(script_path),
-        str(home_path)
+        str(home_path),
     )
 
 
@@ -131,7 +131,7 @@ def conf_file_parser(file_name: pathlib.Path) -> Dict[str, Any]:
         "app configuration file not found in %s, %s and %s: : default configuration will be used.",
         str(pathlib.Path.cwd()),
         str(script_path),
-        str(home_path)
+        str(home_path),
     )
     return dict()
     # raise FileNotFoundError

@@ -25,7 +25,7 @@ def test_no_files(caplog, monkeypatch, tmp_path):
     assert len(warning_log_levels) == 2
 
 
-def test_app_file_curr_dir(tmp_path, caplog, monkeypatch):
+def test_app_conf_file_curr_dir(tmp_path, caplog, monkeypatch):
     """test default values;
     no logging configuration file found;
     app configuration file in current dir: 1 warning
@@ -44,10 +44,10 @@ def test_app_file_curr_dir(tmp_path, caplog, monkeypatch):
         "not_shuffle": True,
     }
 
-    empty_dir = tmp_path / "empty"
-    empty_dir.mkdir()
-    monkeypatch.setattr(pathlib.Path, "parent", empty_dir)
-    monkeypatch.setenv("HOME", str(empty_dir))
+    script_home_empty_dir = tmp_path / "empty"
+    script_home_empty_dir.mkdir()
+    monkeypatch.setattr(pathlib.Path, "parent", script_home_empty_dir)
+    monkeypatch.setenv("HOME", str(script_home_empty_dir))
     monkeypatch.chdir(tmp_path)
 
     app_configuration_file = expected["app_configuration_file"]
@@ -63,121 +63,95 @@ def test_app_file_curr_dir(tmp_path, caplog, monkeypatch):
     assert len(warning_log_levels) == 1
 
 
-def test_app_file_script_dir(tmp_path, caplog, monkeypatch):
+def test_app_conf_file_script_dir(tmp_path, caplog, monkeypatch):
     """no logging configuration file found,
     app configuration file in script dir
     """
     expected = {
-        "input": "questions.csv",
-        "number": 1,
-        "exam": "Exam",
-        "correction": "Correction",
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
-        "page_heading": False,
-        "page_footer": False,
-        "encoding": "utf-8",
-        "delimiter": ",",
-        "not_shuffle": True,
     }
 
-    empty_dir = tmp_path / "empty"
-    empty_dir.mkdir()
-    monkeypatch.chdir(empty_dir)
-    monkeypatch.setenv("HOME", str(empty_dir))
+    curr_home_empty_dir = tmp_path / "empty"
+    curr_home_empty_dir.mkdir()
+    monkeypatch.chdir(curr_home_empty_dir)
+    monkeypatch.setenv("HOME", str(curr_home_empty_dir))
     monkeypatch.setattr(pathlib.Path, "parent", tmp_path)
 
     app_configuration_file = expected["app_configuration_file"]
     save_app_configuration(tmp_path / app_configuration_file)
 
-    param = parameter.param_parser([])
+    parameter.param_parser([])
 
     warning_log_levels = [
         item[1] for item in caplog.record_tuples if item[1] == logging.WARNING
     ]
 
-    assert param == expected
     assert len(warning_log_levels) == 1
 
 
-def test_app_file_home_dir(tmp_path, caplog, monkeypatch):
-    """test no given arguments,
-    no logging configuration file found,
+def test_app_conf_file_home_dir(tmp_path, caplog, monkeypatch):
+    """no logging configuration file found,
     app configuration file in home dir
     """
     expected = {
-        "input": "questions.csv",
-        "number": 1,
-        "exam": "Exam",
-        "correction": "Correction",
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
-        "page_heading": False,
-        "page_footer": False,
-        "encoding": "utf-8",
-        "delimiter": ",",
-        "not_shuffle": True,
     }
 
-    empty_dir = tmp_path / "empty"
-    empty_dir.mkdir()
-    monkeypatch.chdir(empty_dir)
-    monkeypatch.setattr(pathlib.Path, "parent", empty_dir)
+    curr_script_empty_dir = tmp_path / "empty"
+    curr_script_empty_dir.mkdir()
+    monkeypatch.chdir(curr_script_empty_dir)
+    monkeypatch.setattr(pathlib.Path, "parent", curr_script_empty_dir)
     monkeypatch.setenv("HOME", str(tmp_path))
 
     app_configuration_file = expected["app_configuration_file"]
     save_app_configuration(tmp_path / app_configuration_file)
 
-    param = parameter.param_parser([])
+    parameter.param_parser([])
 
     warning_log_levels = [
         item[1] for item in caplog.record_tuples if item[1] == logging.WARNING
     ]
 
-    assert param == expected
     assert len(warning_log_levels) == 1
 
 
-def test_log_file_curr_dir(tmp_path, monkeypatch):
+def test_log_conf_file_curr_dir(tmp_path, monkeypatch):
     """logging configuration file in current dir found;
     no app configuration file: 1 warning.
     """
     expected = {
         "app_configuration_file": "conf.ini",
-        "log_configuration_file": "loggingConf.json"
+        "log_configuration_file": "loggingConf.json",
     }
 
-    home_dir = tmp_path / "home_empty"
-    home_dir.mkdir()
-    monkeypatch.setenv("HOME", str(home_dir))
-
-    script_dir = tmp_path / "script_empty"
-    script_dir.mkdir()
+    script_home_empty_dir = tmp_path / "script_home"
+    script_home_empty_dir.mkdir()
+    monkeypatch.setattr(pathlib.Path, "parent", script_home_empty_dir)
+    monkeypatch.setenv("HOME", str(script_home_empty_dir))
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(pathlib.Path, "parent", script_dir)
 
     log_configuration_file = expected["log_configuration_file"]
     save_log_configuration(tmp_path / log_configuration_file)
 
     parameter.param_parser([])
 
-    log_file = tmp_path / "application.log"
-    with log_file.open() as fd:
+    log_conf_file = tmp_path / "application.log"
+    with log_conf_file.open() as fd:
         log_content = fd.readlines()
 
     assert "".join(log_content).count(logging.getLevelName(logging.WARNING)) == 1
 
 
-def test_log_file_script_dir(tmp_path, caplog, monkeypatch):
-    """test no arguments on command line,
-    logging configuration file in script dir found,
+def test_log_conf_file_script_dir(tmp_path, monkeypatch):
+    """logging configuration file in script dir found,
     no app configuration file: 1 warning.
     """
-    empty_dir = tmp_path / "empty"
-    empty_dir.mkdir()
-    monkeypatch.chdir(empty_dir)
-    monkeypatch.setenv("HOME", str(empty_dir))
-
+    curr_home_dir = tmp_path / "curr_home"
+    curr_home_dir.mkdir()
+    monkeypatch.chdir(curr_home_dir)
+    monkeypatch.setenv("HOME", str(curr_home_dir))
     monkeypatch.setattr(pathlib.Path, "parent", tmp_path)
 
     log_configuration_file = "loggingConf.json"
@@ -185,22 +159,21 @@ def test_log_file_script_dir(tmp_path, caplog, monkeypatch):
 
     parameter.param_parser([])
 
-    warning_log_levels = [
-        item[1] for item in caplog.record_tuples if item[1] == logging.WARNING
-    ]
+    log_conf_file = curr_home_dir / "application.log"
+    with log_conf_file.open() as fd:
+        log_content = fd.readlines()
 
-    assert len(warning_log_levels) == 1
+    assert "".join(log_content).count(logging.getLevelName(logging.WARNING)) == 1
 
 
-def test_log_file_home_dir(tmp_path, capsys, monkeypatch):
-    """test no arguments on command line,
-    logging configuration file in home dir found,
+def test_log_conf_file_home_dir(tmp_path, monkeypatch):
+    """logging configuration file in home dir found,
     no app configuration file: 1 warning.
     """
-    empty_dir = tmp_path / "empty"
-    empty_dir.mkdir()
-    monkeypatch.chdir(empty_dir)
-    monkeypatch.setattr(pathlib.Path, "parent", empty_dir)
+    curr_script_dir = tmp_path / "curr_script"
+    curr_script_dir.mkdir()
+    monkeypatch.chdir(curr_script_dir)
+    monkeypatch.setattr(pathlib.Path, "parent", curr_script_dir)
 
     monkeypatch.setenv("HOME", str(tmp_path))
 
@@ -209,16 +182,15 @@ def test_log_file_home_dir(tmp_path, capsys, monkeypatch):
 
     parameter.param_parser([])
 
-    captured = capsys.readouterr()
-    warning_log_levels = [
-        1 for line in captured.out.split("\n") if line.find("WARNING") != -1
-    ]
+    log_conf_file = curr_script_dir / "application.log"
+    with log_conf_file.open() as fd:
+        log_content = fd.readlines()
 
-    assert warning_log_levels == [1]
+    assert "".join(log_content).count(logging.getLevelName(logging.WARNING)) == 1
 
 
-def test_cli_app_conf_wo_file(tmp_path, caplog, monkeypatch):
-    """test app configuration path in command line but no file saved
+def test_given_arg_app_conf_wo_file(tmp_path, caplog, monkeypatch):
+    """test app configuration given as argument but no file saved
     no logging configuration
     """
     app_configuration_file = str(pathlib.Path.home() / "conf.ini")
@@ -266,7 +238,7 @@ def test_log_output(tmp_path, monkeypatch):
     assert output_log_file.exists()
 
 
-def test_cli_set1(tmp_path, monkeypatch):
+def test_given_args(tmp_path, monkeypatch):
     """test arguments: argument has precedence on config file (number),
     config file has precedence on default (exam)
     """
@@ -296,7 +268,7 @@ def test_cli_set1(tmp_path, monkeypatch):
     assert parsed == expected
 
 
-def test_default4_given_arg(tmp_path, caplog, monkeypatch):
+def test_given_arg_app_conf_wo_files(tmp_path, caplog, monkeypatch):
     """test app configuration given as argument but no file saved
     no logging configuration: 2 warnings
     """
@@ -379,5 +351,3 @@ def test_files_in_home_dir(tmp_path, monkeypatch):
 
     assert param == expected
     assert log_file.exists()
-
-
