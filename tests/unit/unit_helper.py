@@ -1,5 +1,7 @@
 import os
 
+EXAM_FROM_CONF_INI = "Exam from conf.ini"
+
 
 def save_app_configuration(file_path):
     text = "[Default]\n"
@@ -7,7 +9,7 @@ def save_app_configuration(file_path):
 
 
 def save_app_configuration_set(file_path):
-    text = "[Default]\nnumber = 3\nexam = my exam\n"
+    text = f"[Default]\nnumber = 3\nexam = {EXAM_FROM_CONF_INI}\n"
     file_path.write_text(text)
 
 

@@ -6,6 +6,7 @@ from unit_helper import (
     save_app_configuration,
     save_app_configuration_set,
     save_log_configuration,
+    EXAM_FROM_CONF_INI
 )
 
 
@@ -239,13 +240,14 @@ def test_log_output(tmp_path, monkeypatch):
 
 
 def test_given_args(tmp_path, monkeypatch):
-    """test arguments: argument has precedence on config file (number),
+    """test arguments: argument has precedence
+    on config file (input, number),
     config file has precedence on default (exam)
     """
     expected = {
         "input": "my_questions.csv",
         "number": 2,
-        "exam": "my exam",
+        "exam": EXAM_FROM_CONF_INI,
         "correction": "Correction",
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
@@ -272,6 +274,9 @@ def test_given_arg_app_conf_wo_files(tmp_path, caplog, monkeypatch):
     """test app configuration given as argument but no file saved
     no logging configuration: 2 warnings
     """
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(pathlib.Path, "parent", tmp_path)
+    monkeypatch.setenv("HOME", str(tmp_path))
     file_name = "conf.ini"
     app_configuration_file = str(tmp_path / file_name)
 
