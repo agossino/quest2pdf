@@ -31,7 +31,7 @@ def test_style_kwargs():
 
 
 def test_std_aspect_image():
-    file_name = "test.png"
+    file_name = "a.png"
     path = RESOURCES / file_name
     image = get_std_aspect_image(path)
 
@@ -62,7 +62,7 @@ def test_pdfdoc(tmp_path):
 
 
 def test_pdfdoc1(tmp_path):
-    image = str(RESOURCES / "test.png")
+    image = str(RESOURCES / "a.png")
     Item = namedtuple("Item", ["text", "image"])
     data = iter(
         (
@@ -105,7 +105,7 @@ def test_pdfdoc1(tmp_path):
 
 def test_pdfdoc2(tmp_path):
     multi = 1000
-    image = str(RESOURCES / "test.png")
+    image = str(RESOURCES / "a.png")
     Item = namedtuple("Item", ["text", "image"])
     data = iter(
         (
