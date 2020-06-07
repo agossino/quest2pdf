@@ -22,7 +22,7 @@
     },
     "loggers": {
         "": {
-            "handlers": ["console"],
+            "handlers": ["file"],
             "level": "DEBUG",
             "propagate": true
         }
