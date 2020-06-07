@@ -1,5 +1,5 @@
 test:
-	PYTHONPATH=src/ pytest tests/
+	PYTHONPATH=src/ pytest --capture=sys tests/
 
 clean:
 	find . -name '*.pyc' -execdir rm -f {} +

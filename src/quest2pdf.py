@@ -91,10 +91,7 @@ class ContentMix(MainWindow):
             exam.add_path_parent(input_file)
             serial_exam = SerializeExam(exam)
             for number in range(self.parameters["number"]):
-                logging.debug(
-                    "not_shuffle parameter: %s", self.parameters["not_shuffle"]
-                )
-                if self.parameters["not_shuffle"] is True:
+                if self.parameters["not_shuffle"] is False:
                     exam.shuffle()
                 output_file_name_exam = Path(f"{self.parameters['exam']}_{number}.pdf")
                 if isinstance(self.parameters["page_heading"], str):
