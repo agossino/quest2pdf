@@ -5,32 +5,53 @@ from itertools import chain
 
 import pytest
 
-from exam import Exam, Question, Answer
+from exam import (
+    MultiChoiceAnswer,
+    TrueFalseAnswer,
+    MultiChoiceQuest,
+    TrueFalseQuest,
+    Exam,
+)
 from export import SerializeExam, RLInterface
-from unit_helper import fd_input
+from utility import CSVReader
+from unit_helper import fd_input, save_mono_question_data
 
 
 @pytest.fixture
 def dummy_exam():
-    q1 = Question("question 1: correct is n. 2", "subject 1", Path("resources/a.png"))
-    a1 = Answer("answer 1", Path("resources/b.png"))
-    a2 = Answer("answer 2", Path("resources/c.png"))
-    a3 = Answer("answer 3", Path("resources/a.png"))
+    q1 = MultiChoiceQuest(
+        "question 1: correct is n. 2", "subject 1", Path("resources/a.png")
+    )
+    a1 = MultiChoiceAnswer("answer 1", Path("resources/b.png"))
+    a2 = MultiChoiceAnswer("answer 2", Path("resources/c.png"))
+    a3 = MultiChoiceAnswer("answer 3", Path("resources/a.png"))
     q1.answers = (a1, a2, a3)
-    q1.correct_letter = "B"
+    q1.correct_option = "B"
 
-    q2 = Question("question 2: no answer", "subject 2", Path("resources/b.png"))
+    q2 = TrueFalseQuest("question 2: correct is True (first)")
+    a1 = TrueFalseAnswer(True)
+    a2 = TrueFalseAnswer(False)
+    q2.answers = (a1, a2)
 
-    q4 = Question("question 4: correct is n. 3", "subject 4", Path("resources/c.png"))
-    a1 = Answer("answer 1")
-    a2 = Answer("answer 2")
-    a3 = Answer("answer 3")
-    a4 = Answer("answer 4")
-    q4.add_answer(a1)
-    q4.add_answer(a2)
-    q4.add_answer(a3, is_correct=True)
-    q4.add_answer(a4)
-    dummy_ex = Exam(q1, q2, q4)
+    q3 = MultiChoiceQuest("question 3: no answer", "subject 2", Path("resources/b.png"))
+
+    q4 = TrueFalseQuest("question 4: correct is False (first))")
+    a1 = TrueFalseAnswer(False)
+    a2 = TrueFalseAnswer(True)
+    q4.answers = (a1, a2)
+
+    q5 = MultiChoiceQuest(
+        "question 5: correct is n. 3", "subject 4", Path("resources/c.png")
+    )
+    a1 = MultiChoiceAnswer("answer 1")
+    a2 = MultiChoiceAnswer("answer 2")
+    a3 = MultiChoiceAnswer("answer 3")
+    a4 = MultiChoiceAnswer("answer 4")
+    q5.add_answer(a1)
+    q5.add_answer(a2)
+    q5.add_answer(a3, is_correct=True)
+    q5.add_answer(a4)
+    dummy_ex = Exam(q1, q2, q3, q4, q5)
 
     return dummy_ex
 
@@ -51,10 +72,16 @@ def test_print_have_a_look(tmp_path, dummy_exam):
     ex = dummy_exam
     folder = image_tmp_folder
     ex.add_path_parent(folder)
+    ex.shuffle()
     serial_exam = SerializeExam(ex)
     pdf_interface = RLInterface(serial_exam.assignment(), exam_file_path)
     pdf_interface.build()
-    pdf_interface = RLInterface(serial_exam.correction(), correction_file_path)
+    pdf_interface = RLInterface(
+        serial_exam.correction(),
+        correction_file_path,
+        top_item_bullet_type="A",
+        sub_item_bullet_type="1",
+    )
     pdf_interface.build()
 
     subprocess.Popen(["evince", str(exam_file_path)])
@@ -63,3 +90,37 @@ def test_print_have_a_look(tmp_path, dummy_exam):
     answer = fd_input("Is it correct (y)? ")
 
     assert answer == "y\n"
+
+
+def test_shuffle_from_csv(tmp_path):
+    data_file = tmp_path / "data.csv"
+    save_mono_question_data(data_file)
+
+    data = CSVReader(str(data_file))
+    rows = data.to_dictlist()
+
+    exam = Exam()
+    exam.attribute_selector = (
+        "question",
+        "subject",
+        "image",
+        "void",
+        "A",
+        "void",
+        "B",
+        "void",
+        "C",
+        "void",
+        "D",
+        "void",
+    )
+
+    exam.load(rows)
+    exam.add_path_parent(data_file)
+    random.seed(1)
+    exam.shuffle()
+
+    for question in exam.questions:
+        assert question.correct_answer.text == "a"
+    assert exam.questions[0]._answers[0].text == "d"
+    assert exam.questions[1]._answers[0].text == "d"

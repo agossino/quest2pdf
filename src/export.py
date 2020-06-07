@@ -45,7 +45,7 @@ class SerializeExam:
         if self._exam.questions != ():
             yield Item(ItemLevel.top, f"correction", Path("."))
         for question in self._exam.questions:
-            yield Item(ItemLevel.sub, f"{question.correct_letter}", Path("."))
+            yield Item(ItemLevel.sub, f"{question.correct_option}", Path("."))
 
 
 class RLInterface:
