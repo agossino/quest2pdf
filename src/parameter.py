@@ -11,7 +11,7 @@ logName = "quest2pdf." + __name__
 logger = logging.getLogger(logName)
 
 
-def param_parser(args: Optional[List[str]] = None) -> Dict[str, Any]:
+def param_parser(args: Optional[List[str]] = []) -> Dict[str, Any]:
     """Arguments from command line have precedence over the ones
     coming from configuration file.
     """
@@ -35,7 +35,6 @@ def param_parser(args: Optional[List[str]] = None) -> Dict[str, Any]:
     app_config_file = pathlib.Path(default_values["app_configuration_file"])
 
     app_configuration_param = conf_file_parser(pathlib.Path(app_config_file))
-    convert_from_str_to_type(app_configuration_param)
     default_values.update(app_configuration_param)
 
     chosen_args = {}
@@ -63,8 +62,8 @@ def get_default() -> Dict[str, Any]:
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
         "not_shuffle": False,
-        "page_heading": False,
-        "page_footer": True,
+        "page_heading": "",
+        "page_footer": "",
         "delimiter": "comma",
         "encoding": "utf-8",
         # "version": __version__,
@@ -128,7 +127,7 @@ def conf_file_parser(file_name: pathlib.Path) -> Dict[str, Any]:
             return output
 
     logger.warning(
-        "app configuration file not found in %s, %s and %s: : default configuration will be used.",
+        "app configuration file not found in %s, %s and %s: default configuration will be used.",
         str(pathlib.Path.cwd()),
         str(script_path),
         str(home_path),
@@ -152,25 +151,3 @@ def try_conf_file(file_path: pathlib.Path) -> Optional[Dict[str, Any]]:
         return None
 
     return output
-
-
-def convert_from_str_to_type(parameter: Dict[str, Any]) -> None:
-    key = "number"
-    try:
-        parameter[key] = int(parameter.get(key, 1))
-    except ValueError:
-        parameter[key] = 1
-
-    key = "not_shuffle"
-    parameter[key] = True if parameter.get(key, None) is None else False
-
-    for key in ("page_heading", "page_footer"):
-        value = parameter.get(key, None)
-        if value is None:
-            parameter[key] = False
-        elif value == "":
-            parameter[key] = True
-        else:
-            parameter[key] = value
-
-    return
