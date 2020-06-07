@@ -303,6 +303,7 @@ def test_files_in_script_dir(tmp_path, monkeypatch):
 
     assert log_file.exists()
 
+
 def test_files_in_home_dir(tmp_path, monkeypatch):
     """test log and app configuration file in home dir
     """
