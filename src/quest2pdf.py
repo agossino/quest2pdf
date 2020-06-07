@@ -90,7 +90,6 @@ class ContentMix(MainWindow):
             exam.load(rows)
             exam.add_path_parent(input_file)
             serial_exam = SerializeExam(exam)
-            logging.warning("Parameter: %s", self.parameters)
             for number in range(self.parameters["number"]):
                 if self.parameters["not_shuffle"] is False:
                     exam.shuffle()

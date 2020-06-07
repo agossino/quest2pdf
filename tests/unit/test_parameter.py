@@ -6,7 +6,7 @@ from unit_helper import (
     save_app_configuration,
     save_app_configuration_set,
     save_log_configuration,
-    EXAM_FROM_CONF_INI
+    EXAM_FROM_CONF_INI,
 )
 
 
@@ -38,11 +38,11 @@ def test_app_conf_file_curr_dir(tmp_path, caplog, monkeypatch):
         "correction": "Correction",
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
-        "page_heading": False,
-        "page_footer": False,
+        "page_heading": "",
+        "page_footer": "",
         "encoding": "utf-8",
         "delimiter": ",",
-        "not_shuffle": True,
+        "not_shuffle": False,
     }
 
     script_home_empty_dir = tmp_path / "empty"
@@ -212,17 +212,8 @@ def test_log_output(tmp_path, monkeypatch):
     """test log and app configuration file in current dir
     """
     expected = {
-        "input": "questions.csv",
-        "number": 1,
-        "exam": "Exam",
-        "correction": "Correction",
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
-        "page_heading": False,
-        "page_footer": False,
-        "encoding": "utf-8",
-        "delimiter": ",",
-        "not_shuffle": True,
     }
 
     output_log_file = tmp_path / "application.log"
@@ -233,9 +224,8 @@ def test_log_output(tmp_path, monkeypatch):
     log_configuration_file = expected["log_configuration_file"]
     save_log_configuration(tmp_path / log_configuration_file)
 
-    param = parameter.param_parser([])
+    parameter.param_parser([])
 
-    assert param == expected
     assert output_log_file.exists()
 
 
@@ -251,11 +241,11 @@ def test_given_args(tmp_path, monkeypatch):
         "correction": "Correction",
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
-        "page_heading": False,
-        "page_footer": False,
+        "page_heading": "",
+        "page_footer": "",
         "encoding": "utf-8",
         "delimiter": ",",
-        "not_shuffle": True,
+        "not_shuffle": False,
     }
 
     monkeypatch.chdir(tmp_path)
@@ -293,17 +283,8 @@ def test_files_in_script_dir(tmp_path, monkeypatch):
     """test log and app configuration file in script dir
     """
     expected = {
-        "input": "questions.csv",
-        "number": 1,
-        "exam": "Exam",
-        "correction": "Correction",
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
-        "page_heading": False,
-        "page_footer": False,
-        "encoding": "utf-8",
-        "delimiter": ",",
-        "not_shuffle": True,
     }
 
     script_dir = tmp_path / "script_dir"
@@ -318,26 +299,16 @@ def test_files_in_script_dir(tmp_path, monkeypatch):
     log_configuration_file = expected["log_configuration_file"]
     save_log_configuration(script_dir / log_configuration_file)
 
-    param = parameter.param_parser([])
+    parameter.param_parser([])
 
-    assert param == expected
     assert log_file.exists()
 
 def test_files_in_home_dir(tmp_path, monkeypatch):
     """test log and app configuration file in home dir
     """
     expected = {
-        "input": "questions.csv",
-        "number": 1,
-        "exam": "Exam",
-        "correction": "Correction",
         "app_configuration_file": "conf.ini",
         "log_configuration_file": "loggingConf.json",
-        "page_heading": False,
-        "page_footer": False,
-        "encoding": "utf-8",
-        "delimiter": ",",
-        "not_shuffle": True,
     }
 
     home_dir = tmp_path / "home_dir"
@@ -351,7 +322,6 @@ def test_files_in_home_dir(tmp_path, monkeypatch):
     log_configuration_file = expected["log_configuration_file"]
     save_log_configuration(home_dir / log_configuration_file)
 
-    param = parameter.param_parser([])
+    parameter.param_parser([])
 
-    assert param == expected
     assert log_file.exists()
