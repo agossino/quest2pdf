@@ -13,7 +13,8 @@ from exam import (
     Exam,
 )
 from export import SerializeExam, RLInterface
-from unit_helper import fd_input
+from utility import CSVReader
+from unit_helper import fd_input, save_mono_question_data
 
 
 @pytest.fixture
@@ -89,3 +90,37 @@ def test_print_have_a_look(tmp_path, dummy_exam):
     answer = fd_input("Is it correct (y)? ")
 
     assert answer == "y\n"
+
+
+def test_shuffle_from_csv(tmp_path):
+    data_file = tmp_path / "data.csv"
+    save_mono_question_data(data_file)
+
+    data = CSVReader(str(data_file))
+    rows = data.to_dictlist()
+
+    exam = Exam()
+    exam.attribute_selector = (
+        "question",
+        "subject",
+        "image",
+        "void",
+        "A",
+        "void",
+        "B",
+        "void",
+        "C",
+        "void",
+        "D",
+        "void",
+    )
+
+    exam.load(rows)
+    exam.add_path_parent(data_file)
+    random.seed(1)
+    exam.shuffle()
+
+    for question in exam.questions:
+        assert question.correct_answer.text == "a"
+    assert exam.questions[0]._answers[0].text == "d"
+    assert exam.questions[1]._answers[0].text == "d"
