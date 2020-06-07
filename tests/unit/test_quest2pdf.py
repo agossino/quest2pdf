@@ -5,32 +5,52 @@ from itertools import chain
 
 import pytest
 
-from exam import MultiChoiceAnswer, MultiChoiceQuest, Exam
+from exam import (
+    MultiChoiceAnswer,
+    TrueFalseAnswer,
+    MultiChoiceQuest,
+    TrueFalseQuest,
+    Exam,
+)
 from export import SerializeExam, RLInterface
 from unit_helper import fd_input
 
 
 @pytest.fixture
 def dummy_exam():
-    q1 = MultiChoiceQuest("question 1: correct is n. 2", "subject 1", Path("resources/a.png"))
+    q1 = MultiChoiceQuest(
+        "question 1: correct is n. 2", "subject 1", Path("resources/a.png")
+    )
     a1 = MultiChoiceAnswer("answer 1", Path("resources/b.png"))
     a2 = MultiChoiceAnswer("answer 2", Path("resources/c.png"))
     a3 = MultiChoiceAnswer("answer 3", Path("resources/a.png"))
     q1.answers = (a1, a2, a3)
     q1.correct_option = "B"
 
-    q2 = MultiChoiceQuest("question 2: no answer", "subject 2", Path("resources/b.png"))
+    q2 = TrueFalseQuest("question 2: correct is True (first)")
+    a1 = TrueFalseAnswer(True)
+    a2 = TrueFalseAnswer(False)
+    q2.answers = (a1, a2)
 
-    q4 = MultiChoiceQuest("question 4: correct is n. 3", "subject 4", Path("resources/c.png"))
+    q3 = MultiChoiceQuest("question 3: no answer", "subject 2", Path("resources/b.png"))
+
+    q4 = TrueFalseQuest("question 4: correct is False (first))")
+    a1 = TrueFalseAnswer(False)
+    a2 = TrueFalseAnswer(True)
+    q4.answers = (a1, a2)
+
+    q5 = MultiChoiceQuest(
+        "question 5: correct is n. 3", "subject 4", Path("resources/c.png")
+    )
     a1 = MultiChoiceAnswer("answer 1")
     a2 = MultiChoiceAnswer("answer 2")
     a3 = MultiChoiceAnswer("answer 3")
     a4 = MultiChoiceAnswer("answer 4")
-    q4.add_answer(a1)
-    q4.add_answer(a2)
-    q4.add_answer(a3, is_correct=True)
-    q4.add_answer(a4)
-    dummy_ex = Exam(q1, q2, q4)
+    q5.add_answer(a1)
+    q5.add_answer(a2)
+    q5.add_answer(a3, is_correct=True)
+    q5.add_answer(a4)
+    dummy_ex = Exam(q1, q2, q3, q4, q5)
 
     return dummy_ex
 
@@ -51,10 +71,16 @@ def test_print_have_a_look(tmp_path, dummy_exam):
     ex = dummy_exam
     folder = image_tmp_folder
     ex.add_path_parent(folder)
+    ex.shuffle()
     serial_exam = SerializeExam(ex)
     pdf_interface = RLInterface(serial_exam.assignment(), exam_file_path)
     pdf_interface.build()
-    pdf_interface = RLInterface(serial_exam.correction(), correction_file_path)
+    pdf_interface = RLInterface(
+        serial_exam.correction(),
+        correction_file_path,
+        top_item_bullet_type="A",
+        sub_item_bullet_type="1",
+    )
     pdf_interface.build()
 
     subprocess.Popen(["evince", str(exam_file_path)])
