@@ -1143,11 +1143,17 @@ def test_exam_print():
 
 def test_exam_mcquestion():
     mcquestion1 = exam.MultiChoiceQuest("mc quest1 text", "subject")
-    mcquestion1.answers = (exam.MultiChoiceAnswer("Q1 A1"), exam.MultiChoiceAnswer("Q1 A2"),
-                           exam.MultiChoiceAnswer("Q1 A3"))
+    mcquestion1.answers = (
+        exam.MultiChoiceAnswer("Q1 A1"),
+        exam.MultiChoiceAnswer("Q1 A2"),
+        exam.MultiChoiceAnswer("Q1 A3"),
+    )
     mcquestion2 = exam.MultiChoiceQuest("mc quest2 text", "subject")
-    mcquestion2.answers = (exam.MultiChoiceAnswer("Q2 A1"), exam.MultiChoiceAnswer("Q2 A2"),
-                           exam.MultiChoiceAnswer("Q2 A3"))
+    mcquestion2.answers = (
+        exam.MultiChoiceAnswer("Q2 A1"),
+        exam.MultiChoiceAnswer("Q2 A2"),
+        exam.MultiChoiceAnswer("Q2 A3"),
+    )
 
     ex = exam.Exam(mcquestion1, mcquestion2)
 
@@ -1172,8 +1178,11 @@ def test_exam_tfquestion():
 
 def test_exam_mixquestion():
     mcquestion = exam.MultiChoiceQuest("mc quest1 text", "subject")
-    mcquestion.answers = (exam.MultiChoiceAnswer("Q1 A1"), exam.MultiChoiceAnswer("Q1 A2"),
-                           exam.MultiChoiceAnswer("Q1 A3"))
+    mcquestion.answers = (
+        exam.MultiChoiceAnswer("Q1 A1"),
+        exam.MultiChoiceAnswer("Q1 A2"),
+        exam.MultiChoiceAnswer("Q1 A3"),
+    )
     tfquestion = exam.MultiChoiceQuest("mc quest2 text", "subject")
     tfquestion.answers = (exam.TrueFalseAnswer(False), exam.TrueFalseAnswer(True))
 
