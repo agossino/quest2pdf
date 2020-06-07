@@ -94,18 +94,14 @@ class ContentMix(MainWindow):
                 if self.parameters["not_shuffle"] is False:
                     exam.shuffle()
                 output_file_name_exam = Path(f"{self.parameters['exam']}_{number}.pdf")
-                if isinstance(self.parameters["page_heading"], str):
-                    exam_heading = self.parameters["page_heading"]
-                elif self.parameters["page_heading"]:
-                    exam_heading = output_file_name_exam
+
+                if self.parameters["page_heading"] != "":
+                    exam_heading = f"{self.parameters['page_heading']} file n. {number}"
                 else:
                     exam_heading = ""
-                if isinstance(self.parameters["page_footer"], str):
-                    exam_footer = self.parameters["page_footer"]
-                elif self.parameters["page_footer"]:
-                    exam_footer = datetime.now().isoformat()
-                else:
-                    exam_footer = ""
+
+                exam_footer = self.parameters["page_footer"]
+
                 to_pdf_interface = RLInterface(
                     serial_exam.assignment(),
                     output_file_name_exam,
