@@ -1011,8 +1011,6 @@ def test_exam_load3():
     reader = (dict([]), dict([("A", "What?"), ("B", "topic")]))
     ex.load(reader)
 
-    print(ex)
-
     assert ex.questions[0].text == "What?"
     assert ex.questions[0].subject == "topic"
 
