@@ -578,6 +578,53 @@ def dummy_exam():
     return dummy_ex
 
 
+@pytest.fixture
+def dummy_exam():
+    q1 = quest2pdf.MultiChoiceQuest(
+        "question 1: correct is n. 2", "subject 1", Path("a.png")
+    )
+    a1 = quest2pdf.MultiChoiceAnswer("answer 1", Path("b.png"))
+    a2 = quest2pdf.MultiChoiceAnswer("answer 2", Path("c.png"))
+    a3 = quest2pdf.MultiChoiceAnswer("answer 3", Path("a.png"))
+    q1.answers = (a1, a2, a3)
+    q1.correct_option = "B"
+
+    q2 = quest2pdf.MultiChoiceQuest(
+        "question 2: correct is n. 1", "subject 1", Path("a.png")
+    )
+    a1 = quest2pdf.MultiChoiceAnswer("answer 1")
+    a2 = quest2pdf.MultiChoiceAnswer("answer 2")
+    a3 = quest2pdf.MultiChoiceAnswer("answer 3")
+    q2.answers = (a1, a2, a3)
+
+    q3 = quest2pdf.TrueFalseQuest("question 3: correct is True (first)")
+    a1 = quest2pdf.TrueFalseAnswer(True)
+    a2 = quest2pdf.TrueFalseAnswer(False)
+    q3.answers = (a1, a2)
+
+    q4 = quest2pdf.MultiChoiceQuest("question 4: no answer", "subject 2", Path("b.png"))
+
+    q5 = quest2pdf.TrueFalseQuest("question 5: correct is False (first))")
+    a1 = quest2pdf.TrueFalseAnswer(False)
+    a2 = quest2pdf.TrueFalseAnswer(True)
+    q5.answers = (a1, a2)
+
+    q6 = quest2pdf.MultiChoiceQuest(
+        "question 6: correct is n. 3", "subject 4", Path("c.png")
+    )
+    a1 = quest2pdf.MultiChoiceAnswer("answer 1")
+    a2 = quest2pdf.MultiChoiceAnswer("answer 2")
+    a3 = quest2pdf.MultiChoiceAnswer("answer 3")
+    a4 = quest2pdf.MultiChoiceAnswer("answer 4")
+    q6.add_answer(a1)
+    q6.add_answer(a2)
+    q6.add_answer(a3, is_correct=True)
+    q6.add_answer(a4)
+    dummy_ex = quest2pdf.Exam(q1, q2, q3, q4, q5, q6)
+
+    return dummy_ex
+
+
 def test_print_have_a_look(tmp_path, dummy_exam):
     image_folder = Path("tests/unit/resources")
     image_tmp_folder = tmp_path / image_folder.name
