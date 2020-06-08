@@ -9,6 +9,7 @@ from reportlab.platypus import (
     ListFlowable,
     ListItem,
     Spacer,
+    KeepTogether
 )
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -90,7 +91,7 @@ class PDFDoc:
             start=self._top_item_start,
         )
         self._top_item_start += 1
-        self._doc.extend([question_set, self.separator])
+        self._doc.extend([KeepTogether([question_set, self.separator])])
 
     def add_item(self, item):
         """First processes _in_progress_item if not empty,
