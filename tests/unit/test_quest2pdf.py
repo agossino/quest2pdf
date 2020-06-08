@@ -28,30 +28,38 @@ def dummy_exam():
     q1.answers = (a1, a2, a3)
     q1.correct_option = "B"
 
-    q2 = TrueFalseQuest("question 2: correct is True (first)")
+    q2 = MultiChoiceQuest(
+        "question 2: correct is n. 1", "subject 1", Path("resources/a.png")
+    )
+    a1 = MultiChoiceAnswer("answer 1")
+    a2 = MultiChoiceAnswer("answer 2")
+    a3 = MultiChoiceAnswer("answer 3")
+    q2.answers = (a1, a2, a3)
+
+    q3 = TrueFalseQuest("question 3: correct is True (first)")
     a1 = TrueFalseAnswer(True)
     a2 = TrueFalseAnswer(False)
-    q2.answers = (a1, a2)
+    q3.answers = (a1, a2)
 
-    q3 = MultiChoiceQuest("question 3: no answer", "subject 2", Path("resources/b.png"))
+    q4 = MultiChoiceQuest("question 4: no answer", "subject 2", Path("resources/b.png"))
 
-    q4 = TrueFalseQuest("question 4: correct is False (first))")
+    q5 = TrueFalseQuest("question 5: correct is False (first))")
     a1 = TrueFalseAnswer(False)
     a2 = TrueFalseAnswer(True)
-    q4.answers = (a1, a2)
+    q5.answers = (a1, a2)
 
-    q5 = MultiChoiceQuest(
-        "question 5: correct is n. 3", "subject 4", Path("resources/c.png")
+    q6 = MultiChoiceQuest(
+        "question 6: correct is n. 3", "subject 4", Path("resources/c.png")
     )
     a1 = MultiChoiceAnswer("answer 1")
     a2 = MultiChoiceAnswer("answer 2")
     a3 = MultiChoiceAnswer("answer 3")
     a4 = MultiChoiceAnswer("answer 4")
-    q5.add_answer(a1)
-    q5.add_answer(a2)
-    q5.add_answer(a3, is_correct=True)
-    q5.add_answer(a4)
-    dummy_ex = Exam(q1, q2, q3, q4, q5)
+    q6.add_answer(a1)
+    q6.add_answer(a2)
+    q6.add_answer(a3, is_correct=True)
+    q6.add_answer(a4)
+    dummy_ex = Exam(q1, q2, q3, q4, q5, q6)
 
     return dummy_ex
 
