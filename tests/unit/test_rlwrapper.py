@@ -4,7 +4,7 @@ import pytest
 from collections import namedtuple
 from reportlab.lib.styles import ParagraphStyle
 from rlwrapper import Style, get_std_aspect_image, PDFDoc
-from reportlab.platypus import ListFlowable, ListItem
+from reportlab.platypus import ListFlowable, ListItem, KeepTogether
 
 RESOURCES = Path("tests/unit/resources")
 
@@ -83,20 +83,17 @@ def test_pdfdoc1(tmp_path):
     assert doc._top_item_start == 2
     assert isinstance(doc._in_progress_item[-1], ListFlowable)
     assert len(doc._in_progress_item) == 1
-    assert isinstance(doc._doc[-1], ListFlowable)
-    assert len(doc._doc) == 2
+    assert isinstance(doc._doc[-1], KeepTogether)
     doc.add_sub_item(next(data))
     assert doc._top_item_start == 2
     assert isinstance(doc._in_progress_item[-1], ListItem)
     assert len(doc._in_progress_item) == 2
-    assert isinstance(doc._doc[-1], ListFlowable)
-    assert len(doc._doc) == 2
+    assert isinstance(doc._doc[-1], KeepTogether)
     doc.add_sub_item(next(data))
     assert doc._top_item_start == 2
     assert isinstance(doc._in_progress_item[-1], ListItem)
     assert len(doc._in_progress_item) == 3
-    assert isinstance(doc._doc[-1], ListFlowable)
-    assert len(doc._doc) == 2
+    assert isinstance(doc._doc[-1], KeepTogether)
     doc.build()
     assert doc._top_item_start == 3
 
@@ -126,20 +123,17 @@ def test_pdfdoc2(tmp_path):
     assert doc._top_item_start == 2
     assert isinstance(doc._in_progress_item[-1], ListFlowable)
     assert len(doc._in_progress_item) == 1
-    assert isinstance(doc._doc[-1], ListFlowable)
-    assert len(doc._doc) == 2
+    assert isinstance(doc._doc[-1], KeepTogether)
     doc.add_sub_item(next(data))
     assert doc._top_item_start == 2
     assert isinstance(doc._in_progress_item[-1], ListItem)
     assert len(doc._in_progress_item) == 2
-    assert isinstance(doc._doc[-1], ListFlowable)
-    assert len(doc._doc) == 2
+    assert isinstance(doc._doc[-1], KeepTogether)
     doc.add_sub_item(next(data))
     assert doc._top_item_start == 2
     assert isinstance(doc._in_progress_item[-1], ListItem)
     assert len(doc._in_progress_item) == 3
-    assert isinstance(doc._doc[-1], ListFlowable)
-    assert len(doc._doc) == 2
+    assert isinstance(doc._doc[-1], KeepTogether)
     doc.build()
     assert doc._top_item_start == 3
 
