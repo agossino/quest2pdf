@@ -80,8 +80,8 @@ def test_print_have_a_look(tmp_path, dummy_exam):
     ex = dummy_exam
     folder = image_tmp_folder
     ex.add_path_parent(folder)
-    ex.shuffle()
-    ex.mixing()
+    ex.answers_shuffle()
+    ex.questions_shuffle()
     serial_exam = SerializeExam(ex)
     pdf_interface = RLInterface(serial_exam.assignment(), exam_file_path)
     pdf_interface.build()
@@ -127,7 +127,7 @@ def test_shuffle_from_csv(tmp_path):
     exam.load(rows)
     exam.add_path_parent(data_file)
     random.seed(1)
-    exam.shuffle()
+    exam.answers_shuffle()
 
     for question in exam.questions:
         assert question.correct_answer.text == "a"
