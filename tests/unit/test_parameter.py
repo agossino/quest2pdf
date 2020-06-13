@@ -43,6 +43,7 @@ def test_app_conf_file_curr_dir(tmp_path, caplog, monkeypatch):
         "encoding": "utf-8",
         "delimiter": ",",
         "not_shuffle": False,
+        "mixing": False
     }
 
     script_home_empty_dir = tmp_path / "empty"
@@ -246,6 +247,7 @@ def test_given_args(tmp_path, monkeypatch):
         "encoding": "utf-8",
         "delimiter": ",",
         "not_shuffle": False,
+        "mixing": False
     }
 
     monkeypatch.chdir(tmp_path)

@@ -66,7 +66,7 @@ def get_default() -> Dict[str, Any]:
         "page_footer": "",
         "delimiter": "comma",
         "encoding": "utf-8",
-        # "version": __version__,
+        "mixing": False
     }
 
     return default_args
