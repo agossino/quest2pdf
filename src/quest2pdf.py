@@ -92,9 +92,9 @@ class ContentMix(MainWindow):
             serial_exam = SerializeExam(exam)
             for number in range(int(self.parameters["number"])):
                 if self.parameters["not_shuffle"] is False:
-                    exam.shuffle()
+                    exam.answers_shuffle()
                 if self.parameters["mixing"]:
-                    exam.mixing()
+                    exam.questions_shuffle()
                 output_file_name_exam = Path(f"{self.parameters['exam']}_{number}.pdf")
 
                 if self.parameters["page_heading"] != "":
