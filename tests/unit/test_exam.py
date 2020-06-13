@@ -1077,7 +1077,7 @@ def test_exam_load4():
         _ = ex.questions[1].answers[2]
 
 
-def test_shuffle():
+def test_answers_shuffle():
     data = (
         dict(
             [
@@ -1120,22 +1120,22 @@ def test_shuffle():
         "E",
     )
     ex.load(data)
-    ex.shuffle()
+    ex.answers_shuffle()
 
     for question, value in zip(ex.questions, correct_values):
         assert question.correct_option == value
 
 
-def test_mixing(fake_exam):
+def test_questions_shuffle(fake_exam):
     """GIVEN exam with five questions
-    WHEN mixing is called (questions order is mixed)
+    WHEN questions_shuffle is called (questions order is mixed)
     THEN questions order is changed
     """
     expected_text = ("q3 text", "q4 text", "q5 text", "q1 text", "q2 text")
 
     ex = fake_exam
     random.seed(1)
-    ex.mixing()
+    ex.questions_shuffle()
 
     for i, question in enumerate(ex.questions):
         assert question.text == expected_text[i]

@@ -8,7 +8,6 @@
 # based on number of alternative answers provided
 
 from pathlib import Path
-import random
 from typing import Tuple, List, Optional, Iterator, Iterable, Any, Callable, Mapping
 import logging
 from random import shuffle
@@ -531,12 +530,12 @@ class Exam:
                 iterator = iter(data)
                 quest.load_sequentially(iterator)
 
-    def shuffle(self):
+    def answers_shuffle(self):
         for question in self._questions:
             question.shuffle()
 
-    def mixing(self):
-        random.shuffle(self._questions)
+    def questions_shuffle(self):
+        shuffle(self._questions)
 
     def __str__(self) -> str:
         output: List[str] = []
