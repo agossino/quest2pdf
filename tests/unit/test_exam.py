@@ -5,6 +5,19 @@ from utility import safe_int
 import random
 
 
+@pytest.fixture
+def fake_exam():
+    q1, q2, q3, q4, q5 = (
+        exam.Question("q1 text"),
+        exam.Question("q2 text"),
+        exam.Question("q3 text"),
+        exam.Question("q4 text"),
+        exam.Question("q5 text")
+    )
+
+    return exam.Exam(q1, q2, q3, q4, q5)
+
+
 def test_answer_load0():
     """test empty iterator without attribute:
     StopIteration must not be raised
@@ -1111,6 +1124,21 @@ def test_shuffle():
 
     for question, value in zip(ex.questions, correct_values):
         assert question.correct_option == value
+
+
+def test_mixing(fake_exam):
+    """GIVEN exam with five questions
+    WHEN mixing is called (questions order is mixed)
+    THEN questions order is changed
+    """
+    expected_text = ("q3 text", "q4 text", "q5 text", "q1 text", "q2 text")
+
+    ex = fake_exam
+    random.seed(1)
+    ex.mixing()
+
+    for i, question in enumerate(ex.questions):
+        assert question.text == expected_text[i]
 
 
 def test_exam_print():

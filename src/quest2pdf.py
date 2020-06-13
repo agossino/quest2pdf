@@ -93,6 +93,8 @@ class ContentMix(MainWindow):
             for number in range(int(self.parameters["number"])):
                 if self.parameters["not_shuffle"] is False:
                     exam.shuffle()
+                if self.parameters["mixing"]:
+                    exam.mixing()
                 output_file_name_exam = Path(f"{self.parameters['exam']}_{number}.pdf")
 
                 if self.parameters["page_heading"] != "":

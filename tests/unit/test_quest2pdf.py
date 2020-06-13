@@ -81,6 +81,7 @@ def test_print_have_a_look(tmp_path, dummy_exam):
     folder = image_tmp_folder
     ex.add_path_parent(folder)
     ex.shuffle()
+    ex.mixing()
     serial_exam = SerializeExam(ex)
     pdf_interface = RLInterface(serial_exam.assignment(), exam_file_path)
     pdf_interface.build()
