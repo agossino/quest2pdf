@@ -95,35 +95,35 @@ class ContentMix(MainWindow):
                     exam.answers_shuffle()
                 if self.parameters["mixing"]:
                     exam.questions_shuffle()
-                output_file_name_exam = Path(f"{self.parameters['exam']}_{number}.pdf")
+                output_file_name_exam = Path(f"{self.parameters['exam']}_{number + 1}.pdf")
 
                 if self.parameters["page_heading"] != "":
-                    exam_heading = f"{self.parameters['page_heading']} file n. {number}"
+                    exam_heading = f"{self.parameters['page_heading']} exam n. {number + 1}"
                 else:
                     exam_heading = ""
 
                 exam_footer = self.parameters["page_footer"]
 
-                to_pdf_interface = RLInterface(
+                exam_to_pdf = RLInterface(
                     serial_exam.assignment(),
                     output_file_name_exam,
                     destination=output_folder,
                     heading=exam_heading,
                     footer=exam_footer,
                 )
-                to_pdf_interface.build()
+                exam_to_pdf.build()
                 output_file_name_correction = Path(
-                    f"{self.parameters['correction']}_{number}.pdf"
+                    f"{self.parameters['correction']}_{number + 1}.pdf"
                 )
-                to_pdf_interface = RLInterface(
-                    serial_exam.correction(),
+                corrections_to_pdf = RLInterface(
+                    serial_exam.correction(number + 1),
                     output_file_name_correction,
                     destination=output_folder,
                     top_item_bullet_type="A",
                     sub_item_bullet_type="1",
                     heading=output_file_name_exam.name,
                 )
-                to_pdf_interface.build()
+            corrections_to_pdf.build()
         except Exception as err:
             LOGGER.critical("CSVReader failed: %s %s", err.__class__, err)
             self.errorbox(exception_printer(err))
