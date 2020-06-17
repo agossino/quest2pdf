@@ -95,10 +95,14 @@ class ContentMix(MainWindow):
                     exam.answers_shuffle()
                 if self.parameters["mixing"]:
                     exam.questions_shuffle()
-                output_file_name_exam = Path(f"{self.parameters['exam']}_{number + 1}.pdf")
+                output_file_name_exam = Path(
+                    f"{self.parameters['exam']}_{number + 1}.pdf"
+                )
 
                 if self.parameters["page_heading"] != "":
-                    exam_heading = f"{self.parameters['page_heading']} exam n. {number + 1}"
+                    exam_heading = (
+                        f"{self.parameters['page_heading']} exam n. {number + 1}"
+                    )
                 else:
                     exam_heading = ""
 

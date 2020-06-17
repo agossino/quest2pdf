@@ -12,7 +12,7 @@ def fake_exam():
         exam.Question("q2 text"),
         exam.Question("q3 text"),
         exam.Question("q4 text"),
-        exam.Question("q5 text")
+        exam.Question("q5 text"),
     )
 
     return exam.Exam(q1, q2, q3, q4, q5)
@@ -919,10 +919,7 @@ def test_exam_add_path_parent():
     image = Path("images/image.png")
     path = Path("/project/A/")
     q1 = exam.Question("q1 text", "")
-    q1.answers = (
-        exam.Answer("a1 text", image),
-        exam.Answer("a2 text", image),
-    )
+    q1.answers = (exam.Answer("a1 text", image), exam.Answer("a2 text", image))
     q2 = exam.Question("q2 text", "", image)
     q2.add_answer(exam.Answer("a3 text"))
     ex = exam.Exam(q1, q2)

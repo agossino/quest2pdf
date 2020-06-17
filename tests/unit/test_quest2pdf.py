@@ -5,12 +5,7 @@ from itertools import chain
 
 import pytest
 
-from exam import (Answer,
-    TrueFalseAnswer,
-    Question,
-    TrueFalseQuest,
-    Exam,
-)
+from exam import Answer, TrueFalseAnswer, Question, TrueFalseQuest, Exam
 from export import SerializeExam, RLInterface
 from utility import CSVReader
 from unit_helper import fd_input, save_mono_question_data
@@ -18,18 +13,14 @@ from unit_helper import fd_input, save_mono_question_data
 
 @pytest.fixture
 def dummy_exam():
-    q1 = Question(
-        "question 1: correct is n. 2", "subject 1", Path("a.png")
-    )
+    q1 = Question("question 1: correct is n. 2", "subject 1", Path("a.png"))
     a1 = Answer("answer 1", Path("b.png"))
     a2 = Answer("answer 2", Path("c.png"))
     a3 = Answer("answer 3", Path("a.png"))
     q1.answers = (a1, a2, a3)
     q1.correct_option = "B"
 
-    q2 = Question(
-        "question 2: correct is n. 1", "subject 1", Path("a.png")
-    )
+    q2 = Question("question 2: correct is n. 1", "subject 1", Path("a.png"))
     a1 = Answer("answer 1")
     a2 = Answer("answer 2")
     a3 = Answer("answer 3")
@@ -47,9 +38,7 @@ def dummy_exam():
     a2 = TrueFalseAnswer(True)
     q5.answers = (a1, a2)
 
-    q6 = Question(
-        "question 6: correct is n. 3", "subject 4", Path("c.png")
-    )
+    q6 = Question("question 6: correct is n. 3", "subject 4", Path("c.png"))
     a1 = Answer("answer 1")
     a2 = Answer("answer 2")
     a3 = Answer("answer 3")
