@@ -12,20 +12,10 @@ def fake_exam():
         exam.Question("q2 text"),
         exam.Question("q3 text"),
         exam.Question("q4 text"),
-        exam.Question("q5 text")
+        exam.Question("q5 text"),
     )
 
     return exam.Exam(q1, q2, q3, q4, q5)
-
-
-def test_answer_load0():
-    """test empty iterator without attribute:
-    StopIteration must not be raised
-    """
-    a = exam.Answer()
-    a.load_sequentially(iter(tuple()))
-
-    assert True
 
 
 def test_answer_load1():
@@ -46,14 +36,14 @@ def test_answer_load2():
     attribute is expected
     """
     a = exam.Answer()
-    a._attr_load_sequence = ("A",)
-    a._type_caster_sequence = (int,)
-    test_tuple = ("2",)
+    a._attr_load_sequence = ("text",)
+    a._type_caster_sequence = (str,)
+    test_tuple = ("x",)
     iterator = iter(test_tuple)
 
     a.load_sequentially(iterator)
 
-    assert a.A == int(test_tuple[0])
+    assert a.text == test_tuple[0]
 
     with pytest.raises(StopIteration):
         next(iterator)
@@ -64,15 +54,15 @@ def test_answer_load3():
     attribute is expected
     """
     a = exam.Answer()
-    a._attr_load_sequence = ("A", "B")
-    a._type_caster_sequence = (int, str)
-    test_tuple = ("2",)
+    a._attr_load_sequence = ("text", "image")
+    a._type_caster_sequence = (str, Path)
+    test_tuple = ("x",)
     iterator = iter(test_tuple)
 
     with pytest.raises(StopIteration):
         a.load_sequentially(iterator)
 
-    assert a.A == int(test_tuple[0])
+    assert a.text == test_tuple[0]
 
 
 def test_answer_load4():
@@ -81,70 +71,58 @@ def test_answer_load4():
     test last item left in the iterator
     """
     a = exam.Answer()
-    a._attr_load_sequence = ("A",)
-    a._type_caster_sequence = (int,)
-    test_tuple = ("2", "abc")
+    a._attr_load_sequence = ("text",)
+    a._type_caster_sequence = (str,)
+    test_tuple = ("x", "abc")
     iterator = iter(test_tuple)
 
     a.load_sequentially(iterator)
 
-    assert a.A == int(test_tuple[0])
+    assert a.text == test_tuple[0]
     assert next(iterator) == test_tuple[1]
 
 
-def test_answer_load5():
-    """test iterator with wrong type
-    """
-    a = exam.Answer()
-    a._attr_load_sequence = ("A",)
-    a._type_caster_sequence = (int,)
-    iterator = iter("a")
-
-    with pytest.raises(ValueError):
-        a.load_sequentially(iterator)
-
-
-def test_multichoiceanswer_init0():
+def test_answer_init0():
     """test default arguments
     """
-    a = exam.MultiChoiceAnswer()
+    a = exam.Answer()
 
     assert a.text == ""
     assert a.image == Path()
 
 
-def test_multichoiceanswer_init1():
+def test_answer_init1():
     """Test init assignment
     """
     text = "text"
     image = Path("my_pic.jpg")
-    a = exam.MultiChoiceAnswer(text, image)
+    a = exam.Answer(text, image)
 
     assert a.text == text
     assert a.image == image
 
 
-def test_multichoiceanswer_init2():
+def test_answer_init2():
     """Test wrong arguments
     """
     image = Path()
 
     with pytest.raises(TypeError):
-        exam.MultiChoiceAnswer(image)
+        exam.Answer(image)
 
 
-def test_multichoiceanswer_init3():
+def test_answer_init3():
     """Test wrong arguments
     """
     text = "text"
     with pytest.raises(TypeError):
-        exam.MultiChoiceAnswer(image=text)
+        exam.Answer(image=text)
 
 
-def test_multichoiceanswer_attribute():
+def test_answer_attribute():
     """Test attribute
     """
-    a = exam.MultiChoiceAnswer()
+    a = exam.Answer()
     expected_attr_load_sequence = ("text", "image")
     expected_type_caster_sequence = (str, Path)
 
@@ -161,8 +139,8 @@ def test_multichoiceanswer_attribute():
         pytest.param("image", r"\image.png", marks=pytest.mark.xfail),
     ],
 )
-def test_multichoiceanswer_set(attribute, expected):
-    a = exam.MultiChoiceAnswer()
+def test_answer_set(attribute, expected):
+    a = exam.Answer()
     try:
         setattr(a, attribute, expected)
     except TypeError:
@@ -171,8 +149,8 @@ def test_multichoiceanswer_set(attribute, expected):
     assert getattr(a, attribute) == expected
 
 
-def test_multichoiceanswer_load():
-    a = exam.MultiChoiceAnswer()
+def test_answer_load():
+    a = exam.Answer()
     tupl = ("text",)
 
     with pytest.raises(StopIteration):
@@ -181,8 +159,8 @@ def test_multichoiceanswer_load():
     assert a.image == Path()
 
 
-def test_multichoiceanswer_print():
-    a = exam.MultiChoiceAnswer()
+def test_answer_print():
+    a = exam.Answer()
     text = "Answer text"
     image = "home/mydir/image.jpg"
     i = iter((text, image))
@@ -238,7 +216,7 @@ def test_truefalse_attribute():
     assert a.type_caster_sequence == expected_type_caster_sequence
 
 
-def test_question_init0():
+def test_question_init():
     """Test default arguments
     """
     q = exam.Question()
@@ -548,7 +526,7 @@ def test_question_load3():
     """load a complete question; the last item is lost
     because answer does not have any attribute
     """
-    tupl = ("t1", "s1", "p1", "1", "a1")
+    tupl = ("t1", "s1", "p1", "1")
     quest = exam.Question()
     quest.load_sequentially(iter(tupl))
 
@@ -612,9 +590,9 @@ def test_question_load6(monkeypatch):
         def __init__(self):
             super().__init__()
             self._attr_load_sequence = ("text", "image")
-            self._type_caster_sequence = (str, str)
+            self._type_caster_sequence = (str, Path)
 
-    tupl = ("t1", "s1", "p1", "1", "a00", "a01", "a10")
+    tupl = ("t1", "s1", "p1", "1", "a00", Path("a01"), "a10")
     quest = exam.Question()
     monkeypatch.setattr(quest, "_answer_type", MonkeyAnswer)
     quest.load_sequentially(iter(tupl))
@@ -645,10 +623,10 @@ def test_question_print():
     assert f"level: {quest_level}" in quest.__str__()
 
 
-def test_mcquestion_init0():
+def test_question_init0():
     """test init with no answer
     """
-    q = exam.MultiChoiceQuest()
+    q = exam.Question()
 
     assert q.text == ""
     assert q.subject == ""
@@ -656,11 +634,11 @@ def test_mcquestion_init0():
     assert q.level == 0
 
 
-def test_mcquestion_init1():
+def test_question_init1():
     """test init with no answer
     """
     text, subject, image, level = ("q text", "q subject", Path("image.png"), 2)
-    q = exam.MultiChoiceQuest(text, subject, image, level)
+    q = exam.Question(text, subject, image, level)
 
     assert q.text == text
     assert q.subject == subject
@@ -668,11 +646,11 @@ def test_mcquestion_init1():
     assert q.level == level
 
 
-def test_mcquestion_add():
+def test_question_add():
     """Test add answer
     """
-    q = exam.MultiChoiceQuest("Who are you?")
-    a1 = exam.MultiChoiceAnswer("That's me.")
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer("That's me.")
     q.add_answer(a1)
 
     assert q.correct_answer == a1
@@ -680,11 +658,11 @@ def test_mcquestion_add():
     assert q.correct_option == "A"
 
 
-def test_mcquestion_shuffle1():
+def test_question_shuffle1():
     """Test shuffle with one question added
     """
-    q = exam.MultiChoiceQuest("Who are you?")
-    a1 = exam.MultiChoiceAnswer("That's me.")
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer("That's me.")
     q.add_answer(a1)
     random.seed(1)
     q.shuffle()
@@ -694,14 +672,14 @@ def test_mcquestion_shuffle1():
     assert q.correct_option == "A"
 
 
-def test_mcquestion_shuffle2():
+def test_question_shuffle2():
     """Test shuffle with more question added
     """
-    q = exam.MultiChoiceQuest("Who are you?")
-    a1 = exam.MultiChoiceAnswer("That's me.")
-    a2 = exam.MultiChoiceAnswer("That's not me.")
-    a3 = exam.MultiChoiceAnswer("That's him")
-    a4 = exam.MultiChoiceAnswer("That's her.")
+    q = exam.Question("Who are you?")
+    a1 = exam.Answer("That's me.")
+    a2 = exam.Answer("That's not me.")
+    a3 = exam.Answer("That's him")
+    a4 = exam.Answer("That's her.")
     q.add_answer(a1)
     q.add_answer(a2, True)
     q.add_answer(a3)
@@ -715,11 +693,11 @@ def test_mcquestion_shuffle2():
     assert q.correct_option == "D"
 
 
-def test_mcquestion_load0():
+def test_question_load0():
     """load question and two answers.
     """
     tupl = ("t", "s", "i", 1, "a1", "ai1", "a", "ai2")
-    quest = exam.MultiChoiceQuest()
+    quest = exam.Question()
     quest.load_sequentially(iter(tupl))
 
     assert quest.text == tupl[0]
@@ -735,11 +713,11 @@ def test_mcquestion_load0():
         _ = quest.answers[2]
 
 
-def test_mcquestion_load1():
+def test_question_load1():
     """load question and only answer text;
     answer image checked for default value.
     """
-    quest = exam.MultiChoiceQuest()
+    quest = exam.Question()
     sequence = ("Text", "Subject", "dir/ec/tor/y", 1, "Answer")
     iterator = iter(sequence)
     quest.load_sequentially(iterator)
@@ -754,11 +732,11 @@ def test_mcquestion_load1():
         _ = quest.answers[1]
 
 
-def test_mcquestion_load2():
+def test_question_load2():
     """load question and only some empty answers;
     check empty answers are not loaded.
     """
-    quest = exam.MultiChoiceQuest()
+    quest = exam.Question()
     sequence = (
         "Text",
         "Subject",
@@ -788,7 +766,7 @@ def test_mcquestion_load2():
         _ = quest.answers[2]
 
 
-def test_tfquestion_init0():
+def test_truefalse_quest_init0():
     quest = exam.TrueFalseQuest()
 
     assert quest.text == ""
@@ -797,7 +775,7 @@ def test_tfquestion_init0():
     assert quest.level == 0
 
 
-def test_tfquestion_init1():
+def test_truefalse_quest_init1():
     """test init with no answer
     """
     text, subject, image, level = ("q text", "q subject", Path("image.png"), 2)
@@ -809,7 +787,7 @@ def test_tfquestion_init1():
     assert quest.level == level
 
 
-def test_tfquestion_add0():
+def test_truefalse_quest_add0():
     """test add an answer
     """
     answer = exam.TrueFalseAnswer(True)
@@ -820,7 +798,7 @@ def test_tfquestion_add0():
     assert quest.correct_answer == answer
 
 
-def test_tfquestion_add1():
+def test_truefalse_quest_add1():
     """test add 2 answer
     """
     true_answer = exam.TrueFalseAnswer(True)
@@ -832,7 +810,7 @@ def test_tfquestion_add1():
     assert quest.correct_answer == true_answer
 
 
-def test_tfquestion_add2():
+def test_truefalse_quest_add2():
     """test add 2 answer
     """
     true_answer_1 = exam.TrueFalseAnswer(True)
@@ -844,7 +822,7 @@ def test_tfquestion_add2():
         quest.add_answer(true_answer_2)
 
 
-def test_tfquestion_add3():
+def test_truefalse_quest_add3():
     """test add 3 answer ... maybe redundant
     """
     true_answer_1 = exam.TrueFalseAnswer(True)
@@ -857,7 +835,7 @@ def test_tfquestion_add3():
         quest.answers = (true_answer_1, false_answer, true_answer_2)
 
 
-def test_tfquestion_load0():
+def test_truefalse_quest_load0():
     """load question and two answers.
     """
     tupl = ("t", "s", "i", 1, "1", "image", "", "")
@@ -940,13 +918,10 @@ def test_exam_attribute_selector2():
 def test_exam_add_path_parent():
     image = Path("images/image.png")
     path = Path("/project/A/")
-    q1 = exam.MultiChoiceQuest("q1 text", "")
-    q1.answers = (
-        exam.MultiChoiceAnswer("a1 text", image),
-        exam.MultiChoiceAnswer("a2 text", image),
-    )
-    q2 = exam.MultiChoiceQuest("q2 text", "", image)
-    q2.add_answer(exam.MultiChoiceAnswer("a3 text"))
+    q1 = exam.Question("q1 text", "")
+    q1.answers = (exam.Answer("a1 text", image), exam.Answer("a2 text", image))
+    q2 = exam.Question("q2 text", "", image)
+    q2.add_answer(exam.Answer("a3 text"))
     ex = exam.Exam(q1, q2)
     ex.add_path_parent(path)
 
@@ -1167,21 +1142,21 @@ def test_exam_print():
     assert a_image in ex.__str__()
 
 
-def test_exam_mcquestion():
-    mcquestion1 = exam.MultiChoiceQuest("mc quest1 text", "subject")
-    mcquestion1.answers = (
-        exam.MultiChoiceAnswer("Q1 A1"),
-        exam.MultiChoiceAnswer("Q1 A2"),
-        exam.MultiChoiceAnswer("Q1 A3"),
+def test_exam_question():
+    question1 = exam.Question("mc quest1 text", "subject")
+    question1.answers = (
+        exam.Question("Q1 A1"),
+        exam.Question("Q1 A2"),
+        exam.Question("Q1 A3"),
     )
-    mcquestion2 = exam.MultiChoiceQuest("mc quest2 text", "subject")
-    mcquestion2.answers = (
-        exam.MultiChoiceAnswer("Q2 A1"),
-        exam.MultiChoiceAnswer("Q2 A2"),
-        exam.MultiChoiceAnswer("Q2 A3"),
+    question2 = exam.Question("mc quest2 text", "subject")
+    question2.answers = (
+        exam.Question("Q2 A1"),
+        exam.Question("Q2 A2"),
+        exam.Question("Q2 A3"),
     )
 
-    ex = exam.Exam(mcquestion1, mcquestion2)
+    ex = exam.Exam(question1, question2)
 
     assert ex.questions[0].answers[1].image == Path()
     assert ex.questions[0].correct_answer.text == "Q1 A1"
@@ -1189,9 +1164,9 @@ def test_exam_mcquestion():
 
 
 def test_exam_tfquestion():
-    tfquestion1 = exam.MultiChoiceQuest("mc quest1 text", "subject")
+    tfquestion1 = exam.TrueFalseQuest("mc quest1 text", "subject")
     tfquestion1.answers = (exam.TrueFalseAnswer(True), exam.TrueFalseAnswer(False))
-    tfquestion2 = exam.MultiChoiceQuest("mc quest2 text", "subject")
+    tfquestion2 = exam.TrueFalseQuest("mc quest2 text", "subject")
     tfquestion2.answers = (exam.TrueFalseAnswer(False), exam.TrueFalseAnswer(True))
 
     ex = exam.Exam(tfquestion1, tfquestion2)
@@ -1203,16 +1178,16 @@ def test_exam_tfquestion():
 
 
 def test_exam_mixquestion():
-    mcquestion = exam.MultiChoiceQuest("mc quest1 text", "subject")
-    mcquestion.answers = (
-        exam.MultiChoiceAnswer("Q1 A1"),
-        exam.MultiChoiceAnswer("Q1 A2"),
-        exam.MultiChoiceAnswer("Q1 A3"),
+    question = exam.Question("mc quest1 text", "subject")
+    question.answers = (
+        exam.Answer("Q1 A1"),
+        exam.Answer("Q1 A2"),
+        exam.Answer("Q1 A3"),
     )
-    tfquestion = exam.MultiChoiceQuest("mc quest2 text", "subject")
+    tfquestion = exam.TrueFalseQuest("mc quest2 text", "subject")
     tfquestion.answers = (exam.TrueFalseAnswer(False), exam.TrueFalseAnswer(True))
 
-    ex = exam.Exam(mcquestion, tfquestion)
+    ex = exam.Exam(question, tfquestion)
 
     assert ex.questions[0].answers[1].image == Path()
     assert ex.questions[0].correct_option == "A"

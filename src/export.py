@@ -41,9 +41,9 @@ class SerializeExam:
             for answer in question.answers:
                 yield Item(ItemLevel.sub, answer.text, answer.image)
 
-    def correction(self) -> Generator[Item, None, None]:
+    def correction(self, number: int = 0) -> Generator[Item, None, None]:
         if self._exam.questions != ():
-            yield Item(ItemLevel.top, f"correction", Path("."))
+            yield Item(ItemLevel.top, f"correction exam {number}", Path("."))
         for question in self._exam.questions:
             yield Item(ItemLevel.sub, f"{question.correct_option}", Path("."))
 
